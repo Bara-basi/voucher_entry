@@ -1,0 +1,396 @@
+{
+  "packaged_at": "2026-10-16",
+  "operation": "selected files moved; credentials subset copied; scripts adapted",
+  "moved_files": [
+    {
+      "source": "outputs\\凭证平台档案_20261014\\人员档案.json",
+      "destination": "mappings\\platform\\人员档案.json",
+      "sha256": "1b0bdb683a5094238d24f59a8d066e4ca3b763f315a62c04b4d2abba12cf717d",
+      "bytes": 53346
+    },
+    {
+      "source": "outputs\\凭证平台档案_20261014\\会计科目.json",
+      "destination": "mappings\\platform\\会计科目.json",
+      "sha256": "a3356ae07feafddb329146f802f93f75a99d3d43d32c986d948edfe898159c31",
+      "bytes": 534425
+    },
+    {
+      "source": "outputs\\凭证平台档案_20261014\\供应商档案.json",
+      "destination": "mappings\\platform\\供应商档案.json",
+      "sha256": "f9cae5cb19ccf176ef3e531a96f5070aae6fe095ed3dc9a615406d5bb3805e7e",
+      "bytes": 619551
+    },
+    {
+      "source": "outputs\\凭证平台档案_20261014\\凭证及账簿基础配置.json",
+      "destination": "mappings\\platform\\凭证及账簿基础配置.json",
+      "sha256": "724e5be34c4462c69c8daa528479c41ca29c7bcf2d2cce3d7fe104ff87e552d5",
+      "bytes": 77182
+    },
+    {
+      "source": "outputs\\凭证平台档案_20261014\\名称编码索引.json",
+      "destination": "mappings\\platform\\名称编码索引.json",
+      "sha256": "e7a0e750bfc11b2c7650d92f9d96b72fe0263476aebbef34ff57566e33ffd08c",
+      "bytes": 1270397
+    },
+    {
+      "source": "outputs\\凭证平台档案_20261014\\存货档案.json",
+      "destination": "mappings\\platform\\存货档案.json",
+      "sha256": "309f705195382b39e6adb2cb92926f445df9a4ecc8f9d390731bedddebe0d0e0",
+      "bytes": 69415
+    },
+    {
+      "source": "outputs\\凭证平台档案_20261014\\客户档案.json",
+      "destination": "mappings\\platform\\客户档案.json",
+      "sha256": "445bc838ef269d6adcfe592b03298f5217ad5caf074633ee03e8797b3c44ef05",
+      "bytes": 756466
+    },
+    {
+      "source": "outputs\\凭证平台档案_20261014\\已验证接口及请求参数.json",
+      "destination": "mappings\\platform\\已验证接口及请求参数.json",
+      "sha256": "2f88c4d541828569f4b396f82944f8f4170edcf6c9e173ceda9f07468caaf83c",
+      "bytes": 11781
+    },
+    {
+      "source": "outputs\\凭证平台档案_20261014\\已验证编码样例.json",
+      "destination": "mappings\\platform\\已验证编码样例.json",
+      "sha256": "8d83e8a8c0774237679decafd0446f5edfe344febc514e08165d9f2f0da0c32b",
+      "bytes": 1551
+    },
+    {
+      "source": "outputs\\凭证平台档案_20261014\\抓取核验报告.json",
+      "destination": "mappings\\platform\\抓取核验报告.json",
+      "sha256": "d7fc8c4eab7a4bad1f4dc9cc5b97723f858f84c14ea6d66c1786fcc3a66fd69f",
+      "bytes": 4541
+    },
+    {
+      "source": "outputs\\凭证平台档案_20261014\\科目辅助核算配置.json",
+      "destination": "mappings\\platform\\科目辅助核算配置.json",
+      "sha256": "339cdd1550f34b63c06c5fcaed14bb43db9ebfe1b42a99c702bf45f2e828263c",
+      "bytes": 32708
+    },
+    {
+      "source": "outputs\\凭证平台档案_20261014\\银行账号档案.json",
+      "destination": "mappings\\platform\\银行账号档案.json",
+      "sha256": "90f3def5959ab560ba1911dfb8be90751961ec4b050fc88b76bf6aa0e7e60a85",
+      "bytes": 27336
+    },
+    {
+      "source": "outputs\\凭证平台档案_20261014\\项目档案.json",
+      "destination": "mappings\\platform\\项目档案.json",
+      "sha256": "b83f31ef66f5495c751a3b889c454e27b4800a4dc239fb6df602cac8d14ef06a",
+      "bytes": 953852
+    },
+    {
+      "source": "first_try\\customer_alias_mappings.json",
+      "destination": "mappings\\customer_alias_mappings.json",
+      "sha256": "d740c305e02a4d24cb6bc1242343459e2d8f441f63a00c0f4671f9c2a64a1ddd",
+      "bytes": 9012
+    },
+    {
+      "source": "first_try\\customer_resolution_history.json",
+      "destination": "mappings\\customer_resolution_history.json",
+      "sha256": "c84906d313de4c48b8b630944f9fd314c4e9e07f42d7c942c2f8677ac2a56278",
+      "bytes": 49108
+    },
+    {
+      "source": "first_try\\finance_supplier_alias_mappings.json",
+      "destination": "mappings\\finance_supplier_alias_mappings.json",
+      "sha256": "aa09e23321b7117214ef470916382541933de94c6cc2a5bb77669aa210ebe49a",
+      "bytes": 11358
+    },
+    {
+      "source": "first_try\\supplier_directory_snapshot.json",
+      "destination": "mappings\\supplier_directory_snapshot.json",
+      "sha256": "58531ef75b11e413b879692699e430812e2cdb8398b18b94c7b190ea13080030",
+      "bytes": 122053
+    },
+    {
+      "source": "first_try\\finance_product_types_snapshot.json",
+      "destination": "mappings\\finance_product_types_snapshot.json",
+      "sha256": "4c46c683773837d86f0ddd9f98fb632584f0e2b43b0bd5473b11596666d08df3",
+      "bytes": 40118
+    },
+    {
+      "source": "前期资料\\凭证信息.xls",
+      "destination": "templates\\原始空白_凭证信息.xls",
+      "sha256": "2f45c2e6d7dda4c0848e8ceccac9f19abf2ea0d8fce929a9c35a2b567c3b00ce",
+      "bytes": 11776
+    },
+    {
+      "source": "outputs\\完整凭证复刻_20261014\\024_存货档案_反方向数量留空.xls",
+      "destination": "templates\\024_存货档案_反方向数量留空.xls",
+      "sha256": "f41d21a3295d0b6bcaaceb0d87f527cbe71f81f7f0e932a0df732b1a4a3ec288",
+      "bytes": 9728
+    },
+    {
+      "source": "outputs\\批量凭证导入_20261015\\026_两笔凭证_ID2和3_批量导入.xls",
+      "destination": "templates\\026_两笔凭证_ID2和3_批量导入.xls",
+      "sha256": "d2471fb249d91201ea004a7312a884f36334d053e6b515bab8df32200440b357",
+      "bytes": 13824
+    },
+    {
+      "source": "first_try\\actual_vouchers_26MT.json",
+      "destination": "vouchers\\actual_vouchers_26MT.json",
+      "sha256": "9b3e086d3c1b448b179feed890ac3c32f5ae42482874cbc06111107c1b925d75",
+      "bytes": 34269013
+    },
+    {
+      "source": "outputs\\全量凭证测试_20261015\\用友已有凭证_可读导出.xlsx",
+      "destination": "vouchers\\用友已有凭证_可读导出.xlsx",
+      "sha256": "0d5d58c8a39cb94726169dbc0d69b2acf65a5b22cc685dde01b85274352fc05f",
+      "bytes": 895928
+    },
+    {
+      "source": "outputs\\全量凭证测试_20261015\\平台原生导出_验证可读.xlsx",
+      "destination": "vouchers\\平台原生导出_验证可读.xlsx",
+      "sha256": "82f059ae929bd7d7fdf7485a553d9b6eec83643e0256d16d4e93598dfe6a9c8c",
+      "bytes": 12426
+    },
+    {
+      "source": "outputs\\全量凭证测试_20261015\\平台原生导出_凭证列表_2026-10-15_10-44-57.zip",
+      "destination": "vouchers\\平台原生导出_凭证列表_2026-10-15_10-44-57.zip",
+      "sha256": "c38492ebaef58b6431ddf778e90b1a29559b6a27299ab8b9a7dee0bc00ad901b",
+      "bytes": 9127
+    },
+    {
+      "source": "first_try\\read_feishu.py",
+      "destination": "scripts\\read_feishu.py",
+      "sha256": "8f9f7c87ecc6a843ac587cfa2343f1e2a1ec6cae5f80409d429e369e94239e46",
+      "bytes": 4583
+    },
+    {
+      "source": "first_try\\yonyou_browser.py",
+      "destination": "scripts\\yonyou_browser.py",
+      "sha256": "d1494c61663b4693b7c985ff328b1cf43a887186f3636cf5200b21f067c447b2",
+      "bytes": 5777
+    },
+    {
+      "source": "first_try\\fetch_vouchers_task.py",
+      "destination": "scripts\\fetch_vouchers_task.py",
+      "sha256": "f86ac389be828b43d9c2a37376a9e8a0077c8cad39a56b8b2d7e9348ce8b250e",
+      "bytes": 1374
+    },
+    {
+      "source": "first_try\\customer_matching.py",
+      "destination": "scripts\\customer_matching.py",
+      "sha256": "ce0527bd008f2f74fd5e78d26e4c49996976512d6a7949e2ea3506e0155c234b",
+      "bytes": 2023
+    }
+  ],
+  "final_files": [
+    {
+      "path": ".env.example",
+      "bytes": 205,
+      "sha256": "9f74080271c4d7188889fd649c2a2139fbae132cf2510068ea6a8d6618b78741"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 52,
+      "sha256": "96242510ab19d0a45193f0bfba250938eef8ab09a24ce8ac8dc747ae2904cae7"
+    },
+    {
+      "path": "config\\voucher_query.json",
+      "bytes": 1704,
+      "sha256": "7ff93ca0287e569b5ecc80977a73190f792137326c4c3cf43abd257ec7e501a7"
+    },
+    {
+      "path": "data\\.gitkeep",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs\\01_模板使用规则.md",
+      "bytes": 3232,
+      "sha256": "8f16655f923e227746dda94f957ab8f7a16ac3af496f1b9414291537155a4592"
+    },
+    {
+      "path": "docs\\02_映射表使用方法.md",
+      "bytes": 3101,
+      "sha256": "b7a74549862c7eab379a3cc319f25bc9a15c81a340c5570e4cdb54386687e0c6"
+    },
+    {
+      "path": "docs\\03_数据获取脚本.md",
+      "bytes": 3651,
+      "sha256": "f6ca31c71d69c1e9fcd2b19ab2cea9ee59cc64568c7ec6160183c96e79b9c9aa"
+    },
+    {
+      "path": "docs\\04_下载凭证范围与交接清单.md",
+      "bytes": 1226,
+      "sha256": "033f5f697f944738d52c5a1b342029f391eaba07f2bc805d531b630ee50fa9ac"
+    },
+    {
+      "path": "mappings\\customer_alias_mappings.json",
+      "bytes": 9012,
+      "sha256": "d740c305e02a4d24cb6bc1242343459e2d8f441f63a00c0f4671f9c2a64a1ddd"
+    },
+    {
+      "path": "mappings\\customer_resolution_history.json",
+      "bytes": 49108,
+      "sha256": "c84906d313de4c48b8b630944f9fd314c4e9e07f42d7c942c2f8677ac2a56278"
+    },
+    {
+      "path": "mappings\\finance_product_types_snapshot.json",
+      "bytes": 40118,
+      "sha256": "4c46c683773837d86f0ddd9f98fb632584f0e2b43b0bd5473b11596666d08df3"
+    },
+    {
+      "path": "mappings\\finance_supplier_alias_mappings.json",
+      "bytes": 11358,
+      "sha256": "aa09e23321b7117214ef470916382541933de94c6cc2a5bb77669aa210ebe49a"
+    },
+    {
+      "path": "mappings\\platform\\人员档案.json",
+      "bytes": 53346,
+      "sha256": "1b0bdb683a5094238d24f59a8d066e4ca3b763f315a62c04b4d2abba12cf717d"
+    },
+    {
+      "path": "mappings\\platform\\会计科目.json",
+      "bytes": 534425,
+      "sha256": "a3356ae07feafddb329146f802f93f75a99d3d43d32c986d948edfe898159c31"
+    },
+    {
+      "path": "mappings\\platform\\供应商档案.json",
+      "bytes": 619551,
+      "sha256": "f9cae5cb19ccf176ef3e531a96f5070aae6fe095ed3dc9a615406d5bb3805e7e"
+    },
+    {
+      "path": "mappings\\platform\\凭证及账簿基础配置.json",
+      "bytes": 77182,
+      "sha256": "724e5be34c4462c69c8daa528479c41ca29c7bcf2d2cce3d7fe104ff87e552d5"
+    },
+    {
+      "path": "mappings\\platform\\名称编码索引.json",
+      "bytes": 1270397,
+      "sha256": "e7a0e750bfc11b2c7650d92f9d96b72fe0263476aebbef34ff57566e33ffd08c"
+    },
+    {
+      "path": "mappings\\platform\\存货档案.json",
+      "bytes": 69415,
+      "sha256": "309f705195382b39e6adb2cb92926f445df9a4ecc8f9d390731bedddebe0d0e0"
+    },
+    {
+      "path": "mappings\\platform\\客户档案.json",
+      "bytes": 756466,
+      "sha256": "445bc838ef269d6adcfe592b03298f5217ad5caf074633ee03e8797b3c44ef05"
+    },
+    {
+      "path": "mappings\\platform\\已验证接口及请求参数.json",
+      "bytes": 11781,
+      "sha256": "2f88c4d541828569f4b396f82944f8f4170edcf6c9e173ceda9f07468caaf83c"
+    },
+    {
+      "path": "mappings\\platform\\已验证编码样例.json",
+      "bytes": 1551,
+      "sha256": "8d83e8a8c0774237679decafd0446f5edfe344febc514e08165d9f2f0da0c32b"
+    },
+    {
+      "path": "mappings\\platform\\抓取核验报告.json",
+      "bytes": 4541,
+      "sha256": "d7fc8c4eab7a4bad1f4dc9cc5b97723f858f84c14ea6d66c1786fcc3a66fd69f"
+    },
+    {
+      "path": "mappings\\platform\\科目辅助核算配置.json",
+      "bytes": 32708,
+      "sha256": "339cdd1550f34b63c06c5fcaed14bb43db9ebfe1b42a99c702bf45f2e828263c"
+    },
+    {
+      "path": "mappings\\platform\\银行账号档案.json",
+      "bytes": 27336,
+      "sha256": "90f3def5959ab560ba1911dfb8be90751961ec4b050fc88b76bf6aa0e7e60a85"
+    },
+    {
+      "path": "mappings\\platform\\项目档案.json",
+      "bytes": 953852,
+      "sha256": "b83f31ef66f5495c751a3b889c454e27b4800a4dc239fb6df602cac8d14ef06a"
+    },
+    {
+      "path": "mappings\\supplier_directory_snapshot.json",
+      "bytes": 122053,
+      "sha256": "58531ef75b11e413b879692699e430812e2cdb8398b18b94c7b190ea13080030"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1387,
+      "sha256": "9156657815d098f2d2c6c651988c33fb78ad87a91c284896c4905b15f22cb910"
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 21,
+      "sha256": "ff37acab325c913cdcb5c86e3fd8e428e3e5d3464b4cd03f4700fb6c352a85e7"
+    },
+    {
+      "path": "scripts\\customer_matching.py",
+      "bytes": 2076,
+      "sha256": "ee3849f6f6700c33bd0f15371d2133f18218e8fd4542a12b13b9a8ae07caa5f9"
+    },
+    {
+      "path": "scripts\\fetch_vouchers_task.py",
+      "bytes": 386,
+      "sha256": "14f6050f4343d7cc8d36e017af25bba9d5a28027dfd39e572a62fb2683377c80"
+    },
+    {
+      "path": "scripts\\fetch_yonyou.py",
+      "bytes": 8517,
+      "sha256": "1b5d91459994a4fd4976cf79ffc79ea022c04bdc362dea2fb432a4e89db061d3"
+    },
+    {
+      "path": "scripts\\read_feishu.py",
+      "bytes": 4709,
+      "sha256": "42ef0c2b4d08a6b5c7c37371f986a7bbab1602daae9b0973102ce5aacf779d46"
+    },
+    {
+      "path": "scripts\\yonyou_browser.py",
+      "bytes": 6062,
+      "sha256": "46c674b9825cc09f8f31fb77321599136557d52bf90b1f3010014d68a911e050"
+    },
+    {
+      "path": "templates\\024_存货档案_反方向数量留空.xls",
+      "bytes": 9728,
+      "sha256": "f41d21a3295d0b6bcaaceb0d87f527cbe71f81f7f0e932a0df732b1a4a3ec288"
+    },
+    {
+      "path": "templates\\026_两笔凭证_ID2和3_批量导入.xls",
+      "bytes": 13824,
+      "sha256": "d2471fb249d91201ea004a7312a884f36334d053e6b515bab8df32200440b357"
+    },
+    {
+      "path": "templates\\原始空白_凭证信息.xls",
+      "bytes": 11776,
+      "sha256": "2f45c2e6d7dda4c0848e8ceccac9f19abf2ea0d8fce929a9c35a2b567c3b00ce"
+    },
+    {
+      "path": "vouchers\\actual_vouchers_26MT.json",
+      "bytes": 34269013,
+      "sha256": "9b3e086d3c1b448b179feed890ac3c32f5ae42482874cbc06111107c1b925d75"
+    },
+    {
+      "path": "vouchers\\平台原生导出_凭证列表_2026-10-15_10-44-57.zip",
+      "bytes": 9127,
+      "sha256": "c38492ebaef58b6431ddf778e90b1a29559b6a27299ab8b9a7dee0bc00ad901b"
+    },
+    {
+      "path": "vouchers\\平台原生导出_验证可读.xlsx",
+      "bytes": 12426,
+      "sha256": "82f059ae929bd7d7fdf7485a553d9b6eec83643e0256d16d4e93598dfe6a9c8c"
+    },
+    {
+      "path": "vouchers\\用友已有凭证_可读导出.xlsx",
+      "bytes": 895928,
+      "sha256": "0d5d58c8a39cb94726169dbc0d69b2acf65a5b22cc685dde01b85274352fc05f"
+    }
+  ],
+  "validation": {
+    "syntax": "passed",
+    "pagination_replay_entries": 10049,
+    "pagination_pages": 11,
+    "unique_vouchers": 996,
+    "tree_pagination": "passed",
+    "template_columns": 53,
+    "batch_voucher_ids": [
+      2,
+      3
+    ],
+    "live_fetch_rerun": false,
+    "credentials_logged": false
+  }
+}

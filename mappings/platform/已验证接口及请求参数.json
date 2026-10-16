@@ -1,0 +1,348 @@
+{
+  "scope": {
+    "account_book_id": "2269106239432556551",
+    "account_book_code": "ZB001",
+    "account_book_name": "嘉兴迈拓不锈钢有限公司",
+    "organization": {
+      "id": "1838067461966528569",
+      "code": "001",
+      "name": "嘉兴迈拓不锈钢有限公司"
+    },
+    "subject_chart": {
+      "id": "2268561010505285636",
+      "code": "001",
+      "name": "迈拓",
+      "accsubjectchartVid": "2268561010505285636",
+      "accsubjectchartOid": "2268561010505285636",
+      "leaf": "",
+      "bnumcheck": "",
+      "numcheck": "",
+      "measuredoc": "",
+      "currency": ""
+    },
+    "visibility": "当前登录账号在该账簿参照接口中可见的档案；未绕过权限或包含已删除档案"
+  },
+  "plans": {
+    "客户档案.json": {
+      "url": "https://c3.yonyoucloud.com/yonbip-fi-egl/bill/ref/getRefData?serviceCode=newvoucher&refCode=productcenter.baseMerchantRef&sourceBillnum=yonyoufi_voucher&terminalType=1",
+      "method": "POST",
+      "payload": {
+        "page": {
+          "pageSize": 5000,
+          "pageIndex": 1,
+          "totalCount": 0
+        },
+        "refCode": "productcenter.baseMerchantRef",
+        "tplid": "2480809730129788955",
+        "billnum": "yonyoufi_voucher",
+        "externalData": {
+          "financeclose": false
+        },
+        "data": "{\"accbook\":\"2269106239432556551\",\"MultiDimensionExt_code\":\"0005\",\"accsubject\":\"2271468754915295234\",\"accsubject_code\":\"112202\",\"accentity\":\"1838067461966528569\",\"isAuxiliary\":true}",
+        "query": {
+          "serviceCode": "newvoucher"
+        },
+        "custMap": {
+          "realHotKey": "id"
+        },
+        "serviceCode": "newvoucher",
+        "condition": {
+          "isExtend": true,
+          "simpleVOs": []
+        },
+        "dataType": "grid",
+        "busiObj": "glVoucher"
+      },
+      "tree": false,
+      "key": "id"
+    },
+    "供应商档案.json": {
+      "url": "https://c3.yonyoucloud.com/yonbip-fi-egl/bill/ref/getRefData?serviceCode=newvoucher&refCode=yssupplier.aa_vendorBasicref&sourceBillnum=yonyoufi_voucher&terminalType=1",
+      "method": "POST",
+      "payload": {
+        "page": {
+          "pageSize": 5000,
+          "pageIndex": 1,
+          "totalCount": 0
+        },
+        "refCode": "yssupplier.aa_vendorBasicref",
+        "tplid": 2253613,
+        "billnum": "yonyoufi_voucher",
+        "externalData": {
+          "financeclose": false
+        },
+        "data": "{\"accbook\":\"2269106239432556551\",\"MultiDimensionExt_code\":\"0004\",\"accsubject\":\"2271459366116786178\",\"accsubject_code\":\"220201\",\"accentity\":\"1838067461966528569\",\"isAuxiliary\":true}",
+        "query": {
+          "serviceCode": "newvoucher"
+        },
+        "custMap": {
+          "realHotKey": "code"
+        },
+        "serviceCode": "newvoucher",
+        "condition": {
+          "isExtend": true,
+          "simpleVOs": []
+        },
+        "dataType": "grid",
+        "busiObj": "glVoucher"
+      },
+      "tree": false,
+      "key": "id"
+    },
+    "存货档案.json": {
+      "url": "https://c3.yonyoucloud.com/yonbip-fi-egl/bill/ref/getRefData?serviceCode=newvoucher&refCode=ucfbasedoc.001&sourceBillnum=yonyoufi_voucher&terminalType=1",
+      "method": "POST",
+      "payload": {
+        "dataType": "tree",
+        "refCode": "ucfbasedoc.001",
+        "tplid": 1848109,
+        "billnum": "yonyoufi_voucher",
+        "externalData": {
+          "financeclose": false
+        },
+        "data": "{\"accbook\":\"2269106239432556551\",\"MultiDimensionExt_code\":\"0015\",\"accsubject\":\"2271459305987244040\",\"accsubject_code\":\"140501\",\"accentity\":\"1838067461966528569\",\"isAuxiliary\":true}",
+        "query": {
+          "serviceCode": "newvoucher"
+        },
+        "custMap": {
+          "realHotKey": "id"
+        },
+        "serviceCode": "newvoucher",
+        "treeCondition": {
+          "isExtend": true,
+          "simpleVOs": [],
+          "lazyLoad": false
+        },
+        "busiObj": "glVoucher",
+        "page": {
+          "pageSize": 5000,
+          "pageIndex": 1,
+          "totalCount": 0
+        }
+      },
+      "tree": true,
+      "key": "id"
+    },
+    "人员档案.json": {
+      "url": "https://c3.yonyoucloud.com/yonbip-fi-egl/bill/ref/getRefData?serviceCode=newvoucher&refCode=ucf-staff-center.bd_staff_leave_ref&sourceBillnum=yonyoufi_voucher&terminalType=1",
+      "method": "POST",
+      "payload": {
+        "dataType": "grid",
+        "refCode": "ucf-staff-center.bd_staff_leave_ref",
+        "tplid": "1656241815718461479",
+        "billnum": "yonyoufi_voucher",
+        "data": "{\"accbook\": \"2269106239432556551\", \"MultiDimensionExt_code\": \"0003\", \"accsubject\": \"2271459297397309448\", \"accsubject_code\": \"122101\", \"accentity\": \"1838067461966528569\", \"isAuxiliary\": true}",
+        "serviceCode": "newvoucher",
+        "condition": {
+          "isExtend": true,
+          "simpleVOs": []
+        },
+        "busiObj": "glVoucher",
+        "page": {
+          "pageSize": 2000,
+          "pageIndex": 1,
+          "totalCount": 0
+        }
+      },
+      "tree": false,
+      "key": "id"
+    },
+    "项目档案.json": {
+      "url": "https://c3.yonyoucloud.com/yonbip-fi-egl/bill/ref/getRefData?serviceCode=newvoucher&refCode=ucfbasedoc.bd_projectNewRef&sourceBillnum=yonyoufi_voucher&terminalType=1",
+      "method": "POST",
+      "payload": {
+        "dataType": "grid",
+        "refCode": "ucfbasedoc.bd_projectNewRef",
+        "tplid": 7324753,
+        "billnum": "yonyoufi_voucher",
+        "data": "{\"accbook\": \"2269106239432556551\", \"MultiDimensionExt_code\": \"0002\", \"accsubject\": \"2418601973572435972\", \"accsubject_code\": \"43010304\", \"accentity\": \"1838067461966528569\", \"isAuxiliary\": true}",
+        "serviceCode": "newvoucher",
+        "condition": {
+          "isExtend": true,
+          "simpleVOs": []
+        },
+        "busiObj": "glVoucher",
+        "page": {
+          "pageSize": 2000,
+          "pageIndex": 1,
+          "totalCount": 0
+        }
+      },
+      "tree": false,
+      "key": "id"
+    },
+    "银行账号档案.json": {
+      "url": "https://c3.yonyoucloud.com/yonbip-fi-egl/bill/ref/getRefData?serviceCode=newvoucher&refCode=ucfbasedoc.bd_enterprisebankacct&sourceBillnum=yonyoufi_voucher&terminalType=1",
+      "method": "POST",
+      "payload": {
+        "dataType": "grid",
+        "refCode": "ucfbasedoc.bd_enterprisebankacct",
+        "tplid": 1339511,
+        "billnum": "yonyoufi_voucher",
+        "data": "{\"accbook\": \"2269106239432556551\", \"MultiDimensionExt_code\": \"0013\", \"accsubject\": \"2271459357526851585\", \"accsubject_code\": \"20010101\", \"accentity\": \"1838067461966528569\", \"isAuxiliary\": true}",
+        "serviceCode": "newvoucher",
+        "condition": {
+          "isExtend": true,
+          "simpleVOs": []
+        },
+        "busiObj": "glVoucher",
+        "page": {
+          "pageSize": 2000,
+          "pageIndex": 1,
+          "totalCount": 0
+        }
+      },
+      "tree": false,
+      "key": "currencyId"
+    },
+    "会计科目.json": {
+      "url": "https://c3.yonyoucloud.com/yonbip-fi-egl/bill/ref/getRefData?serviceCode=newvoucher&refCode=fiepub.epub_accsubjectversion_treecard_ref&sourceBillnum=yonyoufi_voucher&terminalType=1",
+      "method": "POST",
+      "payload": {
+        "dataType": "tree",
+        "refCode": "fiepub.epub_accsubjectversion_treecard_ref",
+        "tplid": "2744623987934625803",
+        "billnum": "yonyoufi_voucher",
+        "data": "{\"accbook\": \"2269106239432556551\", \"accsubjectchart\": \"2268561010505285636\", \"makeTime\": \"2026-10-14\", \"maketime\": \"2026-10-14\"}",
+        "serviceCode": "newvoucher",
+        "treeCondition": {
+          "isExtend": true,
+          "simpleVOs": [],
+          "lazyLoad": false
+        },
+        "busiObj": "glVoucher",
+        "page": {
+          "pageSize": 2000,
+          "pageIndex": 1,
+          "totalCount": 0
+        }
+      },
+      "tree": false,
+      "key": "id"
+    }
+  },
+  "configuration_reads": [
+    {
+      "url": "https://c3.yonyoucloud.com/mdf-node/uniform/bill/ref/getRefData?serviceCode=newvoucher",
+      "method": "POST",
+      "payload": {
+        "dataType": "tree",
+        "refCode": "fiepub.fiepub_accountbooktreeref",
+        "billnum": "glVoucher",
+        "isMasterOrg": false,
+        "busiObj": "glVoucher",
+        "data": "{\"enable\":1}",
+        "externalData": {
+          "serviceCode": "newvoucher",
+          "mainBookValue": true
+        },
+        "serviceCode": "newvoucher",
+        "treeCondition": {
+          "isExtend": true,
+          "simpleVOs": [
+            {
+              "field": "accountBookGL.enabled",
+              "op": "in",
+              "value1": [
+                "1"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "url": "https://c3.yonyoucloud.com/yonbip-fi-egl/currency/queryMultiCurrencyRatetypeDetail/2269106239432556551?serviceCode=newvoucher",
+      "method": "GET",
+      "payload": null
+    },
+    {
+      "url": "https://c3.yonyoucloud.com/yonbip-fi-egl/accbook/getdetailBookbyid",
+      "method": "POST",
+      "payload": {
+        "id": "2269106239432556551",
+        "makeTime": "2026-10-14 00:00:00"
+      }
+    },
+    {
+      "url": "https://c3.yonyoucloud.com/yonbip-fi-egl/refbase_ctr/queryRefJSON",
+      "method": "POST",
+      "payload": {
+        "refCode": "currency",
+        "refType": "list",
+        "displayFields": [
+          "id",
+          "code",
+          "name",
+          "moneydigit",
+          "moneyrount",
+          "pricedigit",
+          "pricerount"
+        ],
+        "funcode": "newvoucher"
+      }
+    },
+    {
+      "url": "https://c3.yonyoucloud.com/yonbip-fi-egl/accsubject/queryvrbyaccbook",
+      "method": "POST",
+      "payload": {
+        "accbook": "2269106239432556551",
+        "makeTime": "2026-10-14"
+      }
+    },
+    {
+      "url": "https://c3.yonyoucloud.com/yonbip-fi-egl/refbase_ctr/queryRefJSON",
+      "method": "POST",
+      "payload": {
+        "refCode": "vouchertype",
+        "refType": "list",
+        "displayFields": [
+          "id",
+          "code",
+          "name",
+          "voucherstr"
+        ],
+        "funcode": "newvoucher",
+        "pk_org": "1838067461966528569",
+        "filterCondition": "{\"pk_org\":\"1838067461966528569\"}"
+      }
+    },
+    {
+      "url": "https://c3.yonyoucloud.com/yonbip-fi-egl/refbase_ctr/queryRefJSON",
+      "method": "POST",
+      "payload": {
+        "refCode": "ratetype",
+        "refType": "list",
+        "displayFields": [
+          "id",
+          "code",
+          "name",
+          "digit"
+        ],
+        "funcode": "newvoucher"
+      }
+    },
+    {
+      "url": "https://c3.yonyoucloud.com/yonbip-fi-egl/accsubject/queryleaf?serviceCode=newvoucher",
+      "method": "POST",
+      "payload": {
+        "accbook": "2269106239432556551",
+        "funcode": "newvoucher",
+        "makeTime": "2026-10-14"
+      }
+    },
+    {
+      "url": "https://c3.yonyoucloud.com/yonbip-fi-egl/vt/vlist",
+      "method": "POST",
+      "payload": {
+        "accbook": "2269106239432556551"
+      }
+    }
+  ],
+  "login_environment_keys": [
+    "YONG_YOU_URL",
+    "YONG_YOU_NAME",
+    "YONG_YOU_PASSWORD"
+  ],
+  "authentication": "由Python Playwright登录后通过BrowserContext.request复用内存Cookie；不保存Cookie、密码或访问令牌。"
+}

@@ -1,0 +1,1682 @@
+{
+  "records": [
+    {
+      "normalized_alias": "segyungbesttech",
+      "alias": "SEGYUNG BEST TECH",
+      "platform_code": "020836",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlVIdxD",
+        "recvi3bxlVCJGa",
+        "recvi3bxlVOfto"
+      ]
+    },
+    {
+      "normalized_alias": "optimisas",
+      "alias": "OPTIMI SAS",
+      "platform_code": "020501",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlVUjut",
+        "recvwtAikuoOr6"
+      ]
+    },
+    {
+      "normalized_alias": "specialpipingmaterialsltd",
+      "alias": "Special Piping Materials Ltd",
+      "platform_code": "000086",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlV2fgM",
+        "recvi3bxlVKWHj",
+        "recvi3bxlVSeg6",
+        "recvi3bxlVq3a5",
+        "recvi3bxlVcriJ",
+        "recvi3bxlVqIv5",
+        "recvgD2KR003XC",
+        "recvfHAHDMtSjF",
+        "recvgDlHAczkqe",
+        "recvhpoFrUt5Ng",
+        "recvhv5kmgMRbP",
+        "recvi2yGlOqSC4",
+        "recvi2yHiAq7b9",
+        "recvhWM6nZTTE3",
+        "recviNp628xNPn",
+        "recviNp75xErdq",
+        "recviNp8g4XB5J",
+        "recviNp9rKTHzh",
+        "recvjX0IvtG4hD",
+        "recvjmtUfcp6f7",
+        "recvjmuoVE55fI",
+        "recvkG9yJVuVqD",
+        "recvkABZMNdwMg",
+        "recvob4xkMsdil",
+        "recvob4yGKug8i",
+        "recvob4zZx8UaP",
+        "recvnBANCU7d3K",
+        "recvpRW7TBz2XD",
+        "recvpXQGLl14U7",
+        "recvrpqIU1K7Nn",
+        "recvvbqenGpWL5",
+        "recvpiS6bVSqfn",
+        "recvpiS7kWpwmI",
+        "recvpiS8wC1Abg",
+        "recvpiS9FKloLa",
+        "recvrpqKdUtgoe",
+        "recvsx7bwmYR6I",
+        "recvsx7f30udJz",
+        "recvsx7hivPThj",
+        "recvsTJgTmgScy",
+        "recvvbq8sejmCo",
+        "recvvbqayIds80",
+        "recvvbqcZ6cEp4",
+        "recvvbqfLwKygE",
+        "recvvbqkfk6QLS",
+        "recvvbqlAppUaP"
+      ]
+    },
+    {
+      "normalized_alias": "moraviasystemsas",
+      "alias": "Moravia Systems a.s.",
+      "platform_code": "020467",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlVW3Pc",
+        "recvjmtPofkPRi",
+        "recvqUfGlA5DZy"
+      ]
+    },
+    {
+      "normalized_alias": "tubexaindustrialltda",
+      "alias": "Tubexa Industrial Ltda.",
+      "platform_code": "020009",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlVeGDt",
+        "recvi3bxlV1kR3",
+        "recvi3bxlV2e2p",
+        "recvi3bxlVcvfI",
+        "recvi3bxlV2XuV",
+        "recvmFyWmDfZtn",
+        "recvnrBii3uQg6",
+        "recvoW0B1mkaTA"
+      ]
+    },
+    {
+      "normalized_alias": "halliburtonoverseasltd",
+      "alias": "Halliburton Overseas ltd",
+      "platform_code": "020329",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlVXyYq",
+        "recvsTItobnbhI"
+      ]
+    },
+    {
+      "normalized_alias": "swiftoilfieldsupplyinc",
+      "alias": "Swift Oilfield Supply Inc",
+      "platform_code": "000028",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlVLelN",
+        "recvgWtkVqNnvH",
+        "recviNnO90Rkt2",
+        "recviNnPTken9t",
+        "recvkZcQlOgCCT",
+        "recvkZcX1USiHq",
+        "recvnmjXVlWRST",
+        "recvpiS3VfeFGX",
+        "recvpiS53aADnX",
+        "recvpuzB9aUjzb",
+        "recvpXQxF3glrB",
+        "recvpXQvpMa3F6",
+        "recvpXQwB5wlRu",
+        "recvrpqGge1gXs",
+        "recvrpqHEOt9kI",
+        "recvvUZKJmgxbc",
+        "recvvbpiadxVL4",
+        "recvvbptW9Qf07",
+        "recvvbpvpteV0x",
+        "recvvbpwSwhS0y",
+        "recvvwXlbwSXbj",
+        "recvvwXmvxO9g4",
+        "recvvwXnH9QEgl",
+        "recvvwXoTsI1pF",
+        "recvvbqou5bXU1",
+        "recvvbrTVzTYyN",
+        "recvgUFNqsQ1Zw",
+        "recvi8sekC5l88",
+        "recvkZd16B2Jxq",
+        "recvoW0y3UDhMA",
+        "recvoW0zuGVApN",
+        "recvpuzA4cwbb8",
+        "recvpXQuk63WM2",
+        "recvtmsQ1rNyWI",
+        "recvtmsRbDiZCE",
+        "recvtmsSnN2wzD",
+        "recvtmsTzxOEjf",
+        "recvtmsUHBAIf0",
+        "recvtmsVMTLS6j",
+        "recvtmsWVCmK60",
+        "recvtmsY65BEFr",
+        "recvtmsZg4yctR",
+        "recvtmt0syOC7H",
+        "recvtQHyoa2OCb",
+        "recvvUYI7bGaWF",
+        "recvvbpjxwaLax",
+        "recvvV0xoqImPT",
+        "recvvbpHb7wqpP",
+        "recvvbpIw9wpmM",
+        "recvvbpyf8X144",
+        "recvvbqiIfWFjG",
+        "recvvwXDoYyOjT",
+        "recvvwXEzu5YS9",
+        "recvvwXqa87hay",
+        "recvw1CNBnv8Q5",
+        "recvvbqn0xFYNx",
+        "recvvbqpRXzDYG",
+        "recvvbqrq0uV2Y",
+        "recvvwXHkO2viZ",
+        "recvvwXID0lyop",
+        "recvvUYF1kek1K"
+      ]
+    },
+    {
+      "normalized_alias": "enercomsa",
+      "alias": "ENERCOM S.A.",
+      "platform_code": "020270",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlVS6Oy"
+      ]
+    },
+    {
+      "normalized_alias": "calforge",
+      "alias": "Calforge",
+      "platform_code": "020191-",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlVTDXf",
+        "recvgDlIApnW4B",
+        "recvrjOeyrX6fF",
+        "recvrjOfVqmSuX",
+        "recvvbqDZOCzHD"
+      ]
+    },
+    {
+      "normalized_alias": "hosesuppliesvietnamcompanylimited",
+      "alias": "Hose Supplies Vietnam Company Limited",
+      "platform_code": "020346",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlVbVE5",
+        "recvi3bxlVvIKo",
+        "recvjApkLqC08P",
+        "recvjAplWFCk3U",
+        "recvvbqIJrCo9h",
+        "recvvbqK8M4emM"
+      ]
+    },
+    {
+      "normalized_alias": "cfpindustriesinc",
+      "alias": "CFP INDUSTRIES INC",
+      "platform_code": "020200",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlVC0ny",
+        "recvi2yFhirzyB",
+        "recvi38LZOBszK",
+        "recvi38LZOQ5di",
+        "recvjAppzBsEBa",
+        "recvjApqK67sCd",
+        "recvjAprXVBfRZ",
+        "recvlg1fTdV3Oq",
+        "recvmFz4D5YF4T",
+        "recvmFyUZHvCaS",
+        "recvob4nkl27Cm",
+        "recvo52mG1Xyjt",
+        "recvo52nVzlxiW",
+        "recvi3bxlVb5gX",
+        "recvmGvKnj3uAv"
+      ]
+    },
+    {
+      "normalized_alias": "trilogyproducts",
+      "alias": "Trilogy Products",
+      "platform_code": "020710-",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlVRhSR",
+        "recvm6oVIFNch0"
+      ]
+    },
+    {
+      "normalized_alias": "msionexchangeindialtd",
+      "alias": "M/s. Ion Exchange (India) Ltd.",
+      "platform_code": "020858",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlVfzcs",
+        "recvq3EMWkwQtE"
+      ]
+    },
+    {
+      "normalized_alias": "altalasa",
+      "alias": "ALTALA S.A.",
+      "platform_code": "020133",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlVxwJe"
+      ]
+    },
+    {
+      "normalized_alias": "nordiasprings",
+      "alias": "Nordia Springs",
+      "platform_code": "020489",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlVuwZR",
+        "recvgUFPjI9PeG",
+        "recvltxTuS2tUx",
+        "recvrzbTqZmccW",
+        "recvnrKY0gRAfC",
+        "recvnrKY0gocBb"
+      ]
+    },
+    {
+      "normalized_alias": "uadrillingequipmentandtubularsuppliesdmcc",
+      "alias": "U&A Drilling Equipment and Tubular Supplies DMCC",
+      "platform_code": "020854",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlVtClH"
+      ]
+    },
+    {
+      "normalized_alias": "brinox",
+      "alias": "BRINOX",
+      "platform_code": "020855",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlV3PTQ",
+        "recvi3bxlV6XMD",
+        "recvgDlFAQyTpy",
+        "recvgWsB6muqNM",
+        "recvgWsvyNajEv",
+        "recvhWLkFu9hCR",
+        "recvhWLlI2Ng40",
+        "recvhYzHjm2QrA",
+        "recvhYzHjmNIW9",
+        "recvm6pe2gcG7C"
+      ]
+    },
+    {
+      "normalized_alias": "atmsteelоооатмстил",
+      "alias": "ATM Steel ООО \"АТМ СТИЛ\"",
+      "platform_code": "020806-",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlVitGy"
+      ]
+    },
+    {
+      "normalized_alias": "weatherfordoiltoolgmbh",
+      "alias": "Weatherford Oil Tool GmbH",
+      "platform_code": "020746-",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlVZLU7",
+        "recvfHAENTE41v",
+        "recvkAAnBrVDH0",
+        "recvvbq6Y5uOgK"
+      ]
+    },
+    {
+      "normalized_alias": "nalcıboruekparcaları",
+      "alias": "Nalcı Boru Ek Parçaları",
+      "platform_code": "020857",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvfHAFHdfobK",
+        "recvnmlxi02jMk"
+      ]
+    },
+    {
+      "normalized_alias": "vtlsrl",
+      "alias": "VTL SRL",
+      "platform_code": "020826",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvfHARTjTJVj"
+      ]
+    },
+    {
+      "normalized_alias": "hyperglobalimportacaoeexportacaoltda",
+      "alias": "Hyperglobal Importacao e Exportacao Ltda.",
+      "platform_code": "020839",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvgUFMqNQdD3"
+      ]
+    },
+    {
+      "normalized_alias": "servivapor",
+      "alias": "SERVIVAPOR",
+      "platform_code": "020616",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvhv5jhmWeXM",
+        "recvhv5i8O6Unl"
+      ]
+    },
+    {
+      "normalized_alias": "hezenerji",
+      "alias": "HEZ ENERJI",
+      "platform_code": "1-088",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvhX1puJtwrE"
+      ]
+    },
+    {
+      "normalized_alias": "kasugaishanghaicoltd",
+      "alias": "Kasugai Shanghai Co., Ltd.",
+      "platform_code": "020815",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvgUGhZS7Fbb",
+        "recvjsjAXkkaAg",
+        "recvjsjzSbsNRU",
+        "recvtQJAx1XmLh",
+        "recvtQJBBZF1d9",
+        "recvmFyKYympWy",
+        "recvoJLTEGX8v3",
+        "recvoJLUIqvFvr",
+        "recvoJLVKOylPp"
+      ]
+    },
+    {
+      "normalized_alias": "simleccosdnbhd",
+      "alias": "SIMLECCO SDN BHD",
+      "platform_code": "020627",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvhv5PkizaEW",
+        "recvtQJzhHB6i9"
+      ]
+    },
+    {
+      "normalized_alias": "tempsensinstrumentsipvtltdunitii",
+      "alias": "Tempsens Instruments (I) Pvt. Ltd., Unit-II",
+      "platform_code": "000189",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvhXiVaaV5sp"
+      ]
+    },
+    {
+      "normalized_alias": "singhasteelpteltd",
+      "alias": "Singha Steel Pte Ltd",
+      "platform_code": "7-142",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvhXiQZ60EzI",
+        "recvhXiSsnrD8N",
+        "recviUmkU6xyXC"
+      ]
+    },
+    {
+      "normalized_alias": "qualitywireproductscowll",
+      "alias": "Quality Wire Products Co.W.L.L",
+      "platform_code": "020554",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recviNnJXavMfo"
+      ]
+    },
+    {
+      "normalized_alias": "precisedownholeservicesltd",
+      "alias": "Precise Downhole Services Ltd.",
+      "platform_code": "020534",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recviNnR2Lh9lp",
+        "recvnmltwZaMJn",
+        "recvsTJboQ9KbU"
+      ]
+    },
+    {
+      "normalized_alias": "technodesingusallc",
+      "alias": "TECHNODESING USA LLC.",
+      "platform_code": "020859",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi2zmKrTUn8",
+        "recvi39aa7veVa"
+      ]
+    },
+    {
+      "normalized_alias": "scopemetalsgroupltd",
+      "alias": "Scope Metals Group Ltd.",
+      "platform_code": "020604",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recviTgiZEhJsP",
+        "recvjXZHt5fVt4",
+        "recvmGvsD2C8fm",
+        "recvmGvtZKgZbD",
+        "recvnrLV3WYTHy",
+        "recvmFz0qCEC1J",
+        "recvmFyZ2n1qgY",
+        "recvnmk4cm9npA",
+        "recvnmk5tvoMl5",
+        "recvnmk893usuP",
+        "recvnrPORG8paX",
+        "recvnrPORGA0BX",
+        "recvnrPORGa9tK",
+        "recvnrPsn7VeMr",
+        "recvnrPsn7joDb",
+        "recvnmlw8wFsTR",
+        "recvo52peAMFHB",
+        "recvo52qmWCwyZ",
+        "recvpXQI7L58kY",
+        "recvvUIs9iwWi1",
+        "recvvUIty5tWzu",
+        "recvvUIxK1OHce",
+        "recvwqgR8PpvjV",
+        "recvmGvrjMpXtz",
+        "recvnmk6VwD8Xd",
+        "recvnrPsn76IWQ",
+        "recvqwUI9LJhN1",
+        "recvqwUJcrzVpu",
+        "recvqwUKegTspj",
+        "recvqwULkrwOlu",
+        "recvqwUMqpB0wU",
+        "recvsTIpexbRUg",
+        "recvsTIqW49iWz",
+        "recvsTIsasyD1M",
+        "recvvUIuVNbvd4",
+        "recvvUIwmF4wY3"
+      ]
+    },
+    {
+      "normalized_alias": "hifiengineeringinc",
+      "alias": "Hifi Engineering Inc",
+      "platform_code": "020342",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvjsj14TPzZu"
+      ]
+    },
+    {
+      "normalized_alias": "dsbindustrialinc",
+      "alias": "DSB Industrial Inc.",
+      "platform_code": "020251",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvjXY1wvae7o",
+        "recviOeA3BGETQ",
+        "recviOeAhD3Hzk",
+        "recviOeAtJVrZP",
+        "recvpd3xF2dd2r",
+        "recvpAqJi5PAc3",
+        "recvpAqKhjWgJ8",
+        "recvpAqMhCszHK",
+        "recvgD2LSDmV7W",
+        "recviNnMRI8Sf6",
+        "recvpAqLhSqkSp",
+        "recvpS3uuQIglJ",
+        "recvrbOvvuEqUz",
+        "recvsTJcZ7ULTi"
+      ]
+    },
+    {
+      "normalized_alias": "huronalloys",
+      "alias": "Huron Alloys",
+      "platform_code": "020787-",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvjApjw3U43Q",
+        "recvkUqSwODnNO",
+        "recvgUFOn5OVn6"
+      ]
+    },
+    {
+      "normalized_alias": "ebinoxsrl",
+      "alias": "EBINOX SRL",
+      "platform_code": "020255",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvk9edezWf6c",
+        "recvoJLbeYnvFU",
+        "recvoJLckC1YvR",
+        "recvpRW90JcZBV",
+        "recvrjOadDeDJu",
+        "recvrjObCHIcEw",
+        "recvrjOcUL8BWV",
+        "recvtmqsAvL0fP",
+        "recvoJLdoBpNaO"
+      ]
+    },
+    {
+      "normalized_alias": "ooonporizurооонпоризур",
+      "alias": "OOO NPO RIZUR / ООО «НПО РИЗУР»",
+      "platform_code": "020770",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recvjXZPToJgjm"
+      ]
+    },
+    {
+      "normalized_alias": "tubacexawajithailandlimited",
+      "alias": "TUBACEX AWAJI (THAILAND) LIMITED",
+      "platform_code": "7-088",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvkC3sIA7a1C",
+        "recvkC3sIAPaCJ",
+        "recvkC3sIAmhlx",
+        "recvkC3sIAcbjD",
+        "recvtQJy0Z4ZoA",
+        "recvw1DhTAnodQ",
+        "recvkC3sIAcrYN",
+        "recvkC3sIAm2Rt",
+        "recvvwZWrymVKf"
+      ]
+    },
+    {
+      "normalized_alias": "tsaindustriessdnbhd",
+      "alias": "TSA Industries Sdn Bhd",
+      "platform_code": "020711",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvjAphaV3iwe"
+      ]
+    },
+    {
+      "normalized_alias": "messergasesltda",
+      "alias": "Messer Gases Ltda.",
+      "platform_code": "020797",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recvjXZOrL8uHo"
+      ]
+    },
+    {
+      "normalized_alias": "mrcglobalmiddleeast",
+      "alias": "MRC Global Middle East",
+      "platform_code": "020850",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvjXZII2wg4S",
+        "recvjXZJKHj784",
+        "recvjXZKPa0vtf",
+        "recvkiXrKYf6Hm",
+        "recvkiXsOet1Vf",
+        "recvkiXtLQBrKL",
+        "recvkiXuJHk486",
+        "recvkiXvOxDNPi",
+        "recvkiXwPtuPlv",
+        "recvkABSWrIfwl",
+        "recvkABVemgp46",
+        "recvkABWjyMemo",
+        "recvkABXr3q2lp",
+        "recvpXQzXgJ3s5",
+        "recvpXQB1y4K7w",
+        "recvpXQC8clu6b",
+        "recvpXQyPOS856",
+        "recvpXQDavSFPH",
+        "recvrjMuOWgMsD",
+        "recvrbNhca7aTb",
+        "recvrjMJhw4fZg",
+        "recvrjMxT2P0KY",
+        "recvrbOurWidu7",
+        "recvtmqp1NxlGX",
+        "recvtmqnRNPUZW",
+        "recvtmqqaaMFEJ",
+        "recvsxamG8PZ7g"
+      ]
+    },
+    {
+      "normalized_alias": "multialloymetaiseligasespeciaisltda",
+      "alias": "Multialloy Metais E Ligas Especiais LTDA",
+      "platform_code": "020475",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvkAACAhyDnF",
+        "recvmFyME5wced",
+        "recvmFyO1byma2",
+        "recvmFyPjvRe8Q",
+        "recvtmt42t4EVx",
+        "recvtmt5cma7kK"
+      ]
+    },
+    {
+      "normalized_alias": "miracorpllc",
+      "alias": "Miracorp LLC",
+      "platform_code": "10-009",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvkUpJRquluy"
+      ]
+    },
+    {
+      "normalized_alias": "ciqs",
+      "alias": "C.I.Q.S.",
+      "platform_code": "020189",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvkiXxWseEnL",
+        "recvkiXyYpITDL"
+      ]
+    },
+    {
+      "normalized_alias": "nacionalindustriamecanica",
+      "alias": "NACIONAL INDUSTRIA MECANICA",
+      "platform_code": "000126",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvlg19RQPCqH",
+        "recvlg1bdzUpuk",
+        "recvlg1cu4QYs5",
+        "recvlg1eba3iwu",
+        "recvpAqBMdtqXo",
+        "recvpAqCPE6eUh",
+        "recvpAqFZhoU1b",
+        "recvpAqH0hVAt9",
+        "recvpAqDU1XS4C",
+        "recvpAqEXN8cmr",
+        "recvqPAOkUPN95",
+        "recvwFt2c0P8K5",
+        "recvwFt3xZwPsr",
+        "recvwFt4Qwznrj",
+        "recvwFt6chEmlU",
+        "recvwFtalmdbgo",
+        "recvwFt7En2QzQ",
+        "recvwFt8ZleLRU"
+      ]
+    },
+    {
+      "normalized_alias": "bullsupply",
+      "alias": "Bullsupply",
+      "platform_code": "2-074",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvkG9A0XXzeG",
+        "recvnmluT8BgIJ",
+        "recvnrByt3vDUG"
+      ]
+    },
+    {
+      "normalized_alias": "yaydismetal",
+      "alias": "YAYDİŞ METAL",
+      "platform_code": "020761",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recvkABU7pPqfX",
+        "recvu1kcC8zvMk"
+      ]
+    },
+    {
+      "normalized_alias": "tekoslot",
+      "alias": "TEKO-SLOT",
+      "platform_code": "020683-",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvlty1hp2Lt1"
+      ]
+    },
+    {
+      "normalized_alias": "dgvitec",
+      "alias": "DGVITEC",
+      "platform_code": "020242",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvjXZLZ6U65e",
+        "recvjXZNa0h2JE",
+        "recvvbrVB1HJ9T",
+        "recvvbrX5vP8Kb"
+      ]
+    },
+    {
+      "normalized_alias": "moudiindustry",
+      "alias": "Moudi Industry",
+      "platform_code": "020470",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvlg1hBDCP5n",
+        "recvlg1j03SiV0",
+        "recvlg1kK19Dye",
+        "recvlg1meGd37m"
+      ]
+    },
+    {
+      "normalized_alias": "abexhydraulicsengineeringcoltd",
+      "alias": "Abex Hydraulics & Engineering co., Ltd",
+      "platform_code": "020107",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recvm6pftGGHAT"
+      ]
+    },
+    {
+      "normalized_alias": "kbvindustriessdnbhd",
+      "alias": "KBV Industries Sdn Bhd",
+      "platform_code": "020396-",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvm6pibvnZqC",
+        "recvvbpUlPGMeM"
+      ]
+    },
+    {
+      "normalized_alias": "astecvalvesfittingspvtltd",
+      "alias": "Astec Valves & Fittings Pvt Ltd",
+      "platform_code": "5-041",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvmGvpXSvYfP",
+        "recvqUfF3VAiVv",
+        "recvtmsMrjGUI0",
+        "recvtQJwdecAkv",
+        "recvvwY50r3UWB",
+        "recvwtzBS1PZah",
+        "recvwtzDmHb7Wu",
+        "recvwtzEMZrZVq",
+        "recvozHG4JqA8o",
+        "recvsx95MFKSzr",
+        "recvtmt1C8CbC7"
+      ]
+    },
+    {
+      "normalized_alias": "specialpipesfittingstradingltd",
+      "alias": "Special Pipes & Fittings Trading Ltd",
+      "platform_code": "020878",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvnmj6QvW3N8",
+        "recvtmqriBCbl9"
+      ]
+    },
+    {
+      "normalized_alias": "universalflowcontrols",
+      "alias": "Universal Flow Controls",
+      "platform_code": "020863",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recvmGvJ3hSAuM",
+        "recvoW0wFau4NU",
+        "recvvbpJVtlISj"
+      ]
+    },
+    {
+      "normalized_alias": "mtksupplyinternational",
+      "alias": "MTK supply international",
+      "platform_code": "2-209",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvmGvLBYpNxT"
+      ]
+    },
+    {
+      "normalized_alias": "specialisedpipeandfittingsaustraliaptyltd",
+      "alias": "Specialised Pipe and Fittings Australia Pty Ltd",
+      "platform_code": "020862",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvnmj8hM0jx2",
+        "recvnmj9BTNaye",
+        "recvozIFmWZXub",
+        "recvozIGKMV8g8",
+        "recvozIIfBSS9V"
+      ]
+    },
+    {
+      "normalized_alias": "ascprocesssystems",
+      "alias": "ASC Process Systems",
+      "platform_code": "2-A49",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvmFyXLbMrwR",
+        "recvnrLxUY8zkD"
+      ]
+    },
+    {
+      "normalized_alias": "cenivyinc",
+      "alias": "Cenivy Inc",
+      "platform_code": "020867",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recvnmjp6t2VnN",
+        "recvvbqLz3nOu0",
+        "recvm6oXEVmRFm"
+      ]
+    },
+    {
+      "normalized_alias": "pbhidrolikboruvebaglantıelemanlarıticltdsti",
+      "alias": "PB Hidrolik Boru ve Bağlantı Elemanları Tic. Ltd. Şti.",
+      "platform_code": "020516",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recvmFz3jfy53W"
+      ]
+    },
+    {
+      "normalized_alias": "acequisa",
+      "alias": "ACEQUISA",
+      "platform_code": "020112-",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvnmk0uObwEJ",
+        "recvnmk1KOtmKM",
+        "recvnmk31F9Tf5",
+        "recvnrOLxbrpez"
+      ]
+    },
+    {
+      "normalized_alias": "cncflowcontrol",
+      "alias": "CNC Flow Control",
+      "platform_code": "020889",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvnr6HK2ItAi",
+        "recvnr6IPnkyv2",
+        "recvnr6JWcOSlO",
+        "recvnrClzyq3FY",
+        "recvpiS2OEOY40",
+        "recvpiS0xzHole",
+        "recvpiS1I16fD1",
+        "recvsx97LoDjfU",
+        "recvsx99A8BrNi"
+      ]
+    },
+    {
+      "normalized_alias": "rgnicromdoobanjaluka",
+      "alias": "RG Nicrom d.o.o. Banja Luka",
+      "platform_code": "020870",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recvmFyQS0mUrm",
+        "recvmFySeLRDTj",
+        "recvmFyTyK8mNA",
+        "recvo52rBaMp3d",
+        "recvo52sOhqovr",
+        "recvoW0CDXON2d",
+        "recvoW0FmYPQkO",
+        "recvoW0GPicQud",
+        "recvoW0DXi4nVh",
+        "recvqEnbHLL8L0",
+        "recvqPAQGvZZXF",
+        "recvqPARW6gUD2",
+        "recvqPAT5tO1gH",
+        "recvqPAUjmb9vw",
+        "recvqPAVySP4B2",
+        "recvsTJefJtO42",
+        "recvsTJfBCcxmG"
+      ]
+    },
+    {
+      "normalized_alias": "generaindustrialcl",
+      "alias": "Genera industrial CL",
+      "platform_code": "000094",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvnr6KXpggwb"
+      ]
+    },
+    {
+      "normalized_alias": "fffaustralia",
+      "alias": "FFF Australia",
+      "platform_code": "020294",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recvnmlr07XVN6"
+      ]
+    },
+    {
+      "normalized_alias": "mapindustrialprojects制造",
+      "alias": "Mapindustrial Projects（制造）",
+      "platform_code": "020431",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recvnvL9a3LgMv",
+        "recvnvLa9u5tfV"
+      ]
+    },
+    {
+      "normalized_alias": "dolphinradiatorcoolingsystemsmaintenancellc",
+      "alias": "DOLPHIN RADIATOR & COOLING SYSTEMS MAINTENANCE LLC",
+      "platform_code": "020776",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvob4Be1zlgk"
+      ]
+    },
+    {
+      "normalized_alias": "kochengineeredsolution",
+      "alias": "KOCH Engineered Solution",
+      "platform_code": "010249",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recvnr6N7sRohm",
+        "recvo52u2lhEOt",
+        "recvvwZMwi98iM",
+        "recvvwZNJyqY8M",
+        "recvvwZOYEms6r",
+        "recvvwZQdqay1y",
+        "recvvwZRW8kKTW"
+      ]
+    },
+    {
+      "normalized_alias": "upgradecomex",
+      "alias": "UPGRADE COMEX",
+      "platform_code": "000106",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvob5usM4cU5",
+        "recvob5vUpmX7G",
+        "recvob5t5N4kPa",
+        "recvu1lTnDeFeC"
+      ]
+    },
+    {
+      "normalized_alias": "exiros",
+      "alias": "Exiros",
+      "platform_code": "020280",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recvozILuueYIt",
+        "recvozIMKAx8n4",
+        "recvvUIzLvYbgu"
+      ]
+    },
+    {
+      "normalized_alias": "hollandspecialpumps",
+      "alias": "Holland Special Pumps",
+      "platform_code": "000201",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvpd2dNQu8oP"
+      ]
+    },
+    {
+      "normalized_alias": "thealliedgroup",
+      "alias": "The Allied Group",
+      "platform_code": "000039",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvpd3B3jH3Ew",
+        "recvpd3yRTI1on",
+        "recvpd3zVSXTQE"
+      ]
+    },
+    {
+      "normalized_alias": "ptscanjetproductionindah",
+      "alias": "PT Scanjet Production INdah",
+      "platform_code": "7-136",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvpuzyOeRmZZ"
+      ]
+    },
+    {
+      "normalized_alias": "wconex",
+      "alias": "W-CONEX",
+      "platform_code": "020881",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvpAqPBIJPwF",
+        "recvpAqOBABN7q"
+      ]
+    },
+    {
+      "normalized_alias": "technostadengineeringservices",
+      "alias": "Technostad Engineering Services",
+      "platform_code": "7-049",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvpAqNmYg1JI"
+      ]
+    },
+    {
+      "normalized_alias": "ferrituvalcocialtda",
+      "alias": "Ferrituvalco Cía. Ltda",
+      "platform_code": "020868",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvq3EPaDIxCR"
+      ]
+    },
+    {
+      "normalized_alias": "giantoiltoolsfreezone",
+      "alias": "Giant Oil Tools Free Zone",
+      "platform_code": "020316",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvqPALpTUfv6"
+      ]
+    },
+    {
+      "normalized_alias": "fopil",
+      "alias": "FOPIL",
+      "platform_code": "020894",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvqPAY1VT8VK"
+      ]
+    },
+    {
+      "normalized_alias": "acalin",
+      "alias": "Acalin",
+      "platform_code": "020880",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvqCUy7yHStO",
+        "recvrbOwUXbsa2"
+      ]
+    },
+    {
+      "normalized_alias": "foingenieriasadecv",
+      "alias": "F&O Ingeniería SA de CV",
+      "platform_code": "020879",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvsx8RI3XxVC",
+        "recvsx92QS2zqF"
+      ]
+    },
+    {
+      "normalized_alias": "sangbongcorporation",
+      "alias": "SANGBONG CORPORATION",
+      "platform_code": "020883",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvsx9bqW4YV7"
+      ]
+    },
+    {
+      "normalized_alias": "unisignalinc",
+      "alias": "Unisignal Inc",
+      "platform_code": "020897",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvtmqD7qdn05"
+      ]
+    },
+    {
+      "normalized_alias": "gruporuspristeel",
+      "alias": "Grupo Ruspristeel",
+      "platform_code": "2-231",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvtQJtGxZQZ4",
+        "recvvbpLmGSq2P",
+        "recvvbpMLIFQA2",
+        "recvvbpOxLJijA",
+        "recvvbpQfg1tf9",
+        "recvvbpRHIS3Kp",
+        "recvsx77q0llUE"
+      ]
+    },
+    {
+      "normalized_alias": "brownfieldoiltoolsltd",
+      "alias": "Brownfield Oil Tools Ltd.",
+      "platform_code": "020887",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvtQJuTPnNEb"
+      ]
+    },
+    {
+      "normalized_alias": "industriasmetalurgicasvandam",
+      "alias": "Industrias Metalúrgicas Van Dam",
+      "platform_code": "2-229",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvvbpVXnN3cT",
+        "recvvbqFxeG72C",
+        "recvvbqH2Dmx81"
+      ]
+    },
+    {
+      "normalized_alias": "storworks",
+      "alias": "Storworks",
+      "platform_code": "020896",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recvvbqhjlkYPM",
+        "recvu1lUBSJFfT"
+      ]
+    },
+    {
+      "normalized_alias": "тооprofectusпрофектус",
+      "alias": "ТОО Profectus (Профектус",
+      "platform_code": "020884",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recvvwXFYXmf03"
+      ]
+    },
+    {
+      "normalized_alias": "香港英發溶接器材有限公司hongkongyingfatweldingequipmentcoltd",
+      "alias": "香港英發溶接器材有限公司 HONG KONG YING FAT WELDING EQUIPMENT CO.,LTD.",
+      "platform_code": "010258",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recvvbqsUpjcYO"
+      ]
+    },
+    {
+      "normalized_alias": "skidpower",
+      "alias": "Skid Power",
+      "platform_code": "020834",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvvbrYBruYM1"
+      ]
+    },
+    {
+      "normalized_alias": "prochempipelineproductsptyltd",
+      "alias": "Prochem Pipeline Products Pty Ltd",
+      "platform_code": "020036",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvvbs0aEkLj9"
+      ]
+    },
+    {
+      "normalized_alias": "lauingheateccoltd",
+      "alias": "Lauing Heatec Co., Ltd.",
+      "platform_code": "020411",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvvwZL9aCUCX",
+        "recvvwZJP8zNmK"
+      ]
+    },
+    {
+      "normalized_alias": "apexengineeredproducts",
+      "alias": "APEX Engineered Products",
+      "platform_code": "020817",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvvUIma5IpWl",
+        "recvvUInyIFRjO",
+        "recvvUIp1RMRlf",
+        "recvwqgSrG20fl"
+      ]
+    },
+    {
+      "normalized_alias": "dockweilerasiacoltd",
+      "alias": "Dockweiler Asia Co., Ltd.",
+      "platform_code": "7-141",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvvwZV6GQg4G",
+        "recvvwZTyDtirU"
+      ]
+    },
+    {
+      "normalized_alias": "韵富有限公司",
+      "alias": "韵富有限公司",
+      "platform_code": "020163",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recvwtAmeRKALX"
+      ]
+    },
+    {
+      "normalized_alias": "flextechindustriesinc",
+      "alias": "Flextech Industries Inc.",
+      "platform_code": "020299",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlVV5fh"
+      ]
+    },
+    {
+      "normalized_alias": "voestalpinebohlerweldinggroup",
+      "alias": "Voestalpine Böhler Welding Group",
+      "platform_code": "020833",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvi3bxlVqEBo"
+      ]
+    },
+    {
+      "normalized_alias": "kentzusteelpenangsdnbhdyishingsolutionssdnbhd",
+      "alias": "Kentzu Steel (Penang) Sdn. Bhd. / YISHING SOLUTIONS SDN BHD",
+      "platform_code": "020398",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recviNp4YIpLoF",
+        "recvvbpXlis6Zr"
+      ]
+    },
+    {
+      "normalized_alias": "fiberbuiltmanufacturinginc",
+      "alias": "Fiberbuilt Manufacturing Inc",
+      "platform_code": "020295",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_business_code_to_shortname"
+      ],
+      "evidence_record_ids": [
+        "recvkZd1jpZWj7"
+      ]
+    },
+    {
+      "normalized_alias": "unifiedalloys",
+      "alias": "Unified Alloys",
+      "platform_code": "000191",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvmFz1W3oocr"
+      ]
+    },
+    {
+      "normalized_alias": "pttokkiengineeringandfabrication",
+      "alias": "PT TOKKI ENGINEERING AND FABRICATION",
+      "platform_code": "000196",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvnmlyF8Q4Kw"
+      ]
+    },
+    {
+      "normalized_alias": "delriosas",
+      "alias": "Delrio S.A.S.",
+      "platform_code": "020233",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvozIJDJhHZ3"
+      ]
+    },
+    {
+      "normalized_alias": "yujinhighmetalcompany",
+      "alias": "YUJIN HIGH METAL COMPANY",
+      "platform_code": "020765",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvpAqI8VbsG0"
+      ]
+    },
+    {
+      "normalized_alias": "nextenergysolutions",
+      "alias": "Next Energy Solutions",
+      "platform_code": "020891",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvqfjMD6GwGK"
+      ]
+    },
+    {
+      "normalized_alias": "equipamientosyserviciospetrolerosesp",
+      "alias": "Equipamientos y Servicios Petroleros ESP",
+      "platform_code": "020872",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvq9v6CxYFuQ"
+      ]
+    },
+    {
+      "normalized_alias": "jlxinternationalfze",
+      "alias": "JLX INTERNATIONAL FZE",
+      "platform_code": "020885",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvsx7jOcCrjP"
+      ]
+    },
+    {
+      "normalized_alias": "thermaxlimited",
+      "alias": "THERMAX LIMITED",
+      "platform_code": "5-136",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvu1kaajEvim",
+        "recvu1kbqZpxi8"
+      ]
+    },
+    {
+      "normalized_alias": "menderestekstilas",
+      "alias": "Menderes Tekstil A.Ş.",
+      "platform_code": "020446",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvtmt7pQEN7l"
+      ]
+    },
+    {
+      "normalized_alias": "takmanufacturingcoltd",
+      "alias": "TAK Manufacturing Co., Ltd.",
+      "platform_code": "3-117",
+      "basis": "既有客户名称解析结果唯一；人工确认映射优先于此表",
+      "methods": [
+        "unique_name"
+      ],
+      "evidence_record_ids": [
+        "recvtmt6ge3fBu",
+        "recvvUIqu2xTZD"
+      ]
+    }
+  ]
+}

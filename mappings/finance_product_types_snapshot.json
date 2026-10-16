@@ -1,0 +1,1697 @@
+{
+  "fetched_at": "2026-10-16T01:31:32.515302+00:00",
+  "app_name": "迈拓财务部门数据 副本",
+  "table_name": "产品及类型",
+  "tables": [
+    {
+      "name": "现金流分析",
+      "revision": 0,
+      "table_id": "tblrR7q5sNHvdGUN"
+    },
+    {
+      "name": "财务指标",
+      "revision": 0,
+      "table_id": "tblLC3zkg2I8tRAI"
+    },
+    {
+      "name": "2026年报关数据",
+      "revision": 62,
+      "table_id": "tblJngoI0YUGBoNl"
+    },
+    {
+      "name": "产品及类型",
+      "revision": 0,
+      "table_id": "tblokyS2iYgGYGC4"
+    },
+    {
+      "name": "汇率",
+      "revision": 0,
+      "table_id": "tblAYc86ib8hteMk"
+    },
+    {
+      "name": "海关编码及退税率",
+      "revision": 0,
+      "table_id": "tbl6UURqrMwsnTA9"
+    }
+  ],
+  "fields": [
+    {
+      "field_id": "fldTF5aBCE",
+      "field_name": "海关品名",
+      "is_extend": false,
+      "is_primary": true,
+      "is_synced": false,
+      "property": {
+        "options": [
+          {
+            "color": 0,
+            "id": "opt9c7Gplt",
+            "name": "不锈钢制法兰"
+          },
+          {
+            "color": 1,
+            "id": "opt0sZbzgm",
+            "name": "钛管"
+          },
+          {
+            "color": 2,
+            "id": "optE4fyKKO",
+            "name": "不锈钢螺丝"
+          },
+          {
+            "color": 3,
+            "id": "optWZ9PUST",
+            "name": "不锈钢垫圈"
+          },
+          {
+            "color": 4,
+            "id": "optgWIIs4c",
+            "name": "螺丝"
+          },
+          {
+            "color": 5,
+            "id": "optyIxxBRU",
+            "name": "支架"
+          },
+          {
+            "color": 6,
+            "id": "optZysf6rN",
+            "name": "螺帽"
+          },
+          {
+            "color": 7,
+            "id": "optskVJV2n",
+            "name": "镍合金焊丝"
+          },
+          {
+            "color": 8,
+            "id": "optVpvh3eF",
+            "name": "纯镍管"
+          },
+          {
+            "color": 9,
+            "id": "opt66KUCMk",
+            "name": "弹簧"
+          },
+          {
+            "color": 0,
+            "id": "optzVuL9Ib",
+            "name": "焊丝"
+          },
+          {
+            "color": 1,
+            "id": "optrzrNP3j",
+            "name": "不锈钢线材"
+          },
+          {
+            "color": 2,
+            "id": "optBMNLGrZ",
+            "name": "镍基板材"
+          },
+          {
+            "color": 3,
+            "id": "optUHnBS3v",
+            "name": "控制管线"
+          },
+          {
+            "color": 4,
+            "id": "optUS8vozh",
+            "name": "不锈钢筛网"
+          },
+          {
+            "color": 5,
+            "id": "optMAiuDVy",
+            "name": "镍带"
+          },
+          {
+            "color": 6,
+            "id": "opt09O2z7N",
+            "name": "不锈钢锻件"
+          },
+          {
+            "color": 7,
+            "id": "opt6kvSJec",
+            "name": "不锈钢铸造管件"
+          },
+          {
+            "color": 8,
+            "id": "optgwxMHkL",
+            "name": "不锈钢制对焊件"
+          },
+          {
+            "color": 9,
+            "id": "optZ2Exn9a",
+            "name": "镍合金无缝管"
+          },
+          {
+            "color": 0,
+            "id": "optMPkfsy7",
+            "name": "不锈钢焊丝"
+          },
+          {
+            "color": 1,
+            "id": "optzTv0qrv",
+            "name": "保温杯"
+          },
+          {
+            "color": 2,
+            "id": "optbaz6Z3M",
+            "name": "合金粉末"
+          },
+          {
+            "color": 3,
+            "id": "optmsQQZkS",
+            "name": "不锈钢光棒"
+          },
+          {
+            "color": 4,
+            "id": "opterPEOEG",
+            "name": "高碳钢丝"
+          },
+          {
+            "color": 5,
+            "id": "opte3I6MAE",
+            "name": "不锈钢丝"
+          },
+          {
+            "color": 6,
+            "id": "optORQmGxA",
+            "name": "镍合金圆棒"
+          },
+          {
+            "color": 7,
+            "id": "optYmC9lu8",
+            "name": "药芯镍基焊丝"
+          },
+          {
+            "color": 8,
+            "id": "optkfSyfLj",
+            "name": "碳钢法兰"
+          },
+          {
+            "color": 9,
+            "id": "optrRbhojO",
+            "name": "钛法兰"
+          },
+          {
+            "color": 0,
+            "id": "optsr5Mzx6",
+            "name": "阀门"
+          },
+          {
+            "color": 1,
+            "id": "opt82t16tf",
+            "name": "不锈钢法兰"
+          },
+          {
+            "color": 2,
+            "id": "opt8vmLYai",
+            "name": "镍合金管"
+          },
+          {
+            "color": 3,
+            "id": "optAvehc1g",
+            "name": "铸棒"
+          },
+          {
+            "color": 4,
+            "id": "optEOWcClK",
+            "name": "不锈钢螺帽"
+          },
+          {
+            "color": 5,
+            "id": "optFlUQ7ul",
+            "name": "不锈钢六角棒"
+          },
+          {
+            "color": 6,
+            "id": "optfW8LAaU",
+            "name": "镍合金板材"
+          },
+          {
+            "color": 7,
+            "id": "opti9OK7kk",
+            "name": "螺栓"
+          },
+          {
+            "color": 8,
+            "id": "optjkI270D",
+            "name": "不锈钢铸件"
+          },
+          {
+            "color": 9,
+            "id": "optWGCn0uU",
+            "name": "钢铁制软管"
+          },
+          {
+            "color": 0,
+            "id": "optSrdOEcv",
+            "name": "不锈钢料盘"
+          },
+          {
+            "color": 1,
+            "id": "optWWk2t4e",
+            "name": "镍合金条"
+          },
+          {
+            "color": 2,
+            "id": "optDQLKw3C",
+            "name": "镍合金棒"
+          },
+          {
+            "color": 3,
+            "id": "opt69w7Dg0",
+            "name": "密封圈毛坯"
+          },
+          {
+            "color": 4,
+            "id": "optF2HMRiX",
+            "name": "纯镍板"
+          },
+          {
+            "color": 5,
+            "id": "optB7tPVUu",
+            "name": "不锈钢管件"
+          },
+          {
+            "color": 6,
+            "id": "opt476uZqZ",
+            "name": "不锈钢焊管"
+          },
+          {
+            "color": 7,
+            "id": "optgwIGus0",
+            "name": "镍合金管件"
+          },
+          {
+            "color": 8,
+            "id": "optuyJeiYK",
+            "name": "不锈钢无缝管"
+          },
+          {
+            "color": 9,
+            "id": "optjaEPr21",
+            "name": "镍合金线材"
+          },
+          {
+            "color": 0,
+            "id": "opt3lKTdQS",
+            "name": "镍合金法兰"
+          },
+          {
+            "color": 1,
+            "id": "optpMpuIkp",
+            "name": "合金镍棒"
+          },
+          {
+            "color": 2,
+            "id": "optiKoVqti",
+            "name": "镍合金丝"
+          },
+          {
+            "color": 3,
+            "id": "optJH1NCxj",
+            "name": "不锈钢阀门"
+          },
+          {
+            "color": 4,
+            "id": "optOjcpccn",
+            "name": "不锈钢圆棒"
+          },
+          {
+            "color": 5,
+            "id": "optXVYfLhP",
+            "name": "药芯焊丝"
+          },
+          {
+            "color": 6,
+            "id": "optYJIpLZ5",
+            "name": "镍基焊管"
+          },
+          {
+            "color": 7,
+            "id": "optlheKIHw",
+            "name": "垫圈"
+          },
+          {
+            "color": 8,
+            "id": "optgXpVPIr",
+            "name": "钴合金丝"
+          },
+          {
+            "color": 9,
+            "id": "optUgz2LQ6",
+            "name": "纯镍棒"
+          },
+          {
+            "color": 0,
+            "id": "optyoWITFo",
+            "name": "不锈钢扁钢"
+          },
+          {
+            "color": 1,
+            "id": "opt6HBGWw5",
+            "name": "合金钢粉末2507"
+          },
+          {
+            "color": 2,
+            "id": "optA31Kwgj",
+            "name": "不锈钢板"
+          },
+          {
+            "color": 3,
+            "id": "optCZTt3Vv",
+            "name": "法兰保护盖"
+          },
+          {
+            "color": 4,
+            "id": "optIK5Z9kJ",
+            "name": "钛合金管件"
+          },
+          {
+            "color": 5,
+            "id": "optz1op9QB",
+            "name": "N08028螺母"
+          },
+          {
+            "color": 6,
+            "id": "optI7eGCME",
+            "name": "螺母"
+          },
+          {
+            "color": 7,
+            "id": "optF5LcyEd",
+            "name": "补偿器"
+          },
+          {
+            "color": 8,
+            "id": "optmD7Pq4W",
+            "name": "镍基焊丝"
+          },
+          {
+            "color": 9,
+            "id": "opt0mOzC1I",
+            "name": "N08028螺栓"
+          },
+          {
+            "color": 0,
+            "id": "optkHgcxCh",
+            "name": "不锈钢管"
+          },
+          {
+            "color": 1,
+            "id": "optTYiB1zl",
+            "name": "镍基退火软线"
+          },
+          {
+            "color": 2,
+            "id": "optzKsJTzF",
+            "name": "钛管件"
+          },
+          {
+            "color": 3,
+            "id": "optZ1dkAWz",
+            "name": "弹簧钢"
+          },
+          {
+            "color": 4,
+            "id": "optiCcnzdh",
+            "name": "钢板UNS N08028"
+          },
+          {
+            "color": 5,
+            "id": "optbxadj50",
+            "name": "镍基法兰"
+          },
+          {
+            "color": 6,
+            "id": "optbb9ouGI",
+            "name": "镍合金板"
+          },
+          {
+            "color": 7,
+            "id": "optP156Lyh",
+            "name": "碳钢管件"
+          },
+          {
+            "color": 8,
+            "id": "opttfnQsSd",
+            "name": "钛丝"
+          },
+          {
+            "color": 9,
+            "id": "optyFqpNC7",
+            "name": "法兰保护套"
+          },
+          {
+            "color": 0,
+            "id": "optf6vJ3Zt",
+            "name": "321 不锈钢三角丝"
+          },
+          {
+            "color": 1,
+            "id": "opt4QLf3Ll",
+            "name": "不锈钢钢法兰"
+          },
+          {
+            "color": 2,
+            "id": "optRyZ0yxE",
+            "name": "不锈钢角钢"
+          },
+          {
+            "color": 4,
+            "id": "optaiYrrXu",
+            "name": "圆形透明特氟龙法兰套"
+          },
+          {
+            "color": 5,
+            "id": "optAZgKTQ7",
+            "name": "不锈钢闸阀"
+          },
+          {
+            "color": 6,
+            "id": "optWRvxKjT",
+            "name": "八角金属环垫"
+          },
+          {
+            "color": 8,
+            "id": "opt5jRv7Ru",
+            "name": "镍合金焊管"
+          },
+          {
+            "color": 8,
+            "id": "optryHEKiQ",
+            "name": "六角螺塞"
+          },
+          {
+            "color": 0,
+            "id": "optb3C8yTJ",
+            "name": "不锈钢管线"
+          },
+          {
+            "color": 1,
+            "id": "optqXkJasM",
+            "name": "封装电缆"
+          },
+          {
+            "color": 2,
+            "id": "optPqgUEqk",
+            "name": "电焊条"
+          },
+          {
+            "color": 3,
+            "id": "optsQGO5xS",
+            "name": "不锈钢编织软管"
+          }
+        ]
+      },
+      "type": 3,
+      "ui_type": "SingleSelect"
+    },
+    {
+      "field_id": "fldY7GaFU1",
+      "field_name": "产品类型",
+      "is_extend": false,
+      "is_primary": false,
+      "is_synced": false,
+      "property": {
+        "options": [
+          {
+            "color": 0,
+            "id": "optecQMoFI",
+            "name": "无缝管"
+          },
+          {
+            "color": 1,
+            "id": "opt94pQlXT",
+            "name": "其他"
+          },
+          {
+            "color": 2,
+            "id": "opttahmTNe",
+            "name": "亨通（板棒）"
+          },
+          {
+            "color": 3,
+            "id": "optM1C7TsQ",
+            "name": "管件"
+          },
+          {
+            "color": 4,
+            "id": "opt908fIKy",
+            "name": "焊管"
+          },
+          {
+            "color": 5,
+            "id": "optUJzEWQz",
+            "name": "法兰"
+          },
+          {
+            "color": 6,
+            "id": "optbxMQyV1",
+            "name": "焊丝"
+          },
+          {
+            "color": 7,
+            "id": "opt4onplDq",
+            "name": "盘管"
+          },
+          {
+            "color": 8,
+            "id": "optKt1zOSK",
+            "name": "三角丝"
+          },
+          {
+            "color": 9,
+            "id": "opt05hnFEI",
+            "name": "镍基无缝管"
+          },
+          {
+            "color": 2,
+            "id": "optyNmKOd0",
+            "name": "板棒"
+          },
+          {
+            "color": 3,
+            "id": "optfCnQRcX",
+            "name": "焊材"
+          }
+        ]
+      },
+      "type": 3,
+      "ui_type": "SingleSelect"
+    },
+    {
+      "field_id": "fldcd9oh3t",
+      "field_name": "对应海关编码",
+      "is_extend": false,
+      "is_primary": false,
+      "is_synced": false,
+      "property": {
+        "filter_info": {
+          "conditions": {
+            "children": [
+              {
+                "field_id": "fld9e9Xi8h",
+                "field_type": 3,
+                "operator": "is",
+                "value": null
+              }
+            ],
+            "conjunction": "and"
+          },
+          "target_table": "tblJngoI0YUGBoNl"
+        },
+        "formatter": "",
+        "formula": "bitable::$table[tblJngoI0YUGBoNl].FILTER(CurrentValue.$column[fld9e9Xi8h]=bitable::$table[tblokyS2iYgGYGC4].$field[fldTF5aBCE]).$column[fldBT8iwK6].LISTCOMBINE().UNIQUE()",
+        "roll_up": 6,
+        "target_field": "fldBT8iwK6"
+      },
+      "type": 19,
+      "ui_type": "Lookup"
+    },
+    {
+      "field_id": "fldBuDb8t0",
+      "field_name": "日期",
+      "is_extend": false,
+      "is_primary": false,
+      "is_synced": false,
+      "property": {
+        "auto_fill": true,
+        "date_formatter": "yyyy/MM/dd"
+      },
+      "type": 5,
+      "ui_type": "DateTime"
+    }
+  ],
+  "records": [
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "8108904090",
+            "type": "text"
+          }
+        ],
+        "海关品名": "钛管"
+      },
+      "id": "recva2RFECwe3B",
+      "record_id": "recva2RFECwe3B"
+    },
+    {
+      "fields": {
+        "产品类型": "板棒",
+        "对应海关编码": [
+          {
+            "text": "7505120000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "镍合金圆棒"
+      },
+      "id": "recva2RFECzIMy",
+      "record_id": "recva2RFECzIMy"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "7222110000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "不锈钢圆棒"
+      },
+      "id": "recva2RFECVgAz",
+      "record_id": "recva2RFECVgAz"
+    },
+    {
+      "fields": {
+        "产品类型": "板棒",
+        "海关品名": "纯镍板"
+      },
+      "id": "recva2RFECRSNA",
+      "record_id": "recva2RFECRSNA"
+    },
+    {
+      "fields": {
+        "产品类型": "管件",
+        "对应海关编码": [
+          {
+            "text": "7307230000",
+            "type": "text"
+          },
+          {
+            "text": ",",
+            "type": "text"
+          },
+          {
+            "text": "7307290000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "不锈钢管件"
+      },
+      "id": "recva2RFECTqQR",
+      "record_id": "recva2RFECTqQR"
+    },
+    {
+      "fields": {
+        "产品类型": "法兰",
+        "对应海关编码": [
+          {
+            "text": "7307210000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "不锈钢法兰"
+      },
+      "id": "recva2RPRpkBlU",
+      "record_id": "recva2RPRpkBlU"
+    },
+    {
+      "fields": {
+        "产品类型": "焊管",
+        "对应海关编码": [
+          {
+            "text": "7306110000",
+            "type": "text"
+          },
+          {
+            "text": ",",
+            "type": "text"
+          },
+          {
+            "text": "7306400000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "不锈钢焊管"
+      },
+      "id": "recva2RPRphCFv",
+      "record_id": "recva2RPRphCFv"
+    },
+    {
+      "fields": {
+        "产品类型": "镍基无缝管",
+        "对应海关编码": [
+          {
+            "text": "7507120000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "镍合金管"
+      },
+      "id": "recva2RPRpw6Xb",
+      "record_id": "recva2RPRpw6Xb"
+    },
+    {
+      "fields": {
+        "产品类型": "管件",
+        "对应海关编码": [
+          {
+            "text": "7507200000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "镍合金管件"
+      },
+      "id": "recva2RPRp5uod",
+      "record_id": "recva2RPRp5uod"
+    },
+    {
+      "fields": {
+        "产品类型": "无缝管",
+        "对应海关编码": [
+          {
+            "text": "7304419000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "不锈钢无缝管"
+      },
+      "id": "recva2RPRp6eOp",
+      "record_id": "recva2RPRp6eOp"
+    },
+    {
+      "fields": {
+        "产品类型": "焊材",
+        "海关品名": "焊丝"
+      },
+      "id": "recva2RPRpFRSg",
+      "record_id": "recva2RPRpFRSg"
+    },
+    {
+      "fields": {
+        "产品类型": "焊材",
+        "海关品名": "不锈钢焊丝"
+      },
+      "id": "recva2RPRp9yEL",
+      "record_id": "recva2RPRp9yEL"
+    },
+    {
+      "fields": {
+        "产品类型": "三角丝",
+        "对应海关编码": [
+          {
+            "text": "7223000000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "不锈钢线材"
+      },
+      "id": "recva2RPRp3NNN",
+      "record_id": "recva2RPRp3NNN"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "铸棒"
+      },
+      "id": "recva2RPRpoCrw",
+      "record_id": "recva2RPRpoCrw"
+    },
+    {
+      "fields": {
+        "产品类型": "焊材",
+        "海关品名": "镍基焊丝"
+      },
+      "id": "recva2RPRpGeF8",
+      "record_id": "recva2RPRpGeF8"
+    },
+    {
+      "fields": {
+        "产品类型": "三角丝",
+        "海关品名": "镍合金线材"
+      },
+      "id": "recva2RPRpwXio",
+      "record_id": "recva2RPRpwXio"
+    },
+    {
+      "fields": {
+        "产品类型": "法兰",
+        "对应海关编码": [
+          {
+            "text": "7507200000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "镍合金法兰"
+      },
+      "id": "recva2RPRpzsnr",
+      "record_id": "recva2RPRpzsnr"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "不锈钢螺丝"
+      },
+      "id": "recva2RPRpD2bb",
+      "record_id": "recva2RPRpD2bb"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "不锈钢螺帽"
+      },
+      "id": "recva2RPRpItI5",
+      "record_id": "recva2RPRpItI5"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "不锈钢垫圈"
+      },
+      "id": "recva2RPRpN8su",
+      "record_id": "recva2RPRpN8su"
+    },
+    {
+      "fields": {
+        "产品类型": "三角丝",
+        "对应海关编码": [
+          {
+            "text": "7223000000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "不锈钢丝"
+      },
+      "id": "recva2RPRpEQwV",
+      "record_id": "recva2RPRpEQwV"
+    },
+    {
+      "fields": {
+        "产品类型": "盘管",
+        "对应海关编码": [
+          {
+            "text": "8431431000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "控制管线"
+      },
+      "id": "recva2RPRpw1TT",
+      "record_id": "recva2RPRpw1TT"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "合金钢粉末2507"
+      },
+      "id": "recva2RPRpd6qC",
+      "record_id": "recva2RPRpd6qC"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "不锈钢筛网"
+      },
+      "id": "recva2RPRp5hE6",
+      "record_id": "recva2RPRp5hE6"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "7320209000",
+            "type": "text"
+          },
+          {
+            "text": ",",
+            "type": "text"
+          },
+          {
+            "text": "7320909000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "弹簧"
+      },
+      "id": "recva2RPRpi8N8",
+      "record_id": "recva2RPRpi8N8"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "弹簧钢"
+      },
+      "id": "recva2RPRpNwaY",
+      "record_id": "recva2RPRpNwaY"
+    },
+    {
+      "fields": {
+        "产品类型": "管件",
+        "海关品名": "不锈钢铸件"
+      },
+      "id": "recva2RPRpkPYw",
+      "record_id": "recva2RPRpkPYw"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "补偿器"
+      },
+      "id": "recva2RPRpAtiv",
+      "record_id": "recva2RPRpAtiv"
+    },
+    {
+      "fields": {
+        "产品类型": "盘管",
+        "对应海关编码": [
+          {
+            "text": "8307100000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "钢铁制软管"
+      },
+      "id": "recva2RPRpZ2Hk",
+      "record_id": "recva2RPRpZ2Hk"
+    },
+    {
+      "fields": {
+        "产品类型": "焊材",
+        "海关品名": "药芯焊丝"
+      },
+      "id": "recva2RPRpAyLN",
+      "record_id": "recva2RPRpAyLN"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "7506200000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "镍合金板"
+      },
+      "id": "recva2RPRp5FPC",
+      "record_id": "recva2RPRp5FPC"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": " 7219220000",
+            "type": "text"
+          },
+          {
+            "text": ",",
+            "type": "text"
+          },
+          {
+            "text": "7219210000",
+            "type": "text"
+          },
+          {
+            "text": ",",
+            "type": "text"
+          },
+          {
+            "text": "7219220000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "不锈钢板"
+      },
+      "id": "recva2RPRpQ9Dk",
+      "record_id": "recva2RPRpQ9Dk"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "螺丝"
+      },
+      "id": "recva2RPRp7QK3",
+      "record_id": "recva2RPRp7QK3"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "螺帽"
+      },
+      "id": "recva2RPRpWtkB",
+      "record_id": "recva2RPRpWtkB"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "镍带"
+      },
+      "id": "recva2RPRpVphV",
+      "record_id": "recva2RPRpVphV"
+    },
+    {
+      "fields": {
+        "产品类型": "焊材",
+        "对应海关编码": [
+          {
+            "text": "7505220090",
+            "type": "text"
+          }
+        ],
+        "海关品名": "镍合金丝"
+      },
+      "id": "recva2RPRpkmoE",
+      "record_id": "recva2RPRpkmoE"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "7326901990",
+            "type": "text"
+          }
+        ],
+        "海关品名": "不锈钢锻件"
+      },
+      "id": "recva2RPRpaabB",
+      "record_id": "recva2RPRpaabB"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "不锈钢六角棒"
+      },
+      "id": "recva2RPRpFUYK",
+      "record_id": "recva2RPRpFUYK"
+    },
+    {
+      "fields": {
+        "产品类型": "法兰",
+        "海关品名": "不锈钢制法兰"
+      },
+      "id": "recva2RPRpPl34",
+      "record_id": "recva2RPRpPl34"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "9617001900",
+            "type": "text"
+          }
+        ],
+        "海关品名": "保温杯"
+      },
+      "id": "recva2RPRpO4lc",
+      "record_id": "recva2RPRpO4lc"
+    },
+    {
+      "fields": {
+        "产品类型": "管件",
+        "海关品名": "不锈钢铸造管件"
+      },
+      "id": "recva2RPRpZknL",
+      "record_id": "recva2RPRpZknL"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "纯镍棒"
+      },
+      "id": "recva2RPRp6xfO",
+      "record_id": "recva2RPRp6xfO"
+    },
+    {
+      "fields": {
+        "产品类型": "焊材",
+        "海关品名": "镍合金焊丝"
+      },
+      "id": "recva2RPRpgRWz",
+      "record_id": "recva2RPRpgRWz"
+    },
+    {
+      "fields": {
+        "产品类型": "无缝管",
+        "海关品名": "纯镍管"
+      },
+      "id": "recva2RPRpY1s3",
+      "record_id": "recva2RPRpY1s3"
+    },
+    {
+      "fields": {
+        "产品类型": "管件",
+        "海关品名": "碳钢管件"
+      },
+      "id": "recva2RPRpf2Hl",
+      "record_id": "recva2RPRpf2Hl"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "法兰保护盖"
+      },
+      "id": "recva2RPRpm80t",
+      "record_id": "recva2RPRpm80t"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "不锈钢料盘"
+      },
+      "id": "recva2RPRp4xan",
+      "record_id": "recva2RPRp4xan"
+    },
+    {
+      "fields": {
+        "产品类型": "焊材",
+        "对应海关编码": [
+          {
+            "text": "8311200000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "药芯镍基焊丝"
+      },
+      "id": "recva2RPRpJeF2",
+      "record_id": "recva2RPRpJeF2"
+    },
+    {
+      "fields": {
+        "产品类型": "管件",
+        "海关品名": "钛合金管件"
+      },
+      "id": "recva2RPRp8jln",
+      "record_id": "recva2RPRp8jln"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "不锈钢阀门"
+      },
+      "id": "recva2RPRp3FfT",
+      "record_id": "recva2RPRp3FfT"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "合金粉末"
+      },
+      "id": "recva2RPRpeDd0",
+      "record_id": "recva2RPRpeDd0"
+    },
+    {
+      "fields": {
+        "产品类型": "板棒",
+        "对应海关编码": [
+          {
+            "text": "7505120000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "镍合金条"
+      },
+      "id": "recva2RPRpv9RI",
+      "record_id": "recva2RPRpv9RI"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "N08028螺栓"
+      },
+      "id": "recva2RPRpzLJM",
+      "record_id": "recva2RPRpzLJM"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "N08028螺母"
+      },
+      "id": "recva2RPRpueMm",
+      "record_id": "recva2RPRpueMm"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "钢板UNS N08028"
+      },
+      "id": "recva2RPRpoxKg",
+      "record_id": "recva2RPRpoxKg"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "7505120000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "镍合金棒"
+      },
+      "id": "recva2RPRpF9ZN",
+      "record_id": "recva2RPRpF9ZN"
+    },
+    {
+      "fields": {
+        "产品类型": "法兰",
+        "对应海关编码": [
+          {
+            "text": "7307910000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "碳钢法兰"
+      },
+      "id": "recva2RPRpCac5",
+      "record_id": "recva2RPRpCac5"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "法兰保护套"
+      },
+      "id": "recva2RPRpeFg4",
+      "record_id": "recva2RPRpeFg4"
+    },
+    {
+      "fields": {
+        "产品类型": "三角丝",
+        "对应海关编码": [
+          {
+            "text": "7223000000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "321 不锈钢三角丝"
+      },
+      "id": "recva2Ugbhs0D2",
+      "record_id": "recva2Ugbhs0D2"
+    },
+    {
+      "fields": {
+        "产品类型": "管件",
+        "对应海关编码": [
+          {
+            "text": "7307230000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "不锈钢制对焊件"
+      },
+      "id": "recva2UgmNxhbM",
+      "record_id": "recva2UgmNxhbM"
+    },
+    {
+      "fields": {
+        "产品类型": "镍基无缝管",
+        "对应海关编码": [
+          {
+            "text": "7507120000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "镍合金无缝管"
+      },
+      "id": "recva2UgNOqjvU",
+      "record_id": "recva2UgNOqjvU"
+    },
+    {
+      "fields": {
+        "产品类型": "法兰",
+        "对应海关编码": [
+          {
+            "text": "7307210000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "不锈钢钢法兰"
+      },
+      "id": "recva2UgNOrDDF",
+      "record_id": "recva2UgNOrDDF"
+    },
+    {
+      "fields": {
+        "产品类型": "无缝管",
+        "海关品名": "不锈钢管"
+      },
+      "id": "recva2UgNO4UDF",
+      "record_id": "recva2UgNO4UDF"
+    },
+    {
+      "fields": {
+        "产品类型": "焊材",
+        "海关品名": "镍基退火软线"
+      },
+      "id": "recva2UgNOYc41",
+      "record_id": "recva2UgNOYc41"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "镍基板材"
+      },
+      "id": "recva2UgNO9FyJ",
+      "record_id": "recva2UgNO9FyJ"
+    },
+    {
+      "fields": {
+        "产品类型": "法兰",
+        "海关品名": "镍基法兰"
+      },
+      "id": "recva2UgNOxCMK",
+      "record_id": "recva2UgNOxCMK"
+    },
+    {
+      "fields": {
+        "产品类型": "焊管",
+        "海关品名": "镍基焊管"
+      },
+      "id": "recva2UgNOzvsm",
+      "record_id": "recva2UgNOzvsm"
+    },
+    {
+      "fields": {
+        "产品类型": "管件",
+        "对应海关编码": [
+          {
+            "text": "8108909000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "钛管件"
+      },
+      "id": "recva2UgNOC5TP",
+      "record_id": "recva2UgNOC5TP"
+    },
+    {
+      "fields": {
+        "产品类型": "板棒",
+        "对应海关编码": [
+          {
+            "text": "7506200000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "镍合金板材"
+      },
+      "id": "recva2UgNO0RlR",
+      "record_id": "recva2UgNO0RlR"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "7222400000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "不锈钢角钢"
+      },
+      "id": "recvalyy5MCBli",
+      "record_id": "recvalyy5MCBli"
+    },
+    {
+      "fields": {
+        "产品类型": "法兰",
+        "对应海关编码": [
+          {
+            "text": "8108909000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "钛法兰"
+      },
+      "id": "recvaMJdtHChTh",
+      "record_id": "recvaMJdtHChTh"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "7318151001",
+            "type": "text"
+          }
+        ],
+        "海关品名": "螺栓"
+      },
+      "id": "recvfGJkc0kyLo",
+      "record_id": "recvfGJkc0kyLo"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "7318160000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "螺母"
+      },
+      "id": "recvfGJkxwS41B",
+      "record_id": "recvfGJkxwS41B"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "7318220001",
+            "type": "text"
+          }
+        ],
+        "海关品名": "垫圈"
+      },
+      "id": "recvfGJkM3zv0d",
+      "record_id": "recvfGJkM3zv0d"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "8481804090",
+            "type": "text"
+          }
+        ],
+        "海关品名": "阀门"
+      },
+      "id": "recvfGJkM3jPDF",
+      "record_id": "recvfGJkM3jPDF"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "8108902000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "钛丝"
+      },
+      "id": "recvg9XA2w2GqJ",
+      "record_id": "recvg9XA2w2GqJ"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "8105900090",
+            "type": "text"
+          }
+        ],
+        "海关品名": "钴合金丝"
+      },
+      "id": "recvgDfQ8S3y4j",
+      "record_id": "recvgDfQ8S3y4j"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "不锈钢光棒"
+      },
+      "id": "recvjX7h9BBOSY",
+      "record_id": "recvjX7h9BBOSY"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "不锈钢扁钢"
+      },
+      "id": "recvjX7hlqPaxq",
+      "record_id": "recvjX7hlqPaxq"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "海关品名": "合金镍棒"
+      },
+      "id": "recvkC0aWsLsU1",
+      "record_id": "recvkC0aWsLsU1"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": " 7217100000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "高碳钢丝"
+      },
+      "id": "recvkXVcneVxx2",
+      "record_id": "recvkXVcneVxx2"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "8302420000",
+            "type": "text"
+          }
+        ],
+        "海关品名": "支架"
+      },
+      "id": "recvmzTIr88J1H",
+      "record_id": "recvmzTIr88J1H"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "日期": 1785254400000,
+        "海关品名": "密封圈毛坯"
+      },
+      "id": "recvnVjzEWTb2x",
+      "record_id": "recvnVjzEWTb2x"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "3923500000",
+            "type": "text"
+          }
+        ],
+        "日期": 1785254400000,
+        "海关品名": "圆形透明特氟龙法兰套"
+      },
+      "id": "recvq4209IKisR",
+      "record_id": "recvq4209IKisR"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "8481804090",
+            "type": "text"
+          }
+        ],
+        "日期": 1785254400000,
+        "海关品名": "不锈钢闸阀"
+      },
+      "id": "recvq420rSJBoX",
+      "record_id": "recvq420rSJBoX"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "7318220090",
+            "type": "text"
+          }
+        ],
+        "日期": 1785254400000,
+        "海关品名": "八角金属环垫"
+      },
+      "id": "recvq420FXTIGg",
+      "record_id": "recvq420FXTIGg"
+    },
+    {
+      "fields": {
+        "产品类型": "焊管",
+        "对应海关编码": [
+          {
+            "text": "7507120000",
+            "type": "text"
+          }
+        ],
+        "日期": 1785254400000,
+        "海关品名": "镍合金焊管"
+      },
+      "id": "recvq5ErRxWGY8",
+      "record_id": "recvq5ErRxWGY8"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "日期": 1785254400000,
+        "海关品名": "六角螺塞"
+      },
+      "id": "recvq5ETqXANHh",
+      "record_id": "recvq5ETqXANHh"
+    },
+    {
+      "fields": {
+        "产品类型": "焊管",
+        "对应海关编码": [
+          {
+            "text": "7306400000",
+            "type": "text"
+          }
+        ],
+        "日期": 1786982400000,
+        "海关品名": "不锈钢管线"
+      },
+      "id": "recvsBQviaydYb",
+      "record_id": "recvsBQviaydYb"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "8544492100",
+            "type": "text"
+          }
+        ],
+        "日期": 1789833600000,
+        "海关品名": "封装电缆"
+      },
+      "id": "recvvK2WQZFnrR",
+      "record_id": "recvvK2WQZFnrR"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "对应海关编码": [
+          {
+            "text": "8311100000",
+            "type": "text"
+          }
+        ],
+        "日期": 1790006400000,
+        "海关品名": "电焊条"
+      },
+      "id": "recvvV1VuI7Ueh",
+      "record_id": "recvvV1VuI7Ueh"
+    },
+    {
+      "fields": {
+        "产品类型": "其他",
+        "日期": 1790092800000,
+        "海关品名": "不锈钢编织软管"
+      },
+      "id": "recvw18VT62zCN",
+      "record_id": "recvw18VT62zCN"
+    }
+  ]
+}

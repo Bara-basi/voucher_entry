@@ -1,0 +1,3534 @@
+{
+  "fetched_at": "2026-10-15T08:35:44.238602+00:00",
+  "app_name": "2026年  海关AI",
+  "table_name": "供应商名录",
+  "tables": [
+    {
+      "name": "2026年报关记录 AI",
+      "revision": 4514,
+      "table_id": "tblXCun7DWTZ4Iow"
+    },
+    {
+      "name": "汇率",
+      "revision": 11,
+      "table_id": "tblYPyKNiJx3yOEC"
+    },
+    {
+      "name": "产品及类型",
+      "revision": 33,
+      "table_id": "tblxTVDzTTOPwXye"
+    },
+    {
+      "name": "海关编码及退税率",
+      "revision": 16,
+      "table_id": "tblaU47nMOMk4KWe"
+    },
+    {
+      "name": "供应商名录",
+      "revision": 14,
+      "table_id": "tblpOYABloaUS1XT"
+    },
+    {
+      "name": "业务员代码1",
+      "revision": 14,
+      "table_id": "tblq4k3hXQtMHgAQ"
+    },
+    {
+      "name": "2026年发货统计",
+      "revision": 1390,
+      "table_id": "tblRMUHQJB5uqG4D"
+    },
+    {
+      "name": "部门&总监",
+      "revision": 9,
+      "table_id": "tblTuuAwahMNmzgZ"
+    },
+    {
+      "name": "2026年报关数据",
+      "revision": 2017,
+      "table_id": "tbltTcKBoe8jdQND"
+    },
+    {
+      "name": "26年销售数据（睿贝）",
+      "revision": 714,
+      "table_id": "tbl6jU0FvLuZALJD"
+    },
+    {
+      "name": "客户信息映射表",
+      "revision": 62,
+      "table_id": "tblKe4CvVXnqP7Bs"
+    },
+    {
+      "name": "25年销售数据（睿贝）",
+      "revision": 5,
+      "table_id": "tblgGKW12Ar5gU5A"
+    },
+    {
+      "name": "8月财务确认工作台",
+      "revision": 54,
+      "table_id": "tbl4VweYMFkTgrul"
+    },
+    {
+      "name": "7月财务确认工作台",
+      "revision": 124,
+      "table_id": "tbljl4Hs1ldb8LQ5"
+    },
+    {
+      "name": "A链关系复核工作台",
+      "revision": 1,
+      "table_id": "tbl1IwZ4UhVY0xWU"
+    },
+    {
+      "name": "9月财务确认工作台",
+      "revision": 36,
+      "table_id": "tblyr6J0TUsIeGwB"
+    },
+    {
+      "name": "10月财务确认工作台",
+      "revision": 5,
+      "table_id": "tblBIjQyWbz2LKUg"
+    }
+  ],
+  "fields": [
+    {
+      "field_id": "fld55IxLWs",
+      "field_name": "文本",
+      "is_extend": false,
+      "is_primary": true,
+      "is_synced": true,
+      "property": null,
+      "type": 1,
+      "ui_type": "Text"
+    },
+    {
+      "field_id": "fldbxt4ngG",
+      "field_name": "供应商名称",
+      "is_extend": false,
+      "is_primary": false,
+      "is_synced": true,
+      "property": null,
+      "type": 1,
+      "ui_type": "Text"
+    },
+    {
+      "field_id": "fldexS3DjF",
+      "field_name": "合作时间",
+      "is_extend": false,
+      "is_primary": false,
+      "is_synced": true,
+      "property": {
+        "options": [
+          {
+            "color": 0,
+            "id": "optqNZZ6c3",
+            "name": "23年"
+          },
+          {
+            "color": 1,
+            "id": "opt0JROzFL",
+            "name": "23年以前"
+          },
+          {
+            "color": 2,
+            "id": "optnOm02lh",
+            "name": "-"
+          },
+          {
+            "color": 3,
+            "id": "optiIJf5v4",
+            "name": "重复"
+          },
+          {
+            "color": 4,
+            "id": "opt9ACdTu0",
+            "name": "24年"
+          },
+          {
+            "color": 5,
+            "id": "opta3MPxZz",
+            "name": "25年"
+          },
+          {
+            "color": 6,
+            "id": "optrLEzD7a",
+            "name": ""
+          },
+          {
+            "color": 7,
+            "id": "optd3aMIuV",
+            "name": ""
+          },
+          {
+            "color": 8,
+            "id": "opthFCiV6k",
+            "name": ""
+          },
+          {
+            "color": 9,
+            "id": "optsmQ54il",
+            "name": "26"
+          },
+          {
+            "color": 10,
+            "id": "optxyFoYUl",
+            "name": "26年"
+          },
+          {
+            "color": 0,
+            "id": "opt45a2ojf",
+            "name": "天津格瑞新金属材料有限责任公司"
+          },
+          {
+            "color": 1,
+            "id": "optEZVvECW",
+            "name": "嘉兴迈拓不锈钢有限公司1"
+          },
+          {
+            "color": 2,
+            "id": "optrZ5KPM8",
+            "name": "江苏丰恒阀门有限公司"
+          },
+          {
+            "color": 3,
+            "id": "optlS9brK5",
+            "name": "宁波榕圣金属制品有限公司"
+          },
+          {
+            "color": 4,
+            "id": "optNSWL3Ui",
+            "name": "浙江国泰萧星密封材料股份有限公司"
+          },
+          {
+            "color": 5,
+            "id": "optML6Uqd9",
+            "name": "浙江瑞浦科技有限公司"
+          },
+          {
+            "color": 6,
+            "id": "opt9cwnhDv",
+            "name": "浙江新拓管业有限公司"
+          },
+          {
+            "color": 7,
+            "id": "optUDkNJo7",
+            "name": "浙江麦金弹簧材料有限公司新增"
+          }
+        ]
+      },
+      "type": 3,
+      "ui_type": "SingleSelect"
+    },
+    {
+      "field_id": "fldnno3nXF",
+      "field_name": "供应商简称",
+      "is_extend": false,
+      "is_primary": false,
+      "is_synced": true,
+      "property": null,
+      "type": 1,
+      "ui_type": "Text"
+    },
+    {
+      "field_id": "fldvsOdaO3",
+      "field_name": "联系人",
+      "is_extend": false,
+      "is_primary": false,
+      "is_synced": true,
+      "property": {
+        "options": [
+          {
+            "color": 0,
+            "id": "optDQxScUu",
+            "name": "杨松林"
+          },
+          {
+            "color": 1,
+            "id": "optkxMBgkh",
+            "name": "王帅"
+          },
+          {
+            "color": 2,
+            "id": "optpkWT67V",
+            "name": "张姐"
+          },
+          {
+            "color": 3,
+            "id": "optnthYHtP",
+            "name": "小程"
+          },
+          {
+            "color": 4,
+            "id": "optISp0yZu",
+            "name": "郑爱芬"
+          },
+          {
+            "color": 5,
+            "id": "optjdNjGB8",
+            "name": " 谢立新"
+          },
+          {
+            "color": 6,
+            "id": "optPDYEFb8",
+            "name": "#N/A"
+          },
+          {
+            "color": 7,
+            "id": "optBrBw2jn",
+            "name": "宋经理"
+          },
+          {
+            "color": 8,
+            "id": "optmX01R3s",
+            "name": "孙光权"
+          },
+          {
+            "color": 9,
+            "id": "optcjUCdyS",
+            "name": "祝经理"
+          },
+          {
+            "color": 10,
+            "id": "optRjzKICI",
+            "name": "沈总"
+          },
+          {
+            "color": 0,
+            "id": "optMiSh75z",
+            "name": "李总"
+          },
+          {
+            "color": 1,
+            "id": "optrvnBV24",
+            "name": "王经理"
+          },
+          {
+            "color": 2,
+            "id": "optmxUtdoX",
+            "name": "杭总"
+          },
+          {
+            "color": 3,
+            "id": "optYXjZfPx",
+            "name": "李春雷"
+          },
+          {
+            "color": 4,
+            "id": "optv17JwBU",
+            "name": "郑经理"
+          },
+          {
+            "color": 5,
+            "id": "optPkip57I",
+            "name": "钱雨华"
+          },
+          {
+            "color": 6,
+            "id": "optM2bt6Km",
+            "name": "郝经理"
+          },
+          {
+            "color": 7,
+            "id": "opt2x4eVJT",
+            "name": "叶总"
+          },
+          {
+            "color": 8,
+            "id": "optrXvRxNW",
+            "name": "邵总"
+          },
+          {
+            "color": 9,
+            "id": "optr4Zo4nL",
+            "name": "张占兵"
+          },
+          {
+            "color": 10,
+            "id": "opt5OnK57L",
+            "name": "刘经理"
+          },
+          {
+            "color": 0,
+            "id": "opt6Xn0QXv",
+            "name": "小余"
+          },
+          {
+            "color": 1,
+            "id": "optXW79UrK",
+            "name": "余科深"
+          },
+          {
+            "color": 2,
+            "id": "opt7yoyJCU",
+            "name": "小范"
+          },
+          {
+            "color": 3,
+            "id": "optc1o9xNH",
+            "name": "寒月"
+          },
+          {
+            "color": 4,
+            "id": "optlMuRaeJ",
+            "name": "园园"
+          },
+          {
+            "color": 5,
+            "id": "opt8oMM17o",
+            "name": "小王"
+          }
+        ]
+      },
+      "type": 3,
+      "ui_type": "SingleSelect"
+    },
+    {
+      "field_id": "fldj5SqhMP",
+      "field_name": "联系电话",
+      "is_extend": false,
+      "is_primary": false,
+      "is_synced": true,
+      "property": null,
+      "type": 1,
+      "ui_type": "Text"
+    },
+    {
+      "field_id": "fld3wSZgvv",
+      "field_name": "添加方式",
+      "is_extend": false,
+      "is_primary": false,
+      "is_synced": true,
+      "property": {
+        "options": [
+          {
+            "color": 0,
+            "id": "optOOWrwkV",
+            "name": "微信个人"
+          },
+          {
+            "color": 1,
+            "id": "optECZBUZf",
+            "name": "微信群聊"
+          },
+          {
+            "color": 2,
+            "id": "optP43fj5M",
+            "name": "飞书群聊"
+          }
+        ]
+      },
+      "type": 3,
+      "ui_type": "SingleSelect"
+    },
+    {
+      "field_id": "fldcz9yfIZ",
+      "field_name": "目前对接人",
+      "is_extend": false,
+      "is_primary": false,
+      "is_synced": true,
+      "property": {
+        "options": [
+          {
+            "color": 0,
+            "id": "optKF020LS",
+            "name": "采购"
+          },
+          {
+            "color": 1,
+            "id": "optNk4jxvL",
+            "name": "财务"
+          }
+        ]
+      },
+      "type": 4,
+      "ui_type": "MultiSelect"
+    },
+    {
+      "field_id": "fldfTApPTX",
+      "field_name": "附件",
+      "is_extend": false,
+      "is_primary": false,
+      "is_synced": true,
+      "property": null,
+      "type": 17,
+      "ui_type": "Attachment"
+    },
+    {
+      "field_id": "fldgkcjLCU",
+      "field_name": "备注",
+      "is_extend": false,
+      "is_primary": false,
+      "is_synced": true,
+      "property": null,
+      "type": 1,
+      "ui_type": "Text"
+    },
+    {
+      "field_id": "fldBDNDTBA",
+      "field_name": "SourceID",
+      "is_extend": false,
+      "is_primary": false,
+      "is_synced": true,
+      "property": null,
+      "type": 1,
+      "ui_type": "Text"
+    }
+  ],
+  "records": [
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzaHRZczo5NmQ4Mjg5NjRkMTNjMTYxNmNlOTEyNjU2YjZjNGJiZDox",
+        "供应商名称": "安徽富凯特材有限公 司",
+        "供应商简称": "富凯",
+        "合作时间": "25年",
+        "文本": "137",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNtjla",
+      "record_id": "recvfGz5DNtjla"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzWmV6bzo2N2U0ZjA1ZWMyOGM4YmQ2MjE5YjkzMmFmOTY0OWZkODox",
+        "供应商名称": "秦皇岛核诚镍业有限公司",
+        "供应商简称": "秦皇岛",
+        "合作时间": "25年",
+        "文本": "138",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNMAYu",
+      "record_id": "recvfGz5DNMAYu"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzRnY5NjpjNTFhZGUxNDJiZWQ0NjhhMTY3MDE0ODZmZjU4NWQ5NDox",
+        "供应商名称": "浙江永成创岳新能源装备有限公司",
+        "供应商简称": "创岳",
+        "合作时间": "25年",
+        "文本": "139",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DN8V08",
+      "record_id": "recvfGz5DN8V08"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzREZnQjo2OGE0ZDcwMzUyMzM0ODg1YmUyYmViYzc4MWI3ODg1Yzox",
+        "供应商名称": "浙江江浦特钢有限公司",
+        "供应商简称": "江浦",
+        "合作时间": "25年",
+        "文本": "140",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNxBbH",
+      "record_id": "recvfGz5DNxBbH"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzMjNDRTpiZmM2ODcwYWJhNThjOWIyOTZhMmRlYjJlNDNmNzM1OTox",
+        "供应商名称": "天津市惠利丰防腐保温钢管集团有限公司",
+        "供应商简称": "惠利",
+        "合作时间": "25年",
+        "文本": "141",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNaFdb",
+      "record_id": "recvfGz5DNaFdb"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzV2c1eToxMDQyMDhhZGY0MWFjYjY3M2Y3NjViZTlhZTY5OWE5Njox",
+        "供应商名称": "嘉兴歌珊五金有限公司",
+        "供应商简称": "歌珊",
+        "合作时间": "25年",
+        "文本": "142",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNNwp4",
+      "record_id": "recvfGz5DNNwp4"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzTVBVSzo2OGZlYjAxOWE4NGJjN2ViMTQ5YWM3ODY2NDQ3MmEwZDox",
+        "供应商名称": "苏州斯林德机电设备有限公司",
+        "供应商简称": "斯林德",
+        "合作时间": "25年",
+        "文本": "147",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNZwlG",
+      "record_id": "recvfGz5DNZwlG"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzMDgwcTo0NzljNDcxYmRjMTg0ZTVmYzFlZDU2YTZiMDhjNDE4NTox",
+        "供应商名称": "江阴市永聚特种合金有限公司",
+        "供应商简称": "永聚",
+        "合作时间": "25年",
+        "文本": "148",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNbfNh",
+      "record_id": "recvfGz5DNbfNh"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzYW5QejphM2E4NzVhMjUxOTRlMzgyZGYyYTI3Zjg2M2Y5NmI2NTox",
+        "供应商名称": "浙江信得达特种管业有限公司",
+        "供应商简称": "信得达",
+        "合作时间": "25年",
+        "文本": "162",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNvFzo",
+      "record_id": "recvfGz5DNvFzo"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzY20wNTo5NGNkMTBjZWY2NWY1NWYyNzhmOGExMWIxM2I3Zjg5Zjox",
+        "供应商名称": "无锡熠钢金属制品科技有限公司",
+        "供应商简称": "熠钢",
+        "合作时间": "25年",
+        "文本": "163",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNObFf",
+      "record_id": "recvfGz5DNObFf"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzTDJqTjozODkxZGJjNjgyNWEwMmI4OWIxY2IzMjlhY2RlNTNkODox",
+        "供应商名称": "江苏鸿科金属科技有限公司",
+        "供应商简称": "鸿科",
+        "合作时间": "25年",
+        "文本": "164",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNXgEX",
+      "record_id": "recvfGz5DNXgEX"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzaGhFUjo5NTdmNjlkYmYxNjlmZDc3MTg3NmExYTM5MzU4Zjg4Zjox",
+        "供应商名称": "台州国富金属科技有限公司（无锡）分公司",
+        "供应商简称": "国富",
+        "合作时间": "25年",
+        "文本": "165",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNNdTr",
+      "record_id": "recvfGz5DNNdTr"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzS3lXRjo1NWFkYWMwOWYxYmU4MjBkNGUyZTQ2Nzk0NDIyMjI0ODox",
+        "供应商名称": "无锡赢广合金有限公司",
+        "供应商简称": "赢广",
+        "合作时间": "25年",
+        "文本": "167",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNKSOu",
+      "record_id": "recvfGz5DNKSOu"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzaDF3Ujo5N2Y4YjA5YjRhODkwNzIzOTZhZTQ3YjdmNmI1NDgzNjox",
+        "供应商名称": "温州庐威阀门管件有限公司",
+        "供应商简称": "庐威",
+        "合作时间": "25年",
+        "文本": "168",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNsMMe",
+      "record_id": "recvfGz5DNsMMe"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzenpGRTpjZGVmMTk4NGI0ODQ4NGMyNjM4NzVlYzFmNmNiZTFmNzox",
+        "供应商名称": "上海玉东水处理有限公司",
+        "供应商简称": "玉东",
+        "合作时间": "25年",
+        "文本": "169",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNKE5M",
+      "record_id": "recvfGz5DNKE5M"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzR3RaaDpmNjUxYjA2MWE5MjE5MDE2N2E4OWFkMTkxZWE4ZDYwYzox",
+        "供应商名称": "温州良凡流体设备有限公司",
+        "供应商简称": "良凡",
+        "合作时间": "25年",
+        "文本": "170",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DN2OC9",
+      "record_id": "recvfGz5DN2OC9"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzOFR4MzowZGI4Yjg5MDFmNDA4OGJiNDhkNmUxMjdlMWY1YWE3Zjox",
+        "供应商名称": "天津格瑞新金属材料有限责",
+        "供应商简称": "格瑞",
+        "合作时间": "25年",
+        "文本": "171",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNbZVM",
+      "record_id": "recvfGz5DNbZVM"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzWjcxZTplZWY1YzllYzJlMzAxMDVjNDZiZWZlZjc2OGI0M2M4Njox",
+        "供应商名称": "江苏安惠环境设备科技有限公司",
+        "供应商简称": "安惠",
+        "合作时间": "25年",
+        "文本": "172",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DN5Lwx",
+      "record_id": "recvfGz5DN5Lwx"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1Bzd2c4NTo5ZDU2NzJkYTNhNGI1MTJhMGIxYTg1M2ZiZWZkNWUwYTox",
+        "供应商名称": "沧州通泽管道装备有限公司",
+        "供应商简称": "通泽",
+        "合作时间": "25年",
+        "文本": "173",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNKyXB",
+      "record_id": "recvfGz5DNKyXB"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzMmlzVzpmMTliNzcwOTU4MGZiNjdjOTg1OGZhMDRkNmM1NDk3Mjox",
+        "供应商名称": "无锡市乾德特钢有限公司",
+        "供应商简称": "乾德",
+        "合作时间": "25年",
+        "文本": "174",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DN6NLw",
+      "record_id": "recvfGz5DN6NLw"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzNmxqNDphZTY3ZGUwMTBjM2NhYWZlZWMzMzM5ODE1MTM4YTFkZTox",
+        "供应商名称": "景县众信诚橡塑制品有限公司",
+        "供应商简称": "众信",
+        "合作时间": "25年",
+        "文本": "175",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNBc8o",
+      "record_id": "recvfGz5DNBc8o"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1Bzc3luSjo5YzU5ODhhZTJjMzg4YjM3Y2EwNDBlYTQ0NTEzMWQzNjox",
+        "供应商名称": "温州叁正科技有限公司",
+        "供应商简称": "叁正",
+        "合作时间": "25年",
+        "文本": "176",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNRz7z",
+      "record_id": "recvfGz5DNRz7z"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzclZQMTo3ZTY2NzUzMjZlOTcyM2E1ZjU2M2YxYTAwMmI4NGJiMzox",
+        "供应商名称": "上海宝之镍冶金科技有限公司",
+        "供应商简称": "宝之镍",
+        "合作时间": "25年",
+        "文本": "177",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNkH23",
+      "record_id": "recvfGz5DNkH23"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzbUxIUDo0ZTdiMDhjZjNlNTVkZDc1ZjQ3NzI1NWMyOTA4MGZmNDox",
+        "供应商名称": "温州久鸿精密弹簧科技有限公司",
+        "供应商简称": "久鸿",
+        "合作时间": "25年",
+        "文本": "178",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DN6sQA",
+      "record_id": "recvfGz5DN6sQA"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzSHdYbDo0MjgwMzZhMWRhNjVhNGVkNTBlYTExZTdlNzI5NDRlZjox",
+        "供应商名称": "江苏国益特种合金有限公司",
+        "供应商简称": "国益",
+        "合作时间": "25年",
+        "文本": "179",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNrmZt",
+      "record_id": "recvfGz5DNrmZt"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzcTJFUzo4YThhZWViOTM1ZTkwYmUwNmJhMTMyZDQ5MDFjZGZjMTox",
+        "供应商名称": "江苏英为金属制品有限公司",
+        "供应商简称": "英为",
+        "合作时间": "25年",
+        "文本": "180",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNdb5V",
+      "record_id": "recvfGz5DNdb5V"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzeENtajpjNjY3ODA3MzBjOWM4NjhmNGY0OTNkYWM2MzI2OGZjZjox",
+        "供应商名称": "江苏四镍合金科技有限公司",
+        "供应商简称": "四镍",
+        "合作时间": "25年",
+        "文本": "181",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNMtBQ",
+      "record_id": "recvfGz5DNMtBQ"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzZjNBajo3OWM0ODUxM2I1YjUyOWE0MWUzMDdlYjgwNDVlZmZiZDox",
+        "供应商名称": "温州铕信合金材料有限公司",
+        "供应商简称": "铕信",
+        "合作时间": "25年",
+        "文本": "182",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNFg0d",
+      "record_id": "recvfGz5DNFg0d"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzQlE3dzowYzU2YzdkMGNiYTMwMjcxNTUzOGJkOGUxMDFmOTZiYzox",
+        "供应商名称": "浙江昊阳弘光环保科技有限公司",
+        "供应商简称": "昊阳",
+        "合作时间": "25年",
+        "文本": "183",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DN00qb",
+      "record_id": "recvfGz5DN00qb"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzNkE5bzowNDU5OTlkNWMzZjhiMTc5MDk5YTcwNTMyMjI1NmQ5Mjox",
+        "供应商名称": "宝鸡盛泰升茂金属材料有限公司",
+        "供应商简称": "盛泰",
+        "合作时间": "25年",
+        "文本": "184",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNTLMX",
+      "record_id": "recvfGz5DNTLMX"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzRGhiSDo0ZWRlODc3NzhhMTEzYjllNTRjMzdmMDlmY2NjZjc0OTox",
+        "供应商名称": "浙江朗志钛镍金属制造有限公司",
+        "供应商简称": "朗志",
+        "合作时间": "25年",
+        "文本": "186",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNpryQ",
+      "record_id": "recvfGz5DNpryQ"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzZkI3ajozMGZhOGQwNDRlMGRkMDkxYmUzMzE2NjYwNmY0Njg4MDox",
+        "供应商名称": "定襄县兴旺法兰锻造有限公司",
+        "供应商简称": "兴旺",
+        "合作时间": "25年",
+        "文本": "187",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNN6Yg",
+      "record_id": "recvfGz5DNN6Yg"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzSW1wRDo2MGYyODc2OTQxYzU0MTEyMzRhNTE5MTM5NGRlNzVkNDox",
+        "供应商名称": "永嘉县金泰焊接材料有限公司",
+        "供应商简称": "金泰",
+        "合作时间": "25年",
+        "文本": "190",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNh5tf",
+      "record_id": "recvfGz5DNh5tf"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzeUNDcDozZWJjZjA4ZWExMGNmYTEwNjExZTlhMDQ1OTZkMTNhNzox",
+        "供应商名称": "温州晟业钢管有限公司",
+        "供应商简称": "晟业",
+        "合作时间": "24年",
+        "文本": "90",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNRWuQ",
+      "record_id": "recvfGz5DNRWuQ"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzNHFpeTo3NmZjMjMwNDZiZTc4ZGE2MDBlMDhiMTQ3ZjZiYjViMzox",
+        "供应商名称": "湖州欣特科技有限公司",
+        "供应商简称": "欣特",
+        "合作时间": "24年",
+        "文本": "91",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNsKJw",
+      "record_id": "recvfGz5DNsKJw"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzY0g5YjozMjFiMTY5ZjllMGVlYzgwY2M4YzMyNmY0MzJmYjUyYjox",
+        "供应商名称": "江苏明璐特钢集团有限公司",
+        "供应商简称": "明璐",
+        "合作时间": "24年",
+        "文本": "93",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNsOSt",
+      "record_id": "recvfGz5DNsOSt"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzWmlkUDpkZDJmMzhmNmEzMTAyZmY3NWMxZDA1MGYxYzAzNDI0NDox",
+        "供应商名称": "安徽溪流管业有限公司",
+        "供应商简称": "溪流",
+        "合作时间": "24年",
+        "文本": "94",
+        "添加方式": "飞书群聊",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "寒月",
+        "联系电话": "18844685663",
+        "附件": [
+          {
+            "file_token": "PSr5b3sU2oXc5fxxKHYcvwKunSb",
+            "name": "657f10618372bf9aec7911b95f2569b.jpg",
+            "size": 222797,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PSr5b3sU2oXc5fxxKHYcvwKunSb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/jpeg",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PSr5b3sU2oXc5fxxKHYcvwKunSb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNsOoR",
+      "record_id": "recvfGz5DNsOoR"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzZ0xOdTo5MDRjMjhmOGQ4ZDBiZDVlMGEyOGIxNzIyYTc0NWM3Yzox",
+        "供应商名称": "上海博中金属集团有限公司",
+        "供应商简称": "博中",
+        "合作时间": "24年",
+        "文本": "96",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNHFZV",
+      "record_id": "recvfGz5DNHFZV"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzVk13UTowZDdiOTk5MjIyODZmNWEwNDU2MTk4MTU5ODAzODJkYjox",
+        "供应商名称": "安平县创垒丝网制品有限公司",
+        "供应商简称": "创垒",
+        "合作时间": "24年",
+        "文本": "97",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNffzt",
+      "record_id": "recvfGz5DNffzt"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzcFZ5dzozMGI0YzE4ZTJhNDU3MThmMWJjYjcyNjQ1OTc0NTMyODox",
+        "供应商名称": "湖北中凯管业科技有限公司",
+        "供应商简称": "中凯",
+        "合作时间": "24年",
+        "文本": "98",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNvY1i",
+      "record_id": "recvfGz5DNvY1i"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzdG8zTzplMzQxMmU2N2U1YTM4ZWIwNGY2MTYwOTFiMTRlNWQ1Zjox",
+        "供应商名称": "无锡开立兴不锈钢有限公司",
+        "供应商简称": "开立兴",
+        "合作时间": "24年",
+        "文本": "99",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNrsw0",
+      "record_id": "recvfGz5DNrsw0"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzUnQ3SDo0N2I1YTdmZWU3YjY3OWU2YTA0YzU2MDQ3MzI5NmZlMDox",
+        "供应商名称": "大连众晟金属有限公司",
+        "供应商简称": "众晟",
+        "合作时间": "24年",
+        "文本": "100",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNZLXI",
+      "record_id": "recvfGz5DNZLXI"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzYXRDZjo4OGQ0ODFlMGMyYmRmZDhiY2YwOWI2ODlkOGNkM2E5ODox",
+        "供应商名称": "江苏春瑞金属制品有限公司",
+        "供应商简称": "春瑞",
+        "合作时间": "24年",
+        "文本": "101",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNY7wS",
+      "record_id": "recvfGz5DNY7wS"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzNlRSWjpkM2MwZjQ1MTI1ZjEyZTIxYWNjN2UzNjY3NDllNjkzODox",
+        "供应商名称": "丹阳市鼎旺特种材料有限公司",
+        "供应商简称": "鼎旺",
+        "合作时间": "24年",
+        "文本": "103",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNEpiJ",
+      "record_id": "recvfGz5DNEpiJ"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzbXV3eDozN2I4YzBiNGY3ZDA3MGZjYWQyMmI5NmFlMGEzNjI1MTox",
+        "供应商名称": "兴化市程璐不锈钢制品有限公司",
+        "供应商简称": "程璐",
+        "合作时间": "24年",
+        "文本": "104",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNTia0",
+      "record_id": "recvfGz5DNTia0"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzN2JRWDo5Y2MzNjk3OTc0YmVhZGQ0N2M0NTI0NDQ5Y2YxMjg1Yzox",
+        "供应商名称": "常州伟隆合金材料有限公司",
+        "供应商简称": "伟隆",
+        "合作时间": "24年",
+        "文本": "105",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNKdmq",
+      "record_id": "recvfGz5DNKdmq"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzTEJFaToxYTJkM2Y2NGNhYTNlNjM4NmY0NjU0ODZiODljNzBhNjox",
+        "供应商名称": "江苏春海电热合金制造有限公司",
+        "供应商简称": "春海",
+        "合作时间": "24年",
+        "文本": "106",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNu3KP",
+      "record_id": "recvfGz5DNu3KP"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzVTJSODo2M2RlOTdjYzgwNDc2YTBlZGVmODBjZDg1YzAwZjBjNzox",
+        "供应商名称": "浙江康龙钢业有限公司",
+        "供应商简称": "康龙",
+        "合作时间": "24年",
+        "文本": "107",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNh9g1",
+      "record_id": "recvfGz5DNh9g1"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzRUNlajo1ZDc2NjlkNzJmZjMxODVkMzMwYWU3YmNiOGRiYjI3OTox",
+        "供应商名称": "上海九钢新材料集团有限公司",
+        "供应商简称": "九钢",
+        "合作时间": "24年",
+        "文本": "108",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DN5zld",
+      "record_id": "recvfGz5DN5zld"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzaWdVVTo1MmM1MzI5M2JlNDFkMDIxMmI5NjViNzJmNDI4MmRjODox",
+        "供应商名称": "江苏飞鹤管业有限公司",
+        "供应商简称": "飞鹤",
+        "合作时间": "24年",
+        "文本": "109",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNCpiN",
+      "record_id": "recvfGz5DNCpiN"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzYmZCZToyOGU4YmRlOTk4OGM5OGFlYWQ4NDk5NmU1OTBjZWFmZTox",
+        "供应商名称": "邗江区金喜力金属制品厂",
+        "供应商简称": "金喜",
+        "合作时间": "24年",
+        "文本": "110",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNcIFM",
+      "record_id": "recvfGz5DNcIFM"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1Bzb3JseDo0YWJkYWZkOTkzNDY1MjJjZjI0Zjc3MDkzZGY2MDQyMjox",
+        "供应商名称": "温州链海不锈钢有限公司",
+        "供应商简称": "链海",
+        "合作时间": "24年",
+        "文本": "111",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNUcCQ",
+      "record_id": "recvfGz5DNUcCQ"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzZkxwUjpkNjFiNDExNmVjNzhiNjdkOTAxN2YxYzY0OTZkNTk0Mzox",
+        "供应商名称": "葫芦岛金属复合材料有限公司",
+        "供应商简称": "葫芦岛金属",
+        "合作时间": "24年",
+        "文本": "112",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNVnPE",
+      "record_id": "recvfGz5DNVnPE"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzOGRRZjo2ZDA2Nzk5ODNhNWE5YTVhZTYwNDQ3MTE2NTY3MGE5Zjox",
+        "供应商名称": "浙江亿嘉旺钢管有限公司",
+        "供应商简称": "亿嘉旺",
+        "合作时间": "24年",
+        "文本": "113",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNuxyG",
+      "record_id": "recvfGz5DNuxyG"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzdXQwcDoxNTAxNjM1MzNhMjk1NmNkNWViODU1N2IwOGJjMWZhMTox",
+        "供应商名称": "河北海源管件有限公司",
+        "供应商简称": "海源",
+        "合作时间": "24年",
+        "文本": "114",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNapqI",
+      "record_id": "recvfGz5DNapqI"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzSDZsdTo1ZjA5MGRhYTkxNTNmY2VlMzRjYTFiNzIyMTljOTFjYTox",
+        "供应商名称": "江苏嘉竞合金科技有限公司",
+        "供应商简称": "嘉竞",
+        "合作时间": "24年",
+        "文本": "116",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNid9F",
+      "record_id": "recvfGz5DNid9F"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzbXJCRDo4NTNhODdkOGQ0MTQwMjg3OGM0ZWQ0N2U2YTk1YjZkMTox",
+        "供应商名称": "上海金鑫盾金属材料科技有限公司",
+        "供应商简称": "金鑫盾",
+        "合作时间": "24年",
+        "文本": "117",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNzQHC",
+      "record_id": "recvfGz5DNzQHC"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzUFZwdjo5N2JiNWFhNTFjNzBmNTFjZDMzNGE5NmY4ZjU5OWI1MTox",
+        "供应商名称": "温州鑫郎特种钢材有限公司",
+        "供应商简称": "鑫郎",
+        "合作时间": "24年",
+        "文本": "118",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNBdg2",
+      "record_id": "recvfGz5DNBdg2"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzeHo5Qjo5ZWViNTIwMDFlYzRlZTJmYzJiZTY2NGU4NTEzZDA0ZTox",
+        "供应商名称": "浙江亚泰焊材有限公司",
+        "供应商简称": "亚泰",
+        "合作时间": "24年",
+        "文本": "119",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNCIXX",
+      "record_id": "recvfGz5DNCIXX"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1Bzcjd3NDo3NzMzOGU4NjUwYzE1NDMxNmVjODJlNmJlY2FhNTlmZDox",
+        "供应商名称": "河北贝达焊接材料有限公司",
+        "供应商简称": "贝达",
+        "合作时间": "24年",
+        "文本": "120",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNZFT1",
+      "record_id": "recvfGz5DNZFT1"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzZVMxNDo3YTBjM2VkMzA3YzcxMjg0NzY2YWNkZGQ4YzhhYTY2Yzox",
+        "供应商名称": "江苏圣欣不锈钢制品有限公司",
+        "供应商简称": "圣欣",
+        "合作时间": "24年",
+        "文本": "121",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNfPnz",
+      "record_id": "recvfGz5DNfPnz"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzTTJjdTo1MDk3ZDM4MmUzNzI2YWU3NTFjMzFmYTNmM2UzYzllZDox",
+        "供应商名称": "浙江东明不锈钢制品股份有限公司销售分公司",
+        "供应商简称": "东明",
+        "合作时间": "24年",
+        "文本": "122",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DN9Ewa",
+      "record_id": "recvfGz5DN9Ewa"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzZEdvejo1NGRlODMwNDU5NjAyMGIzN2RkYmI3N2FkNWRmMGJhYjox",
+        "供应商名称": "昆山金锆新材料有限公司",
+        "供应商简称": "金锆",
+        "合作时间": "24年",
+        "文本": "123",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DN5lVK",
+      "record_id": "recvfGz5DN5lVK"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzUlhwZzo2NDEyMWYyYjI1YTJiNTVlMDMwMmI4OWY3YTFkMjdmOTox",
+        "供应商名称": "浙江圣洁管业科技有限公司",
+        "供应商简称": "圣洁管业",
+        "合作时间": "24年",
+        "文本": "124",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNZmCo",
+      "record_id": "recvfGz5DNZmCo"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzT01Tejo0NDVjYjkxYmRiNTg5Y2QzNjVkODhmOTc2NzFiODZlMzox",
+        "供应商名称": "上海贝纳德新材料有限公司",
+        "供应商简称": "贝纳德",
+        "合作时间": "24年",
+        "文本": "125",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNOVgz",
+      "record_id": "recvfGz5DNOVgz"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzaXNJdzoxNjkwODhjZTFmZTUyY2I4NzcwMDNkNjBmNmJhMzFhZjox",
+        "供应商名称": "泰州市吉泰金属材料有限公司",
+        "供应商简称": "吉泰",
+        "合作时间": "24年",
+        "文本": "126",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNxPhS",
+      "record_id": "recvfGz5DNxPhS"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzSkJ3SjozNGY5ZmRkZTVjOWY4MGM1MjRmODgwMzc1OTc0MGE0NDox",
+        "供应商名称": "供应链公司",
+        "供应商简称": "供应链",
+        "合作时间": "24年",
+        "文本": "127",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNSFVm",
+      "record_id": "recvfGz5DNSFVm"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzNHBIQTplNWRhZTMyYzE1NzBjNmM5MTg2OGEwYmY0N2Y0ZjRkODox",
+        "供应商名称": "江苏恒丰波纹管有限公司",
+        "供应商简称": "恒丰",
+        "合作时间": "24年",
+        "文本": "128",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNljuA",
+      "record_id": "recvfGz5DNljuA"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzWjQ2bDo5YTQwNjExYTQ3MjBkYzg0NDMxZjIzNWJjZGJlMTZhOTox",
+        "供应商名称": "浙江今泰阀门管件有限公司",
+        "供应商简称": "今泰",
+        "合作时间": "24年",
+        "文本": "129",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNXgQv",
+      "record_id": "recvfGz5DNXgQv"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzMXR0RTo5MzdmZmJiMWZjMmViOTNjNTcxODJmZjNjYzkxYzFiODox",
+        "供应商名称": "浙江永立钢业有限公司",
+        "供应商简称": "永立",
+        "合作时间": "24年",
+        "文本": "132",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNGaC0",
+      "record_id": "recvfGz5DNGaC0"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzdGpWZDplOTExNmYxODU5Nzc4MGIyMDQ0M2M3OTNkN2QzZDhlMzox",
+        "供应商名称": "江苏皖锡钢业有限公司",
+        "供应商简称": "皖锡",
+        "合作时间": "24年",
+        "文本": "133",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNRNUf",
+      "record_id": "recvfGz5DNRNUf"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzOGdDMjowYjVhNjM5Zjk2ZmFmYzdjMGQyZTU2OTk0ZDkyZmM5NDox",
+        "供应商名称": "江苏金合特种合金材料有限公司",
+        "供应商简称": "金合",
+        "合作时间": "24年",
+        "文本": "134",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNO0nX",
+      "record_id": "recvfGz5DNO0nX"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzU3RjcTpkOGIwOTU1YjczNjJlMDQ1NTkxNmNhYzU1MzIzOWM0Nzox",
+        "供应商名称": "温州市丰业精钇不锈钢有限公司",
+        "供应商简称": "精钇",
+        "合作时间": "24年",
+        "文本": "135",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNbgFN",
+      "record_id": "recvfGz5DNbgFN"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzRGFFUDplODIyNzQyYTU4YTc1MGEyMTkwNmE4N2MyMmRlMmIwODox",
+        "供应商名称": "武义渝秀金属制品有限公司",
+        "供应商简称": "渝秀",
+        "合作时间": "24年",
+        "文本": "136",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNJwcY",
+      "record_id": "recvfGz5DNJwcY"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzOFFkNDoxM2UxY2VmOTRiMTlmZWRlYTJiYjk1YjlhNjY1NDQ1Yjox",
+        "供应商名称": "张占兵",
+        "供应商简称": "张占兵",
+        "合作时间": "-",
+        "文本": "65",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNvAYY",
+      "record_id": "recvfGz5DNvAYY"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzTFJEMDoyY2U0M2YwYzZjN2VjNTUyZTJhYzVhYjI5OWE5MzhjZDox",
+        "供应商名称": "高坤霞",
+        "供应商简称": "高坤霞",
+        "合作时间": "-",
+        "文本": "66",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNLxN9",
+      "record_id": "recvfGz5DNLxN9"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzYjhyTzpmY2ZhNDJmNGNiODYxNGYyNTA1MGUyNDRkYTNhMjY2Nzox",
+        "供应商名称": "华世桂",
+        "供应商简称": "华世桂",
+        "合作时间": "-",
+        "文本": "67",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNQypD",
+      "record_id": "recvfGz5DNQypD"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzYzJyRTo5YWUxZmJjMjk2NjI0YWY2NDg1YjU2ZDNkMDBmY2ZkMzox",
+        "供应商名称": "祝大晓",
+        "供应商简称": "祝大晓",
+        "合作时间": "-",
+        "文本": "68",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNdBHw",
+      "record_id": "recvfGz5DNdBHw"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzenlkYzpkNDM3ZTFiMjI5MTBkOTkzYWU5YmQxNWU1OWM1NGVkOTox",
+        "供应商名称": "潘财杰",
+        "供应商简称": "潘财杰",
+        "合作时间": "-",
+        "文本": "69",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNECQL",
+      "record_id": "recvfGz5DNECQL"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzN2xERzpkNzgzZmM1YzQyMGExZDU3YTdiMTk1ZWM3ZjdhOGYxODox",
+        "供应商名称": "李小菲",
+        "供应商简称": "李小菲",
+        "合作时间": "-",
+        "文本": "72",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNSGVv",
+      "record_id": "recvfGz5DNSGVv"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzUTdxQTowNWE2OGMyYmEzMmY5MzEyOTI3MzU0NmQyOTcyZmU1NTox",
+        "供应商名称": "李忠恩",
+        "供应商简称": "李忠恩",
+        "合作时间": "-",
+        "文本": "86",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNOFKT",
+      "record_id": "recvfGz5DNOFKT"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzZE5lczphZGM0NmRjMjUyOTZiZjg3MWRlOGRmOGM2MmU0OGNjZTox",
+        "供应商名称": "孙家法",
+        "供应商简称": "孙家法",
+        "合作时间": "-",
+        "文本": "87",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNnEwS",
+      "record_id": "recvfGz5DNnEwS"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzT2JtazpkNjVmMjM0M2UzYmMyZjk2ODU2NTdkOTkwZDg1MzExNjox",
+        "供应商名称": "张维生",
+        "供应商简称": "张维生",
+        "合作时间": "-",
+        "文本": "88",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNuYSg",
+      "record_id": "recvfGz5DNuYSg"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzcnZyNzoyNDNiODIzNmNhZWEyMzBhZDg2NWUxODhlZDk2MzM4MDox",
+        "供应商名称": "嘉兴迈拓不锈钢",
+        "供应商简称": "迈拓",
+        "合作时间": "-",
+        "文本": "92",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNq41J",
+      "record_id": "recvfGz5DNq41J"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzOFQwRjphYTJiZDAwZjcwMGY3OGM0ZGZkMTNhOTEyZWIwZjNjODox",
+        "供应商名称": "业务五部",
+        "供应商简称": "业务五部",
+        "合作时间": "-",
+        "文本": "115",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNGJyb",
+      "record_id": "recvfGz5DNGJyb"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzN0RnUzplMTQ1MWZjYzIyNmMyNmFiZDFjY2I0NThkYTczOWFjZTox",
+        "供应商名称": "浙江鸿迪管业有限公司",
+        "供应商简称": "鸿迪",
+        "合作时间": "23年以前",
+        "文本": "29",
+        "添加方式": "微信群聊",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "张姐",
+        "联系电话": "13757727208",
+        "附件": [
+          {
+            "file_token": "QFkYbjGQBoKyrkxohZ6cCkkHnFa",
+            "name": "f2bf3e9751732fa2bfd71bb7d9c6c23.jpg",
+            "size": 146382,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=QFkYbjGQBoKyrkxohZ6cCkkHnFa&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/jpeg",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/QFkYbjGQBoKyrkxohZ6cCkkHnFa/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNFPlk",
+      "record_id": "recvfGz5DNFPlk"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzcHFBYjpiNmU2MDk3MWY3Y2RjNmMzYWQzOTgxZGVmZDMxMDc2YTox",
+        "供应商名称": "安徽巨星钢业有限公司",
+        "供应商简称": "巨星",
+        "合作时间": "23年以前",
+        "文本": "30",
+        "添加方式": "微信群聊",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "李总",
+        "联系电话": "18967755777",
+        "附件": [
+          {
+            "file_token": "Elsxb5hbqorxo8xdxvBcfOa5n9d",
+            "name": "fb2b2f738373e712445dd7ce8525f81.jpg",
+            "size": 145037,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Elsxb5hbqorxo8xdxvBcfOa5n9d&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/jpeg",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Elsxb5hbqorxo8xdxvBcfOa5n9d/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DN2pIQ",
+      "record_id": "recvfGz5DN2pIQ"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzdDFiUzozMzY4MDczYWI2OTNiMDU2Njg2OWI0NjJkNGJkYTJjOTox",
+        "供应商名称": "宁德巨烽不锈钢有限公司",
+        "供应商简称": "巨烽",
+        "合作时间": "23年以前",
+        "文本": "31",
+        "添加方式": "微信个人",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "郑爱芬",
+        "联系电话": "13906646479",
+        "附件": [
+          {
+            "file_token": "ZoTEbvtgMoYerHxkyXpcLqMtngh",
+            "name": "1728433122403.png",
+            "size": 16158,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=ZoTEbvtgMoYerHxkyXpcLqMtngh&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/png",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/ZoTEbvtgMoYerHxkyXpcLqMtngh/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNW1Fa",
+      "record_id": "recvfGz5DNW1Fa"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzS2VYdjplY2FiNmE4NjJkYzNhYWE2ODk1MWRlZmY2NjRlNTBmMzox",
+        "供应商名称": "浙江新集美钢业有限公司",
+        "供应商简称": "新集美",
+        "合作时间": "23年以前",
+        "文本": "32",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNWLye",
+      "record_id": "recvfGz5DNWLye"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzV0I4ZzpkMGVkOWY2NGM0N2NmODVlZjFkMWNkZjNmZGIzNGQ5Yzox",
+        "供应商名称": "温州勇恒钢业有限公司",
+        "供应商简称": "勇恒",
+        "合作时间": "23年以前",
+        "文本": "33",
+        "添加方式": "飞书群聊",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "园园",
+        "联系电话": "15779708831",
+        "附件": [
+          {
+            "file_token": "OUdEbnZq2oYWLix6zLscWMM4nRd",
+            "name": "cfb66c858703b19d7734283613ae74a.jpg",
+            "size": 212304,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=OUdEbnZq2oYWLix6zLscWMM4nRd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/jpeg",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/OUdEbnZq2oYWLix6zLscWMM4nRd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          },
+          {
+            "file_token": "JPgIb7Ikxoq8VCxioTKcuBu2nMb",
+            "name": "818da3e8b687f82979635f6342345ca.jpg",
+            "size": 206648,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=JPgIb7Ikxoq8VCxioTKcuBu2nMb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/jpeg",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/JPgIb7Ikxoq8VCxioTKcuBu2nMb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNIwoQ",
+      "record_id": "recvfGz5DNIwoQ"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzbVlFUzphY2JhOThjZWY0ZWRlMWRlODY4NTc0Y2U3NWE4NjliYzox",
+        "供应商名称": "上海一郎合金材料有限公司",
+        "供应商简称": "一郎",
+        "合作时间": "23年以前",
+        "文本": "34",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNNvj0",
+      "record_id": "recvfGz5DNNvj0"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzV3dtNTphODBiYTE2NjNhZjU1ZjcxNzhkMTA5M2FiMDFlZDlhOTox",
+        "供应商名称": "丽水市中通机电有限公司",
+        "供应商简称": "中通",
+        "合作时间": "23年以前",
+        "文本": "35",
+        "添加方式": "微信群聊",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "王经理",
+        "联系电话": "15557559879",
+        "附件": [
+          {
+            "file_token": "YWv1bGvmvozOKRxKkZXcXnTan3N",
+            "name": "1728433140158.png",
+            "size": 40028,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=YWv1bGvmvozOKRxKkZXcXnTan3N&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/png",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/YWv1bGvmvozOKRxKkZXcXnTan3N/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNffEP",
+      "record_id": "recvfGz5DNffEP"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzQmtrazpkMzcyODQ3ODUwZjJhMzU5ZTUyZjk2Mzg1MzI0NTcyOTox",
+        "供应商名称": "浙江希蒙雷斯钢管有限公司",
+        "供应商简称": "希蒙",
+        "合作时间": "23年以前",
+        "文本": "36",
+        "添加方式": "飞书群聊",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "小范",
+        "联系电话": "15805833002",
+        "附件": [
+          {
+            "file_token": "D2m5bSHFuo4PP3xPvFfcnhj1n2c",
+            "name": "db9888f03d50fb4ed82119710eaa2dd.jpg",
+            "size": 225040,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=D2m5bSHFuo4PP3xPvFfcnhj1n2c&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/jpeg",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/D2m5bSHFuo4PP3xPvFfcnhj1n2c/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNMFrj",
+      "record_id": "recvfGz5DNMFrj"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzTFVxZzoyZWU1YTgwZmQxYmJjMDgwNGZmMzNkYWFmYjA4OGE1Zjox",
+        "供应商名称": "南通盛立德金属材料科技有限公司",
+        "供应商简称": "盛立德",
+        "合作时间": "23年以前",
+        "文本": "37",
+        "添加方式": "微信群聊",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "杭总",
+        "联系电话": "13813792288",
+        "附件": [
+          {
+            "file_token": "WCDebqIRrodenwxq26Ncqrf0noe",
+            "name": "5cca904c11459b4713ddc8e96908cdc.jpg",
+            "size": 140414,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=WCDebqIRrodenwxq26Ncqrf0noe&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/jpeg",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/WCDebqIRrodenwxq26Ncqrf0noe/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNmpaj",
+      "record_id": "recvfGz5DNmpaj"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzdWlyejo5MTRlNzk1MTI4OWI2MzM3OTgxZGQzNjRhZmYwZDMwNzox",
+        "供应商名称": "湖州鼎上不锈钢有限公司",
+        "供应商简称": "鼎上",
+        "合作时间": "23年以前",
+        "文本": "38",
+        "添加方式": "微信群聊",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "李春雷",
+        "联系电话": "15868266727",
+        "附件": [
+          {
+            "file_token": "UviIbJo2QoB7kmx9n5RcTkfinRg",
+            "name": "18580b34fa8fbe15d56fbd18c844108.jpg",
+            "size": 143479,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=UviIbJo2QoB7kmx9n5RcTkfinRg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/jpeg",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/UviIbJo2QoB7kmx9n5RcTkfinRg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNubOn",
+      "record_id": "recvfGz5DNubOn"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzVm1uRToxZDIwMDQxMTJhMzQzZWZiYmExMjg2OTgzNDJkMzAxOTox",
+        "供应商名称": "浙江麦金弹簧材料有限公司",
+        "供应商简称": "麦金",
+        "合作时间": "23年以前",
+        "文本": "39",
+        "添加方式": "微信个人",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "孙光权",
+        "联系电话": "15857718887",
+        "附件": [
+          {
+            "file_token": "LyjRbjLdgolDEVxhIdTcIUdqnnZ",
+            "name": "image.png",
+            "size": 8454,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=LyjRbjLdgolDEVxhIdTcIUdqnnZ&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/png",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/LyjRbjLdgolDEVxhIdTcIUdqnnZ/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          },
+          {
+            "file_token": "W7cFbxphPo2KOyxRtp5cfYfxnuh",
+            "name": "image.png",
+            "size": 8195,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=W7cFbxphPo2KOyxRtp5cfYfxnuh&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/png",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/W7cFbxphPo2KOyxRtp5cfYfxnuh/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNAXRi",
+      "record_id": "recvfGz5DNAXRi"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzUjV1Zjo1M2QxNTY0YmU3ZDI0NDQwZTEzOTg2NjA4NWNkYTQ2MDox",
+        "供应商名称": "浙江沪新不锈钢制造有限公司",
+        "供应商简称": "沪新",
+        "合作时间": "23年以前",
+        "文本": "40",
+        "添加方式": "微信群聊",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "郑经理",
+        "联系电话": "13758271914",
+        "附件": [
+          {
+            "file_token": "M1Q7buucBocu41xtbToc7n9dnvN",
+            "name": "ce7f5b4b9728d5f59e708df5b151f6c.jpg",
+            "size": 147814,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=M1Q7buucBocu41xtbToc7n9dnvN&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/jpeg",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/M1Q7buucBocu41xtbToc7n9dnvN/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNBQik",
+      "record_id": "recvfGz5DNBQik"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzMHBCaDpiZTQ5NWYzYjgyMmQzNzM2OTQxZTkzNDJjOWYxY2EwNTox",
+        "供应商名称": "温州市欧利伐流体设备有限公司",
+        "供应商简称": "欧利伐",
+        "合作时间": "23年以前",
+        "文本": "41",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNzkQo",
+      "record_id": "recvfGz5DNzkQo"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzNmk3djoxYTU3Y2E4ZjI2MjdiNjcwMTA3ZjVkYzg2MGRiYmYwODox",
+        "供应商名称": "江苏莱华石油装备有限公司",
+        "供应商简称": "莱华",
+        "合作时间": "23年以前",
+        "文本": "42",
+        "添加方式": "微信群聊",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "钱雨华",
+        "联系电话": "15996597000",
+        "附件": [
+          {
+            "file_token": "GtTSb2sfjo0Gu7xn7UgcZ4xjnnd",
+            "name": "44f975cdeba613fbccd248b3bf5d146.jpg",
+            "size": 143530,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=GtTSb2sfjo0Gu7xn7UgcZ4xjnnd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/jpeg",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/GtTSb2sfjo0Gu7xn7UgcZ4xjnnd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNHSAt",
+      "record_id": "recvfGz5DNHSAt"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzQ2RaMjozNzM3M2I2NDU5NzRiMWEyNDdjNDdiMDE5ZTQ0NDZhOTox",
+        "供应商名称": "无锡叁奇商贸有限公司",
+        "供应商简称": "叁奇",
+        "合作时间": "23年以前",
+        "文本": "43",
+        "添加方式": "微信群聊",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "郝经理",
+        "联系电话": "18921171558",
+        "附件": [
+          {
+            "file_token": "RKQWblU2goiyWSxvJL2c5JqRnMg",
+            "name": "20545776212168880c619c16785a164.jpg",
+            "size": 139706,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=RKQWblU2goiyWSxvJL2c5JqRnMg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/jpeg",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/RKQWblU2goiyWSxvJL2c5JqRnMg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNOPvB",
+      "record_id": "recvfGz5DNOPvB"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzYjh6VDpkYmM4MmIzY2U2ZTJmYmJlMmFhNWU4MGYxMDY1ZDNiODox",
+        "供应商名称": "温州久辉科技有限公司",
+        "供应商简称": "久辉",
+        "合作时间": "23年以前",
+        "文本": "44",
+        "添加方式": "微信个人",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "余科深",
+        "联系电话": "18324226996",
+        "附件": [
+          {
+            "file_token": "LAdXbWxlEoXaobxgbsTc6nSCncg",
+            "name": "image.png",
+            "size": 13257,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=LAdXbWxlEoXaobxgbsTc6nSCncg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/png",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/LAdXbWxlEoXaobxgbsTc6nSCncg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNGV9R",
+      "record_id": "recvfGz5DNGV9R"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1Bzanp0ejpjOWEyMWE3YmI2ZDY1OGM3ZGI2MTI2NWI1ODQ5ZjQ3Yzox",
+        "供应商名称": "台州市三辉不锈钢股份有限公司",
+        "供应商简称": "三辉",
+        "合作时间": "23年以前",
+        "文本": "46",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DN3mB9",
+      "record_id": "recvfGz5DN3mB9"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzNk1OeDo3ZDc5ZWE5YWYyZWY3MWI2Y2EwMWQyYmU0YjJiYzMwNjox",
+        "供应商名称": "天长市菲力管材有限公司",
+        "供应商简称": "菲力",
+        "合作时间": "23年以前",
+        "文本": "47",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNuwab",
+      "record_id": "recvfGz5DNuwab"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzUFZVUTphZTQ2YTk2MGM0OTAxNWU0ODFkMzU5NTBkNTUzODk1ZDox",
+        "供应商名称": "衢州久华光亮管金属制品有限公司",
+        "供应商简称": "久华",
+        "合作时间": "23年以前",
+        "文本": "48",
+        "添加方式": "微信群聊",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "叶总",
+        "联系电话": "15988721037",
+        "附件": [
+          {
+            "file_token": "MX2Xbjd2NoOGzsxSzNxcr9pfngh",
+            "name": "775f3365d10908d408ff93da3a37649.jpg",
+            "size": 146067,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=MX2Xbjd2NoOGzsxSzNxcr9pfngh&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/jpeg",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/MX2Xbjd2NoOGzsxSzNxcr9pfngh/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DN2ja5",
+      "record_id": "recvfGz5DN2ja5"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzbG5QNDoxZjZiM2VkMWM1MmJmZGE2ZTFlMDlmNDU1ZjE1YzAwOTox",
+        "供应商名称": "温州市华昌钢管厂",
+        "供应商简称": "华昌",
+        "合作时间": "23年以前",
+        "文本": "49",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNqw97",
+      "record_id": "recvfGz5DNqw97"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzbnZGWDpmMzA2YzI2YzkwOTI1MWQ4YTI3ODIzYjUxYzVmYzI0YTox",
+        "供应商名称": "河北圣天集团无缝钢管有限公司",
+        "供应商简称": "圣天",
+        "合作时间": "23年以前",
+        "文本": "50",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNXzOk",
+      "record_id": "recvfGz5DNXzOk"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzVlZiSTo1ZjRhZGNjMjVlYjVkNTlhYWE3ODkxYmI1MzgxNWMwZTox",
+        "供应商名称": "无锡彰源不锈钢有限公司",
+        "供应商简称": "彰源",
+        "合作时间": "23年以前",
+        "文本": "51",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNPIN7",
+      "record_id": "recvfGz5DNPIN7"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzNmc4Vzo4NjE2NGNmZGE4MDEwZjVmYWNlODFjOTJlZjE1YmJkMTox",
+        "供应商名称": "松阳宝丰精密洁净管有限公司",
+        "供应商简称": "宝丰",
+        "合作时间": "23年以前",
+        "文本": "52",
+        "添加方式": "微信个人",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "刘经理",
+        "联系电话": "15967280559",
+        "附件": [
+          {
+            "file_token": "PaJvbPgwpoBjD3xK54wcumtcnBg",
+            "name": "1728433444581.png",
+            "size": 14395,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PaJvbPgwpoBjD3xK54wcumtcnBg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/png",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PaJvbPgwpoBjD3xK54wcumtcnBg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNRfdf",
+      "record_id": "recvfGz5DNRfdf"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzMEd0YTo0ODBkYTRkMWM1Yjk4ZjYzOGQ1OTI3NTc4MTVmMTcwNDox",
+        "供应商名称": "新普特种材料集团有限公司",
+        "供应商简称": "新普",
+        "合作时间": "23年以前",
+        "文本": "53",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DN15n8",
+      "record_id": "recvfGz5DN15n8"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzQ0F2azpkYzMwNWEyMDc1YzFhMjNjODZmZTg0MDFkNWFhMWM4Zjox",
+        "供应商名称": "浙江大明阪和金属科技有限公司",
+        "供应商简称": "大明",
+        "合作时间": "23年以前",
+        "文本": "54",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNgR15",
+      "record_id": "recvfGz5DNgR15"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzWXJkQjpkZWNhMTJhNWJiYWY2MTZkZDY1Yzk4M2ZlY2EwMThkMTox",
+        "供应商名称": "浙江宝丰特材股份有限公司",
+        "供应商简称": "宝丰-1",
+        "合作时间": "23年以前",
+        "备注": "原名，现已更名",
+        "文本": "55",
+        "添加方式": "微信个人",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "刘经理",
+        "联系电话": "15967280559",
+        "附件": [
+          {
+            "file_token": "PaJvbPgwpoBjD3xK54wcumtcnBg",
+            "name": "1728433444581.png",
+            "size": 14395,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PaJvbPgwpoBjD3xK54wcumtcnBg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/png",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PaJvbPgwpoBjD3xK54wcumtcnBg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNaKok",
+      "record_id": "recvfGz5DNaKok"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzWWZUMTo3MjZlMjAzMjFlODU4MTg3MDkzYjhjNDYxOTVmYjFmMzox",
+        "供应商名称": "苏州市吴中区木渎特种不锈钢材料厂",
+        "供应商简称": "木渎",
+        "合作时间": "23年以前",
+        "文本": "56",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNTHzV",
+      "record_id": "recvfGz5DNTHzV"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1Bzc01kWjo1OGJhMmEzMmUwYTViNDRmY2ZlZDU2YWI5MDJiNjcyMzox",
+        "供应商名称": "湖州南浔银拓特材科技股份有限公司",
+        "供应商简称": "银拓",
+        "合作时间": "23年以前",
+        "文本": "57",
+        "添加方式": "微信个人",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "沈总",
+        "联系电话": "13705728251",
+        "附件": [
+          {
+            "file_token": "VXO8bjneSoYpHfxoriVcPhi5nUd",
+            "name": "1728433464172.png",
+            "size": 15380,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=VXO8bjneSoYpHfxoriVcPhi5nUd&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/png",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/VXO8bjneSoYpHfxoriVcPhi5nUd/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNgEof",
+      "record_id": "recvfGz5DNgEof"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzSHRWVzo3ZWVhZjU2OTRlMzFkMzEzMjg4NGYwODdiZTVkOGYyOTox",
+        "供应商名称": "河北欧神管道装备有限公司",
+        "供应商简称": "欧神",
+        "合作时间": "23年以前",
+        "文本": "58",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DN1RxX",
+      "record_id": "recvfGz5DN1RxX"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzUVFsVTo4YTQ2NjRjNzE1MmI5OWUwYWU4NGU3YTcyNzQ4ZTMyODox",
+        "供应商名称": "浙江鑫通达特钢制造有限公司",
+        "供应商简称": "鑫通达",
+        "合作时间": "23年以前",
+        "文本": "59",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNzSmf",
+      "record_id": "recvfGz5DNzSmf"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzNTZSSjo0YzEyZDU1ZjUxZDVkMzFmZmViNDMxOGQ5MmEwZjVjYjox",
+        "供应商名称": "浙江铭峰管道装备有限公司",
+        "供应商简称": "铭峰",
+        "合作时间": "23年以前",
+        "文本": "60",
+        "添加方式": "微信群聊",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "邵总",
+        "联系电话": "18805785188",
+        "附件": [
+          {
+            "file_token": "ZzU3bJUhko6XEexnoCWc2lS7nhh",
+            "name": "b710aa6027ef8a0e083d5525dfc710f.jpg",
+            "size": 144281,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=ZzU3bJUhko6XEexnoCWc2lS7nhh&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/jpeg",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/ZzU3bJUhko6XEexnoCWc2lS7nhh/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNPY6w",
+      "record_id": "recvfGz5DNPY6w"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzczR0ODo4YTY2NDA1OTkxZDI1YWNmNWU0MjhjMzYxOWY2OGFhMTox",
+        "供应商名称": "泰州市炬森特钢制品有限公司",
+        "供应商简称": "炬森",
+        "合作时间": "23年以前",
+        "文本": "61",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNsqK3",
+      "record_id": "recvfGz5DNsqK3"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzeVZyRTowMDZlYjI5YjA4ODU4NjFhN2U4N2E1OTE5MWUwYWU3MTox",
+        "供应商名称": "浙江景宁洁净钢管有限公司",
+        "供应商简称": "景宁",
+        "合作时间": "23年以前",
+        "文本": "62",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNRy5i",
+      "record_id": "recvfGz5DNRy5i"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzTkxVRDo3ZDI5MzU2MmIxMWRkYjQ4ODQzNzQ2NGM3MjFkZGI2ODox",
+        "供应商名称": "江苏荣明不锈钢有限公司",
+        "供应商简称": "荣明",
+        "合作时间": "23年以前",
+        "文本": "63",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNs5sw",
+      "record_id": "recvfGz5DNs5sw"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1Bzc2ZXczo3MjAzOTIxMDE4YzlhOWRkZDg2MjU1OTRlZmYwNjBhZjox",
+        "供应商名称": "益大特钢有限公司",
+        "供应商简称": "益大",
+        "合作时间": "23年以前",
+        "文本": "64",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNXw2b",
+      "record_id": "recvfGz5DNXw2b"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzeVdwUzo2YmQwMjM1NDE5YmQyNjkyMDhhOTk1NWI4MTE2NmM4MDox",
+        "供应商名称": "浙江益大特钢有限公司",
+        "供应商简称": "益大-1",
+        "合作时间": "23年以前",
+        "备注": "原名，现已更名",
+        "文本": "70",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DN2ctn",
+      "record_id": "recvfGz5DN2ctn"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1Bzb3VueDo1ZWZkYWIyMDhkZjc4YzM0ZjZmYzc5ZTc0NDc0YWVmNzox",
+        "供应商名称": "浙江新普金属材料有限公司",
+        "供应商简称": "新普-1",
+        "合作时间": "23年以前",
+        "备注": "原名，现已更名",
+        "文本": "71",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNjtPW",
+      "record_id": "recvfGz5DNjtPW"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzWnZ2VTpkY2MzMzUyZTRiYWI1MTc1OTVhMDdiMzM0NTExM2E1Nzox",
+        "供应商名称": "宝丰钢业集团有限公司",
+        "供应商简称": "宝丰-2",
+        "合作时间": "23年以前",
+        "备注": "原名，现已更名",
+        "文本": "74",
+        "添加方式": "微信个人",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "刘经理",
+        "联系电话": "15967280559",
+        "附件": [
+          {
+            "file_token": "PaJvbPgwpoBjD3xK54wcumtcnBg",
+            "name": "1728433444581.png",
+            "size": 14395,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=PaJvbPgwpoBjD3xK54wcumtcnBg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/png",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/PaJvbPgwpoBjD3xK54wcumtcnBg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNTlcn",
+      "record_id": "recvfGz5DNTlcn"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1Bzb1Y4Uzo1MTJkN2NmOTQxZTFkZmI3YzA0MGE1ZWM4MDJiMDE5Njox",
+        "供应商名称": "浙江圣洁钛业科技有限公司",
+        "供应商简称": "圣洁钛业",
+        "合作时间": "23年以前",
+        "文本": "75",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNJ7LS",
+      "record_id": "recvfGz5DNJ7LS"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzUkRCUjo5MWIxYWVhZDE4YTZhZWExMGViNmI2YTk1ZWY3MGNlYjox",
+        "供应商名称": "福建东特管业科技有限公司",
+        "供应商简称": "东特",
+        "合作时间": "23年以前",
+        "文本": "76",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DN4YjK",
+      "record_id": "recvfGz5DN4YjK"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzUG5OTzpmZmNmNTI5NTBiOTE4MjJjNDZhOWU1MWYwY2FkM2FmMDox",
+        "供应商名称": "温州市中星管业有限公司",
+        "供应商简称": "中星",
+        "合作时间": "23年以前",
+        "文本": "77",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNEoiZ",
+      "record_id": "recvfGz5DNEoiZ"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzT1FFeDpjMTI0NGVjODM2NWQyYmQwYjM2YjgyZTc4ZjE1NGJiMTox",
+        "供应商名称": "扬州旻阳传热科技有限公司",
+        "供应商简称": "旻阳",
+        "合作时间": "23年以前",
+        "文本": "78",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNlply",
+      "record_id": "recvfGz5DNlply"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzTUtteDpjYzM4MmFjZGI4YTgyYzk0OWUzOWJkYTI3ODhkNDkyMTox",
+        "供应商名称": "江苏鼎翔节能科技有限公司",
+        "供应商简称": "鼎翔",
+        "合作时间": "23年以前",
+        "文本": "79",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DN9NFh",
+      "record_id": "recvfGz5DN9NFh"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzajQ1RTo1MzM0ZjlmNmU3OWJmM2YwMjE5OGQ4MWJlY2UzNWZkMzox",
+        "供应商名称": "博通精密科技（浙江）有限公司",
+        "供应商简称": "精密",
+        "合作时间": "23年以前",
+        "文本": "80",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DN25kY",
+      "record_id": "recvfGz5DN25kY"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzelgwRDo0YTNjZDY2OTE4YjE4YjZjMDg0ODM2M2M3ZDlmN2Q5NTox",
+        "供应商名称": "无锡市远征钛锆科技有限公司",
+        "供应商简称": "远征",
+        "合作时间": "23年以前",
+        "文本": "81",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNT2Yu",
+      "record_id": "recvfGz5DNT2Yu"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzMkZsSDpjYjM2YWM4YmIyMGU3OGYzYzMwOTgwZGUxNTc2OGFkNzox",
+        "供应商名称": "景宁君文钢铁有限公司",
+        "供应商简称": "君文",
+        "合作时间": "23年以前",
+        "文本": "82",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNDJb9",
+      "record_id": "recvfGz5DNDJb9"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzTTVGZjpmNWNiNWRmMTNhYjZlMzIxN2Q0NDllNmVkMWE0ZmRiZjox",
+        "供应商名称": "温州市昊腾不锈钢有限公司",
+        "供应商简称": "昊腾",
+        "合作时间": "23年以前",
+        "文本": "83",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DN6Xdc",
+      "record_id": "recvfGz5DN6Xdc"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzZVRqZjo2M2U0YmIzODk5M2ZkZjdhNTIwNGQ2ODhiNmNkYzYyMjox",
+        "供应商名称": "佛山市恩成五金实业有限公司",
+        "供应商简称": "恩成",
+        "合作时间": "23年以前",
+        "文本": "84",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNL9Jx",
+      "record_id": "recvfGz5DNL9Jx"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzZE5Fazo2OWYwZTQxOWRlMzE4YzRjNDlkZmRhODE2OTRlZDY1Njox",
+        "供应商名称": "巨景塑业有限公司",
+        "供应商简称": "塑业",
+        "合作时间": "23年以前",
+        "文本": "85",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNa2GI",
+      "record_id": "recvfGz5DNa2GI"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzNk53bDo1NjMyYzE5ZDM2ZTM2YTJjZDM1NTUxN2RjOTA4MWNhYzox",
+        "供应商名称": "东台市海通金属制品有限公司",
+        "供应商简称": "海通",
+        "合作时间": "23年以前",
+        "文本": "95",
+        "添加方式": "微信个人",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "祝经理",
+        "联系电话": "13852665733",
+        "附件": [
+          {
+            "file_token": "V9WTbm9hioF5qsxhC2NcF9NGn4f",
+            "name": "1728433428050.png",
+            "size": 14975,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=V9WTbm9hioF5qsxhC2NcF9NGn4f&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/png",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/V9WTbm9hioF5qsxhC2NcF9NGn4f/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DN0Sdx",
+      "record_id": "recvfGz5DN0Sdx"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzWDZqdDo2NDM3MjNlZDVkM2NkZDNkOTU5NWNhNDBjMDhiZjZhNTox",
+        "供应商名称": "沧州康威金属制品有限公司",
+        "供应商简称": "康威",
+        "合作时间": "23年以前",
+        "文本": "149"
+      },
+      "id": "recvfGz5DNUxBn",
+      "record_id": "recvfGz5DNUxBn"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzM0FzeDoyMDU1ODQzOTNmOTVkNzRjZGFmY2RmNmE3YWRkNmNhNTox",
+        "供应商名称": "沧州市辰宁管道有限公司",
+        "供应商简称": "辰宁",
+        "合作时间": "23年以前",
+        "文本": "150"
+      },
+      "id": "recvfGz5DNKKAN",
+      "record_id": "recvfGz5DNKKAN"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzaVVadjpmZmI5M2YxNTYyZGUzZDMwZDQ1MjUxYjM1YmU0NjM1NTox",
+        "供应商名称": "温州丰迪不锈钢有限公司",
+        "供应商简称": "丰迪",
+        "合作时间": "23年以前",
+        "文本": "151"
+      },
+      "id": "recvfGz5DN29GS",
+      "record_id": "recvfGz5DN29GS"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzczZVaDo1Zjk2MWIyY2JkNTNkYzJiNmE0ZjNhNGI0OGM3ZDQwNDox",
+        "供应商名称": "嘉兴福轩进出口有限公司",
+        "供应商简称": "福轩",
+        "合作时间": "23年以前",
+        "文本": "152"
+      },
+      "id": "recvfGz5DNFHz4",
+      "record_id": "recvfGz5DNFHz4"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzZmtDUzpkOTI1ODVlYTc0MGQ4NGYzZDM2NDdkNTBmYTM0NTI0ODox",
+        "供应商名称": "温州市富田不锈钢有限公司",
+        "供应商简称": "富田",
+        "合作时间": "23年以前",
+        "文本": "153"
+      },
+      "id": "recvfGz5DN92mK",
+      "record_id": "recvfGz5DN92mK"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzUmx1cDo0NWU2YjhlZDIxYWE0YjQ5NGMxNDA2ZWRmOWVmZjNkNDox",
+        "供应商名称": "河北宏程管业有限公司",
+        "供应商简称": "宏程",
+        "合作时间": "23年以前",
+        "文本": "154"
+      },
+      "id": "recvfGz5DNCqqv",
+      "record_id": "recvfGz5DNCqqv"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzNFlGdzo5YWVkZWY0ZjA1ZTYyYWJhOGUwMjZhZGIzYTE4MGI3ZDox",
+        "供应商名称": "台州市宏亮管业有限公司",
+        "供应商简称": "宏亮",
+        "合作时间": "23年以前",
+        "文本": "155"
+      },
+      "id": "recvfGz5DNWuTQ",
+      "record_id": "recvfGz5DNWuTQ"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzYVRFYTpjZmRiZGFlMzhhMDkxOWUyOTliZWUxNDFhM2I2NjQ1NTox",
+        "供应商名称": "华友管业有限公司",
+        "供应商简称": "华友",
+        "合作时间": "23年以前",
+        "文本": "156"
+      },
+      "id": "recvfGz5DNAocl",
+      "record_id": "recvfGz5DNAocl"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzQTF4STphYTdmNmM4MTNiMTQzOGQ1YjJiODNiMjZmZjE1ZTg0Mjox",
+        "供应商名称": "上海派睿德冲孔网筛有限公司",
+        "供应商简称": "派睿德",
+        "合作时间": "23年以前",
+        "文本": "157"
+      },
+      "id": "recvfGz5DNhBEN",
+      "record_id": "recvfGz5DNhBEN"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzU01DeToyNDc4YjNlNGZkYzFkMTBmZDc5ZDE1YWRjM2MyYWViZjox",
+        "供应商名称": "温州特源不锈钢有限公司",
+        "供应商简称": "特源",
+        "合作时间": "23年以前",
+        "文本": "159"
+      },
+      "id": "recvfGz5DNR2WI",
+      "record_id": "recvfGz5DNR2WI"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzV0lpWDpjN2U2MmM0YzI1MzFmZWVhZmE5ODhlYTBlNDA1NTgzNzox",
+        "供应商名称": "温州鑫郎特种钢材有限公司",
+        "供应商简称": "鑫郎特",
+        "合作时间": "23年以前",
+        "文本": "160"
+      },
+      "id": "recvfGz5DNiWNf",
+      "record_id": "recvfGz5DNiWNf"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzSEhSVzplY2ZhYmQ5ODllMWI5ZmIyYzY5N2Y4ZTdhMDlmMmEyNjox",
+        "供应商名称": "江苏星火特钢有限公司",
+        "供应商简称": "星火",
+        "合作时间": "23年以前",
+        "文本": "161"
+      },
+      "id": "recvfGz5DNxCtu",
+      "record_id": "recvfGz5DNxCtu"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzYkVUTjoyZDA3MzQ3ZjQzOTkwZjNlYWM1ZjYzNzQzMDU5M2Y0MDox",
+        "供应商名称": "无锡市润声德金属制品有限公司",
+        "供应商简称": "润声德",
+        "合作时间": "23年",
+        "文本": "1",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNn8M9",
+      "record_id": "recvfGz5DNn8M9"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzUlExWjozNDQ3NmNmNGE1NTZhNmEyYzBjNTBiMDg5ZGUxN2I2MTox",
+        "供应商名称": "江苏志得管业有限公司",
+        "供应商简称": "志得",
+        "合作时间": "23年",
+        "文本": "2",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNoh7U",
+      "record_id": "recvfGz5DNoh7U"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzZDZDNDo1YzhkNjBlM2FlMjk2MzZiNDUxNmFjNmRiNjQ0NmE5OTox",
+        "供应商名称": "江苏凌志镍合金材料有限公司",
+        "供应商简称": "凌志",
+        "合作时间": "23年",
+        "文本": "3",
+        "添加方式": "微信个人",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "王帅",
+        "联系电话": "13023156818",
+        "附件": [
+          {
+            "file_token": "Dnk0b178nomaG5xL7mMcQg0Pnbg",
+            "name": "1728433092720.png",
+            "size": 16830,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=Dnk0b178nomaG5xL7mMcQg0Pnbg&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/png",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/Dnk0b178nomaG5xL7mMcQg0Pnbg/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNYgiR",
+      "record_id": "recvfGz5DNYgiR"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzeXNOdzo1YzVlZTFhMTIyNjM3NmJlZGNhZDgwMGJiMTkyMDRkZjox",
+        "供应商名称": "无锡亨通特种合金制造有限公司",
+        "供应商简称": "亨通",
+        "合作时间": "23年",
+        "文本": "4",
+        "添加方式": "微信个人",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": " 谢立新",
+        "联系电话": "13013676728",
+        "附件": [
+          {
+            "file_token": "K4tsbN4mzoF7mDx72B5cMSQbnMf",
+            "name": "1728433105811.png",
+            "size": 15479,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=K4tsbN4mzoF7mDx72B5cMSQbnMf&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/png",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/K4tsbN4mzoF7mDx72B5cMSQbnMf/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNthrE",
+      "record_id": "recvfGz5DNthrE"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzVGhweToxMzhjODU2ZmE5NDdlY2E4ODdlYWExNjk1MTdmMjljMDox",
+        "供应商名称": "洛阳兴铜有色金属有限公司",
+        "供应商简称": "兴铜",
+        "合作时间": "23年",
+        "文本": "5",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNAccd",
+      "record_id": "recvfGz5DNAccd"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzQXdkUjpmOGUzMjI2MDgwOGE3M2ZkZTUyZDEyZTMwOGRlYjJmZTox",
+        "供应商名称": "江苏钟兴镍合金材料有限公司",
+        "供应商简称": "钟兴",
+        "合作时间": "23年",
+        "文本": "6",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DN5JcF",
+      "record_id": "recvfGz5DN5JcF"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzMWw5Sjo4ODQyNGE1ZjM3MDU3M2YwODdjYTFiNzdlODY4ZDliNjox",
+        "供应商名称": "福建施和新材料科技有限公司",
+        "供应商简称": "施和",
+        "合作时间": "23年",
+        "文本": "7",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DN0KCh",
+      "record_id": "recvfGz5DN0KCh"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzQ2pOYToxNzdlNTVhMzRhMjlhNzk3OWVjYzNhMDY0MjlmZDFjYTox",
+        "供应商名称": "浙江卓业能源装备有限公司",
+        "供应商简称": "卓业",
+        "合作时间": "23年",
+        "文本": "8",
+        "添加方式": "微信个人",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "小王",
+        "联系电话": "0578-6768555",
+        "附件": [
+          {
+            "file_token": "ITsdbxrEPoOsc9xVU1McQwkRnIc",
+            "name": "1728433300819.png",
+            "size": 13416,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=ITsdbxrEPoOsc9xVU1McQwkRnIc&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/png",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/ITsdbxrEPoOsc9xVU1McQwkRnIc/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNpegg",
+      "record_id": "recvfGz5DNpegg"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzNTJiMDpjYzlmZDYxMDYzMTJiMDU2YWNiNGY3NjY2YmZlMzA0Yzox",
+        "供应商名称": "无锡市巨东精密金属材料科技有限公司",
+        "供应商简称": "巨东",
+        "合作时间": "23年",
+        "文本": "9",
+        "添加方式": "微信个人",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "杨松林",
+        "联系电话": "15852532302",
+        "附件": [
+          {
+            "file_token": "D2BnbNgryoVrrwxtTUPcc7Tsnfb",
+            "name": "image.png",
+            "size": 18346,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=D2BnbNgryoVrrwxtTUPcc7Tsnfb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/png",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/D2BnbNgryoVrrwxtTUPcc7Tsnfb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DNsrPl",
+      "record_id": "recvfGz5DNsrPl"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzV1pVUjpiMDYxYjczNTk3ZDY5YTQwMmRiZDNhODdlNDExZDZmMTox",
+        "供应商名称": "武汉先同科技股份有限公司",
+        "供应商简称": "先同",
+        "合作时间": "23年",
+        "文本": "10",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNqpyd",
+      "record_id": "recvfGz5DNqpyd"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzMHprdzozMDNhOTA4NGExOGEzY2Y4ZGVhMTkxMTYyOGMzZmVlYTox",
+        "供应商名称": "诸暨市诚熙不锈钢制品厂",
+        "供应商简称": "诚熙",
+        "合作时间": "23年",
+        "文本": "11",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNlweO",
+      "record_id": "recvfGz5DNlweO"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzcGZwUTowOWUzYzk2ZGM3ODE2NzI2YzU5ZmYyNTViN2FiYmY1Yzox",
+        "供应商名称": "江苏博航合金科技有限公司",
+        "供应商简称": "博航",
+        "合作时间": "23年",
+        "文本": "12",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNkIkd",
+      "record_id": "recvfGz5DNkIkd"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzeUV5UjpiNjZkODM4ODBiYzA0MjQwN2M5N2NiZGFmYzFjZGQzNzox",
+        "供应商名称": "上海禄兆不锈钢有限公司",
+        "供应商简称": "禄兆",
+        "合作时间": "23年",
+        "文本": "13",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNmDrv",
+      "record_id": "recvfGz5DNmDrv"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzbHBpTzpmNjZiNzQwMmFlNWZmMTViNGRhZGY3Njk0ZWM2NGFiMDox",
+        "供应商名称": "兴化市仁凯金属制品有限公司",
+        "供应商简称": "仁凯",
+        "合作时间": "23年",
+        "文本": "14",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNGpXi",
+      "record_id": "recvfGz5DNGpXi"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzUUtYZTpjNTg0MjRkNzc3MmUzNTUyYzY4ODYwMDJiYmVjYWRlNjox",
+        "供应商名称": "无锡百仟金属科技有限公司",
+        "供应商简称": "百仟",
+        "合作时间": "23年",
+        "文本": "15",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNHg7B",
+      "record_id": "recvfGz5DNHg7B"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzRGJBYjpjM2E2M2ZlNjFjNGE5NGNjZTg0OTZmZWVlNDk1YzQwOTox",
+        "供应商名称": "丹阳市盛伟合金材料有限公司",
+        "供应商简称": "盛伟",
+        "合作时间": "23年",
+        "文本": "16",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNrWYS",
+      "record_id": "recvfGz5DNrWYS"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzaWtveDowNDhlY2UxMzVmODNkNGE0OTBkOGM3NWRiNzlmZTVjMTox",
+        "供应商名称": "兴化市天承不锈钢制品有限公司",
+        "供应商简称": "天承",
+        "合作时间": "23年",
+        "文本": "17",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNPz87",
+      "record_id": "recvfGz5DNPz87"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzS0dyWjplM2JjMzA0YWExZDQyM2M1ZmVkZTI0Y2I2ZTgwNTU1Njox",
+        "供应商名称": "山东鸿聚工程材料有限公司",
+        "供应商简称": "鸿聚",
+        "合作时间": "23年",
+        "文本": "18",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNurqu",
+      "record_id": "recvfGz5DNurqu"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzbjlDeDo2OWM0N2U4ZDU2YWI3NDRkNGZjNDhjYzI0MDg3MDc3NDox",
+        "供应商名称": "嘉兴海纳紧固件有限公司",
+        "供应商简称": "海纳",
+        "合作时间": "23年",
+        "文本": "19",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNg8LW",
+      "record_id": "recvfGz5DNg8LW"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1Bza2d4RDo3MWE1MmY4ZWIzMWMwYzc5MDRlZTE3NzczMGJhMTQ3ZDox",
+        "供应商名称": "扬中市永升仪表电器有限公司",
+        "供应商简称": "永升",
+        "合作时间": "23年",
+        "文本": "20",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNdx5P",
+      "record_id": "recvfGz5DNdx5P"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzTzdIZzo0ZGYyOTA0MTRjNzBlMGJiNjZhZmM1ODljZTAwNjAxNzox",
+        "供应商名称": "江苏金轮特种钢丝有限公司",
+        "供应商简称": "金轮",
+        "合作时间": "23年",
+        "文本": "21",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNL7MQ",
+      "record_id": "recvfGz5DNL7MQ"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzRnN4SjpiZTQ2NjgxZDAyZmJkZmJmYzM4ZDNkNThhNTVkNDFlMzox",
+        "供应商名称": "泰州帅科机械工程科技有限公司",
+        "供应商简称": "帅科",
+        "合作时间": "23年",
+        "文本": "23",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNuxSP",
+      "record_id": "recvfGz5DNuxSP"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzbHl2VjowNGEzMjA5MWQ0YTNiYTY5MWQ4ZmRlNGVkYjQ1YmE1MDox",
+        "供应商名称": "苏州瑞德宝钢管有限公司",
+        "供应商简称": "瑞德宝",
+        "合作时间": "23年",
+        "文本": "24",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNnzU8",
+      "record_id": "recvfGz5DNnzU8"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzNFI3djozNjQ0ZTE4MjZkMTI1OWYzZWM0OTA5N2JiNTc2NmU3Mzox",
+        "供应商名称": "南通英杰金属制品有限公司",
+        "供应商简称": "英杰",
+        "合作时间": "23年",
+        "文本": "25",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNLYRJ",
+      "record_id": "recvfGz5DNLYRJ"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzNW00UDoxNGY3NWMyODc2YzQ3NzkxNTI5NGUxNjcwY2ZiMzZjMzox",
+        "供应商名称": "成都科太隆合金有限公司",
+        "供应商简称": "科太隆",
+        "合作时间": "23年",
+        "文本": "26",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNieuk",
+      "record_id": "recvfGz5DNieuk"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzbWNnQzo4N2EzZWY2MTMwZDIyMWE5OTkwOThiNTgzNTNjZDM5ODox",
+        "供应商名称": "温州瑞庆阀门管件有限公司",
+        "供应商简称": "瑞庆",
+        "合作时间": "23年",
+        "文本": "27",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNkxy6",
+      "record_id": "recvfGz5DNkxy6"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzdTQwbjplYWNhYmY0ZTE2ZDFlZjhlNmFlNWUyNDYwMzc0YjZjOTox",
+        "供应商名称": "福建洁恩管业科技有限公司",
+        "供应商简称": "洁恩",
+        "合作时间": "23年",
+        "文本": "28",
+        "目前对接人": [
+          "采购"
+        ]
+      },
+      "id": "recvfGz5DNuv2y",
+      "record_id": "recvfGz5DNuv2y"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2N05WZ1BzckR1SToyMGI5ZWY5NWZlZjRlZTVmZGE1NWM1YzI5MTdkMWZlNzox",
+        "供应商名称": "无锡市巨东精密金属材料有限公司",
+        "供应商简称": "巨东-1",
+        "合作时间": "23年",
+        "备注": "原名，现已更名",
+        "文本": "73",
+        "添加方式": "微信个人",
+        "目前对接人": [
+          "采购",
+          "财务"
+        ],
+        "联系人": "杨松林",
+        "联系电话": "15852532302",
+        "附件": [
+          {
+            "file_token": "D2BnbNgryoVrrwxtTUPcc7Tsnfb",
+            "name": "image.png",
+            "size": 18346,
+            "tmp_url": "https://open.feishu.cn/open-apis/drive/v1/medias/batch_get_tmp_download_url?file_tokens=D2BnbNgryoVrrwxtTUPcc7Tsnfb&extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D",
+            "type": "image/png",
+            "url": "https://open.feishu.cn/open-apis/drive/v1/medias/D2BnbNgryoVrrwxtTUPcc7Tsnfb/download?extra=%7B%22bitablePerm%22%3A%7B%22tableId%22%3A%22tblpOYABloaUS1XT%22%2C%22rev%22%3A14%7D%7D"
+          }
+        ]
+      },
+      "id": "recvfGz5DN9wNh",
+      "record_id": "recvfGz5DN9wNh"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2YTg5RkluaDY3MDo2MWRhYTc3MzcyNDBjNGFiZTgwMjQ5OGRiYmNiYWNlMzox",
+        "供应商名称": "天津格瑞新金属材料有限责任公司",
+        "供应商简称": "格瑞新",
+        "合作时间": "26年",
+        "文本": "191"
+      },
+      "id": "recvfGz5DNu6p4",
+      "record_id": "recvfGz5DNu6p4"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2YTg5RkluUGFaNzo3NmY5ODY0NjVmYjVlNTM1OTQ1OWY2ZGIxYTg2YTFkYTox",
+        "供应商名称": "嘉兴迈拓不锈钢有限公司1",
+        "供应商简称": "迈拓",
+        "合作时间": "26年",
+        "文本": "192"
+      },
+      "id": "recvfGz5DNdYhg",
+      "record_id": "recvfGz5DNdYhg"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2YTg5RklubmIwSDozMGIxZjkzZWRlMzFmYjQyZDM0YjMzZWZiNDFhOGYxMTox",
+        "供应商名称": "江苏丰恒阀门有限公司",
+        "供应商简称": "丰恒",
+        "合作时间": "26年",
+        "文本": "193"
+      },
+      "id": "recvfGz5DNQQpe",
+      "record_id": "recvfGz5DNQQpe"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2YTg5RkluOU9UTzoyNTg4N2ZhMjU4ZDllMjQzZDE1OWNiZDlhYzU2NWUwMTox",
+        "供应商名称": "宁波榕圣金属制品有限公司",
+        "供应商简称": "榕圣",
+        "合作时间": "26年",
+        "文本": "194"
+      },
+      "id": "recvfGz5DNfR05",
+      "record_id": "recvfGz5DNfR05"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2YTg5RkluYnZLQjo5MTIwYWYzZmQyMDBmNGIzMmUwYzVkYWVmNmZmOWY5MTox",
+        "供应商名称": "浙江国泰萧星密封材料股份有限公司",
+        "供应商简称": "国泰",
+        "合作时间": "26年",
+        "文本": "195"
+      },
+      "id": "recvfGz5DNBqGR",
+      "record_id": "recvfGz5DNBqGR"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2YTg5RkluaFRhczpmZDk1MjNmMGY1ODczNWRmN2NlYTM5ZDRhNWEzMTNmMjox",
+        "供应商名称": "浙江瑞浦科技有限公司",
+        "供应商简称": "瑞浦",
+        "合作时间": "26年",
+        "文本": "198"
+      },
+      "id": "recvfGz5DNPghN",
+      "record_id": "recvfGz5DNPghN"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2YTg5RkluTGlRYzo4NzFjYzZiYWFjNjE2ZTA4M2UyMzU4NmFkZDdmZTUwNzox",
+        "供应商名称": "浙江新拓管业有限公司",
+        "供应商简称": "新拓",
+        "合作时间": "26年",
+        "文本": "199"
+      },
+      "id": "recvfGz5DN6Rf4",
+      "record_id": "recvfGz5DN6Rf4"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2YTg5RklueVkwYzpkNTQ1ODg4MDQxYmM4ZGRhMjVmN2Q4YmEwOGFjZjlhNTox",
+        "供应商名称": "定襄县兴旺法兰制造股份有限公司",
+        "供应商简称": "兴旺",
+        "文本": "202"
+      },
+      "id": "recvfGz5DNFT3A",
+      "record_id": "recvfGz5DNFT3A"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2YTg5RkluamVSMDo0ZTE3ODU2NGE3N2E0ZTZlMjNkZDdhNDNiNWI2M2YxOTox",
+        "供应商名称": "浙江国泰萧星密封材料股份有限公司",
+        "供应商简称": "萧星",
+        "文本": "203"
+      },
+      "id": "recvfGz5DNCKqy",
+      "record_id": "recvfGz5DNCKqy"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2bWRSdnlqbHJHbzozMWI1ZjNhM2Q3NzA0NzgxZjIzMmRiNTlkMzg2MWZiZDox",
+        "供应商名称": "\n江苏立新合金实业总公司",
+        "供应商简称": "立新",
+        "文本": "204"
+      },
+      "id": "recvme1vPC07LQ",
+      "record_id": "recvme1vPC07LQ"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2bkJPbUU2eWhNdToxODUyNjMxOTczMzA4NzY1MjA3MWM4ZGRjODE4YzBiMzox",
+        "供应商名称": "天岸贸易（无锡）有限公司",
+        "供应商简称": "天岸",
+        "文本": "205"
+      },
+      "id": "recvnBT4S5jjoq",
+      "record_id": "recvnBT4S5jjoq"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2b2JhUWI1MTRneTpjMDgyYWYwNWE2MTU5Mjk2YTNlMzRmZGYyNjZmYTI3YTox",
+        "供应商名称": "四达氟塑股份有限公司",
+        "供应商简称": "四达",
+        "文本": "206"
+      },
+      "id": "recvoblUNThkUg",
+      "record_id": "recvoblUNThkUg"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2b2JhUWI1VmtrUjo4YTJmZTM1YWE3OWJhZGY2NzVjYjI2Y2Q4MTEzZGJiOTox",
+        "供应商名称": "安徽溪流管业有限公司-供应链",
+        "供应商简称": "供应链",
+        "文本": "207"
+      },
+      "id": "recvoblUNTFD2k",
+      "record_id": "recvoblUNTFD2k"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2b2JhUWI1Skl5Rjo5OWI0NWI0YTRjN2E0ZjBiZTVhOGM4OWFjYmRkNmRmYjox",
+        "供应商名称": "浙江麦金弹簧材料有限公司新增",
+        "供应商简称": "麦金",
+        "文本": "208"
+      },
+      "id": "recvoblUNTP1Dw",
+      "record_id": "recvoblUNTP1Dw"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2b2JhUWI1aHRNRDozYTY4MWQyN2NiZDg0NjUwNDY3OGJjNjc0OWRiMmZjOTox",
+        "供应商名称": "温州正海密封件有限公司",
+        "供应商简称": "正海",
+        "文本": "209"
+      },
+      "id": "recvoblUNTS9jB",
+      "record_id": "recvoblUNTS9jB"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2b2JhUWI1MlpxVjoxMWViYzgyOGMwMTk1MTk1MGU4ZjJmM2NiNGYxZWQwOTox",
+        "供应商名称": "安徽富凯特材股份有限公司",
+        "供应商简称": "富凯",
+        "文本": "210"
+      },
+      "id": "recvoblUNTLjL9",
+      "record_id": "recvoblUNTLjL9"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2b2JhUWI1MlRJVzpiMDI0MjM5MTkzZDI4YzJiYzNjMWM5NTZjNjAyODliYTox",
+        "供应商名称": "浙江麦金弹簧材料有限公司（麦金老账号）",
+        "供应商简称": "麦金",
+        "文本": "211"
+      },
+      "id": "recvoblUNTVPGx",
+      "record_id": "recvoblUNTVPGx"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2b2JhUWI1QjM5dzoyMmQ5NjMxYzRlNGE0ZDBlOTllMjgyZDRhZjdmZTdjNjox",
+        "供应商名称": "浙江麦金弹簧材料有限公司（迈拓新账号暂停使用）",
+        "供应商简称": "麦金",
+        "文本": "212"
+      },
+      "id": "recvoblUNTfrt0",
+      "record_id": "recvoblUNTfrt0"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2b2JhUWI1dk9TTDo0YjQ4N2VjMzAxNzZlYzI4ZjRlZGM1NTQ4YmM5NzE5YTox",
+        "供应商名称": "江苏立新合金实业总公司",
+        "供应商简称": "立新",
+        "文本": "213"
+      },
+      "id": "recvoblUNTE0pL",
+      "record_id": "recvoblUNTE0pL"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2b2JhUWI1SkRwaToxYTFmOGJmZTgzOWU3YWRlYmZkYzQ0YWU2NmVhZjE3Yzox",
+        "供应商名称": "江苏新叁奇不锈钢有限公司",
+        "供应商简称": "新叁奇",
+        "文本": "214"
+      },
+      "id": "recvoblUNTHurn",
+      "record_id": "recvoblUNTHurn"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2b2JhUWI1MDZiZDpiZTk3OWYwZTQzMTNlOGMyNGZkZmU2YjM2MzFiYWY1Mjox",
+        "供应商名称": "中天电力光缆有限公司",
+        "供应商简称": "中天",
+        "文本": "215"
+      },
+      "id": "recvoblUNTNYpA",
+      "record_id": "recvoblUNTNYpA"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2b2JhUWI1UFNjeDo3ZGQyZjMyNTkzNjA0YzI1YTA0ZGMwMjRiNmU4Njc1Mzox",
+        "供应商名称": "江苏亚迅合金股份有限公司",
+        "供应商简称": "亚迅",
+        "文本": "216"
+      },
+      "id": "recvoblUNTYgG6",
+      "record_id": "recvoblUNTYgG6"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2dkthbDJlV1g3MDo2MTU0YjE2ZDNkNjJiNjYwMzZjZmZlNDQ1NWZkY2Y4NTox",
+        "供应商名称": "江苏太平洋联合焊接材料有限公司",
+        "供应商简称": "太平洋",
+        "文本": "217"
+      },
+      "id": "recvvKlzzWvwkO",
+      "record_id": "recvvKlzzWvwkO"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2dzFhd1FocWxDdzo4NGE0NWI5ZTdmNDc1ZDk5ODkzNzg1MDYxOTU2MDNkZjox",
+        "供应商名称": "兴化市盛晟管道设备制造厂",
+        "供应商简称": "盛晟",
+        "文本": "218"
+      },
+      "id": "recvw1oYfNdN6d",
+      "record_id": "recvw1oYfNdN6d"
+    },
+    {
+      "fields": {
+        "SourceID": "NzYyNDMzMTc0OTkyMDczODUxMTpyZWN2d3JhUmFRN0o2dDo4OGQ2MDJjZTdiYzQ2MDViOTE2ZjA2MmEyNmEwZDE5OTox",
+        "供应商名称": "石家庄噼里啪啦电子商务有限公司",
+        "供应商简称": "噼里啪啦",
+        "文本": "219"
+      },
+      "id": "recvwrdXn1NpEt",
+      "record_id": "recvwrdXn1NpEt"
+    }
+  ]
+}

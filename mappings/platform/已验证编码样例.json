@@ -1,0 +1,50 @@
+{
+  "supplier_010498": [
+    {
+      "openaccountbank_name": "中国农业银行股份有限公司温州龙湾支行",
+      "code": "010498",
+      "org": "666666",
+      "openaccountbank": "2335883489000292402",
+      "internalunit": false,
+      "correspondentcode": "103333022515",
+      "bank": "2335877811053527072",
+      "accountname": "浙江鸿迪管业有限公司",
+      "datasource": "14",
+      "name": "浙江鸿迪管业有限公司",
+      "bank_name": "中国农业银行股份有限公司",
+      "id": "2271525903760097380",
+      "pubts": "2025-08-14 09:57:40",
+      "org_name": "企业账号级",
+      "account": "19225101040035011",
+      "refHotType": 0,
+      "refHotId": "2652219615757729796"
+    }
+  ],
+  "inventory_05010002": [
+    {
+      "parent": "2271363622693765124",
+      "path": "2271363622693765123|2271363622693765124|2271363631283699721|",
+      "code": "05010002",
+      "level": 3,
+      "enable": 1,
+      "name": "不锈钢管件",
+      "description": "千克",
+      "id": "2271363631283699721",
+      "pubts": "2025-05-19 10:25:28",
+      "isEnd": true
+    }
+  ],
+  "customer_000126": [
+    {
+      "enterpriseNature": 0,
+      "code": "000126",
+      "transType": "1838065305885606897",
+      "transType_name": "通用客户",
+      "name": "NACIONAL INDUSTRIA MECANICA",
+      "merchantRole!merchantOptions": false,
+      "id": "2482302892673859605",
+      "merchantRole!businessRole": "1",
+      "shortname": "NACIONAL INDUSTRIA MECANICA"
+    }
+  ]
+}

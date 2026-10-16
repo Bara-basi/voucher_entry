@@ -1,0 +1,118 @@
+{
+  "exported_at": "2026-10-14T17:22:10+08:00",
+  "scope": {
+    "account_book_id": "2269106239432556551",
+    "account_book_code": "ZB001",
+    "account_book_name": "嘉兴迈拓不锈钢有限公司",
+    "organization": {
+      "id": "1838067461966528569",
+      "code": "001",
+      "name": "嘉兴迈拓不锈钢有限公司"
+    },
+    "subject_chart": {
+      "id": "2268561010505285636",
+      "code": "001",
+      "name": "迈拓",
+      "accsubjectchartVid": "2268561010505285636",
+      "accsubjectchartOid": "2268561010505285636",
+      "leaf": "",
+      "bnumcheck": "",
+      "numcheck": "",
+      "measuredoc": "",
+      "currency": ""
+    },
+    "visibility": "当前登录账号在该账簿参照接口中可见的档案；未绕过权限或包含已删除档案"
+  },
+  "datasets": {
+    "客户档案.json": {
+      "reported_total": 1832,
+      "exported_records": 1832,
+      "unique_keys": 1832,
+      "key_field": "id",
+      "complete_in_reported_scope": true,
+      "returned_page_count": 1,
+      "returned_page_size": 5000
+    },
+    "供应商档案.json": {
+      "reported_total": 1436,
+      "exported_records": 1436,
+      "unique_keys": 1436,
+      "key_field": "id",
+      "complete_in_reported_scope": true,
+      "returned_page_count": 1,
+      "returned_page_size": 5000
+    },
+    "存货档案.json": {
+      "reported_total": 196,
+      "exported_records": 196,
+      "unique_keys": 196,
+      "key_field": "id",
+      "complete_in_reported_scope": true,
+      "returned_page_count": 1,
+      "returned_page_size": 5000,
+      "leaf_records": 185
+    },
+    "会计科目.json": {
+      "reported_total": 406,
+      "exported_records": 406,
+      "unique_keys": 406,
+      "key_field": "id",
+      "complete_in_reported_scope": true,
+      "returned_page_count": 1,
+      "returned_page_size": 2000
+    },
+    "人员档案.json": {
+      "reported_total": 93,
+      "exported_records": 93,
+      "unique_keys": 93,
+      "key_field": "id",
+      "complete_in_reported_scope": true,
+      "returned_page_count": 1,
+      "returned_page_size": 2000
+    },
+    "项目档案.json": {
+      "reported_total": 1723,
+      "exported_records": 1723,
+      "unique_keys": 1723,
+      "key_field": "id",
+      "complete_in_reported_scope": true,
+      "returned_page_count": 1,
+      "returned_page_size": 2000
+    },
+    "银行账号档案.json": {
+      "reported_total": 25,
+      "exported_records": 25,
+      "unique_keys": 25,
+      "key_field": "currencyId",
+      "complete_in_reported_scope": true,
+      "returned_page_count": 1,
+      "returned_page_size": 2000
+    }
+  },
+  "credentials_included": false,
+  "new_voucher_saved": false,
+  "voucher_editor_closed": true,
+  "limitations": [],
+  "account_leaf_count": 351,
+  "inventory_leaf_count": 185,
+  "default_enabled_filter_removed_check": {
+    "customers_count_unchanged": true,
+    "suppliers_count_unchanged": true,
+    "inventory_count_unchanged": true
+  },
+  "remaining_source_pipeline_gap": "这三条飞书记录缺少客户名称，仍需合同号→客户名称/业务客户代码关联。取得客户档案并不能单凭合同号确定客户；不能把客户业务代码直接当成凭证平台编码。",
+  "files_sha256": {
+    "人员档案.json": "1b0bdb683a5094238d24f59a8d066e4ca3b763f315a62c04b4d2abba12cf717d",
+    "会计科目.json": "a3356ae07feafddb329146f802f93f75a99d3d43d32c986d948edfe898159c31",
+    "供应商档案.json": "f9cae5cb19ccf176ef3e531a96f5070aae6fe095ed3dc9a615406d5bb3805e7e",
+    "凭证及账簿基础配置.json": "724e5be34c4462c69c8daa528479c41ca29c7bcf2d2cce3d7fe104ff87e552d5",
+    "名称编码索引.json": "e7a0e750bfc11b2c7650d92f9d96b72fe0263476aebbef34ff57566e33ffd08c",
+    "存货档案.json": "309f705195382b39e6adb2cb92926f445df9a4ecc8f9d390731bedddebe0d0e0",
+    "客户档案.json": "445bc838ef269d6adcfe592b03298f5217ad5caf074633ee03e8797b3c44ef05",
+    "已验证接口及请求参数.json": "2f88c4d541828569f4b396f82944f8f4170edcf6c9e173ceda9f07468caaf83c",
+    "已验证编码样例.json": "8d83e8a8c0774237679decafd0446f5edfe344febc514e08165d9f2f0da0c32b",
+    "科目辅助核算配置.json": "339cdd1550f34b63c06c5fcaed14bb43db9ebfe1b42a99c702bf45f2e828263c",
+    "银行账号档案.json": "90f3def5959ab560ba1911dfb8be90751961ec4b050fc88b76bf6aa0e7e60a85",
+    "项目档案.json": "b83f31ef66f5495c751a3b889c454e27b4800a4dc239fb6df602cac8d14ef06a"
+  }
+}

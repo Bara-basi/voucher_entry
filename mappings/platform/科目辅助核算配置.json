@@ -1,0 +1,1138 @@
+{
+  "exported_at": "2026-10-14T17:22:10+08:00",
+  "scope": {
+    "account_book_id": "2269106239432556551",
+    "account_book_code": "ZB001",
+    "account_book_name": "嘉兴迈拓不锈钢有限公司",
+    "organization": {
+      "id": "1838067461966528569",
+      "code": "001",
+      "name": "嘉兴迈拓不锈钢有限公司"
+    },
+    "subject_chart": {
+      "id": "2268561010505285636",
+      "code": "001",
+      "name": "迈拓",
+      "accsubjectchartVid": "2268561010505285636",
+      "accsubjectchartOid": "2268561010505285636",
+      "leaf": "",
+      "bnumcheck": "",
+      "numcheck": "",
+      "measuredoc": "",
+      "currency": ""
+    },
+    "visibility": "当前登录账号在该账簿参照接口中可见的档案；未绕过权限或包含已删除档案"
+  },
+  "records": [
+    {
+      "account_id": "2271459357526851589",
+      "account_code": "2001",
+      "account_name": "短期借款",
+      "auxiliary_fields": [
+        {
+          "code": "yssupplier.aa_vendorBasicref",
+          "field": "vr4",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": false,
+          "name": "供应商",
+          "MultiDimensionExt_code": "0004",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459323167113224",
+      "account_code": "140802",
+      "account_name": "委托加工物资_原材料",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.001",
+          "field": "vr13",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": false,
+          "name": "存货档案",
+          "MultiDimensionExt_code": "0015",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459323167113223",
+      "account_code": "1408",
+      "account_name": "委托加工物资",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.001",
+          "field": "vr13",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": false,
+          "name": "存货档案",
+          "MultiDimensionExt_code": "0015",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459357526851585",
+      "account_code": "20010101",
+      "account_name": "短期借款_银行_人民币",
+      "auxiliary_fields": [
+        {
+          "code": "yssupplier.aa_vendorBasicref",
+          "field": "vr4",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": false,
+          "name": "供应商",
+          "MultiDimensionExt_code": "0004",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        },
+        {
+          "code": "ucfbasedoc.bd_enterprisebankacct",
+          "field": "vr12",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "银行账号",
+          "MultiDimensionExt_code": "0013",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459297397309448",
+      "account_code": "122101",
+      "account_name": "其他应收款_个人",
+      "auxiliary_fields": [
+        {
+          "code": "ucf-staff-center.bd_staff_leave_ref",
+          "field": "vr3",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "人员",
+          "MultiDimensionExt_code": "0003",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459314577178629",
+      "account_code": "140505",
+      "account_name": "库存商品_钛产品",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.001",
+          "field": "vr13",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "存货档案",
+          "MultiDimensionExt_code": "0015",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459297397309445",
+      "account_code": "1123",
+      "account_name": "预付账款",
+      "auxiliary_fields": [
+        {
+          "code": "yssupplier.aa_vendorBasicref",
+          "field": "vr4",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "供应商",
+          "MultiDimensionExt_code": "0004",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2418601973572435972",
+      "account_code": "43010304",
+      "account_name": "研发支出_费用化支出（明细）_其他费用",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.bd_projectNewRef",
+          "field": "vr2",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "项目",
+          "MultiDimensionExt_code": "0002",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459314577178627",
+      "account_code": "140504",
+      "account_name": "库存商品_机械产品",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.001",
+          "field": "vr13",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "存货档案",
+          "MultiDimensionExt_code": "0015",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459314577178625",
+      "account_code": "140503",
+      "account_name": "库存商品_阀门产品",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.001",
+          "field": "vr13",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "存货档案",
+          "MultiDimensionExt_code": "0015",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459331757047823",
+      "account_code": "1511",
+      "account_name": "长期股权投资",
+      "auxiliary_fields": [
+        {
+          "code": "yssupplier.aa_vendorBasicref",
+          "field": "vr4",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": false,
+          "name": "供应商",
+          "MultiDimensionExt_code": "0004",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        },
+        {
+          "code": "productcenter.baseMerchantRef",
+          "field": "vr5",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": false,
+          "name": "客户",
+          "MultiDimensionExt_code": "0005",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459305987244035",
+      "account_code": "140302",
+      "account_name": "原材料_镍基产品",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.001",
+          "field": "vr13",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "存货档案",
+          "MultiDimensionExt_code": "0015",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459314577178631",
+      "account_code": "140506",
+      "account_name": "库存商品_钢产品",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.001",
+          "field": "vr13",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "存货档案",
+          "MultiDimensionExt_code": "0015",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271468754915295234",
+      "account_code": "112202",
+      "account_name": "应收账款_美元",
+      "auxiliary_fields": [
+        {
+          "code": "productcenter.baseMerchantRef",
+          "field": "vr5",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "客户",
+          "MultiDimensionExt_code": "0005",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459357526851592",
+      "account_code": "200101",
+      "account_name": "短期借款_银行",
+      "auxiliary_fields": [
+        {
+          "code": "yssupplier.aa_vendorBasicref",
+          "field": "vr4",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": false,
+          "name": "供应商",
+          "MultiDimensionExt_code": "0004",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459357526851593",
+      "account_code": "20010102",
+      "account_name": "短期借款_银行_美元",
+      "auxiliary_fields": [
+        {
+          "code": "yssupplier.aa_vendorBasicref",
+          "field": "vr4",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": false,
+          "name": "供应商",
+          "MultiDimensionExt_code": "0004",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        },
+        {
+          "code": "ucfbasedoc.bd_enterprisebankacct",
+          "field": "vr12",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "银行账号",
+          "MultiDimensionExt_code": "0013",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271468763505229833",
+      "account_code": "1221",
+      "account_name": "其他应收款",
+      "auxiliary_fields": [
+        {
+          "code": "ucf-staff-center.bd_staff_leave_ref",
+          "field": "vr3",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "人员",
+          "MultiDimensionExt_code": "0003",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        },
+        {
+          "code": "productcenter.baseMerchantRef",
+          "field": "vr5",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "客户",
+          "MultiDimensionExt_code": "0005",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271468754915295236",
+      "account_code": "112203",
+      "account_name": "应收账款_欧元",
+      "auxiliary_fields": [
+        {
+          "code": "productcenter.baseMerchantRef",
+          "field": "vr5",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "客户",
+          "MultiDimensionExt_code": "0005",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271468763505229834",
+      "account_code": "122102",
+      "account_name": "其他应收款_单位",
+      "auxiliary_fields": [
+        {
+          "code": "productcenter.baseMerchantRef",
+          "field": "vr5",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "客户",
+          "MultiDimensionExt_code": "0005",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459357526851595",
+      "account_code": "200102",
+      "account_name": "短期借款_单位",
+      "auxiliary_fields": [
+        {
+          "code": "yssupplier.aa_vendorBasicref",
+          "field": "vr4",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": false,
+          "name": "供应商",
+          "MultiDimensionExt_code": "0004",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        },
+        {
+          "code": "ucfbasedoc.bd_enterprisebankacct",
+          "field": "vr12",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": false,
+          "name": "银行账号",
+          "MultiDimensionExt_code": "0013",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459323167113219",
+      "account_code": "140801",
+      "account_name": "委托加工物资_加工",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.001",
+          "field": "vr13",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": false,
+          "name": "存货档案",
+          "MultiDimensionExt_code": "0015",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271468754915295238",
+      "account_code": "112204",
+      "account_name": "应收账款_澳元",
+      "auxiliary_fields": [
+        {
+          "code": "productcenter.baseMerchantRef",
+          "field": "vr5",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "客户",
+          "MultiDimensionExt_code": "0005",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2513279167487279112",
+      "account_code": "100207",
+      "account_name": "银行存款_新加坡元",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.bd_enterprisebankacct",
+          "field": "vr12",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "银行账号",
+          "MultiDimensionExt_code": "0013",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459323167113216",
+      "account_code": "140599",
+      "account_name": "库存商品_其他产品",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.001",
+          "field": "vr13",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "存货档案",
+          "MultiDimensionExt_code": "0015",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459271627505667",
+      "account_code": "100205",
+      "account_name": "银行存款_英镑",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.bd_enterprisebankacct",
+          "field": "vr12",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "银行账号",
+          "MultiDimensionExt_code": "0013",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459271627505665",
+      "account_code": "100204",
+      "account_name": "银行存款_澳元",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.bd_enterprisebankacct",
+          "field": "vr12",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "银行账号",
+          "MultiDimensionExt_code": "0013",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271468780685099019",
+      "account_code": "2202",
+      "account_name": "应付账款",
+      "auxiliary_fields": [
+        {
+          "code": "yssupplier.aa_vendorBasicref",
+          "field": "vr4",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "供应商",
+          "MultiDimensionExt_code": "0004",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459271627505669",
+      "account_code": "100206",
+      "account_name": "银行存款_卢布",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.bd_enterprisebankacct",
+          "field": "vr12",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "银行账号",
+          "MultiDimensionExt_code": "0013",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459486375870466",
+      "account_code": "430101",
+      "account_name": "研发支出_费用化支出",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.bd_projectNewRef",
+          "field": "vr2",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": false,
+          "name": "项目",
+          "MultiDimensionExt_code": "0002",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459305987244037",
+      "account_code": "140303",
+      "account_name": "原材料_其他产品",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.001",
+          "field": "vr13",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "存货档案",
+          "MultiDimensionExt_code": "0015",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459305987244044",
+      "account_code": "140502",
+      "account_name": "库存商品_镍合金产品",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.001",
+          "field": "vr13",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "存货档案",
+          "MultiDimensionExt_code": "0015",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271468780685099020",
+      "account_code": "220202",
+      "account_name": "应付账款_暂估",
+      "auxiliary_fields": [
+        {
+          "code": "yssupplier.aa_vendorBasicref",
+          "field": "vr4",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "供应商",
+          "MultiDimensionExt_code": "0004",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459426246328324",
+      "account_code": "224101",
+      "account_name": "其他应付款_个人",
+      "auxiliary_fields": [
+        {
+          "code": "ucf-staff-center.bd_staff_leave_ref",
+          "field": "vr3",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": false,
+          "name": "人员",
+          "MultiDimensionExt_code": "0003",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        },
+        {
+          "code": "yssupplier.aa_vendorBasicref",
+          "field": "vr4",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": false,
+          "name": "供应商",
+          "MultiDimensionExt_code": "0004",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459305987244040",
+      "account_code": "140501",
+      "account_name": "库存商品_不锈钢产品",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.001",
+          "field": "vr13",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "存货档案",
+          "MultiDimensionExt_code": "0015",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459366116786176",
+      "account_code": "2201",
+      "account_name": "应付票据",
+      "auxiliary_fields": [
+        {
+          "code": "yssupplier.aa_vendorBasicref",
+          "field": "vr4",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "供应商",
+          "MultiDimensionExt_code": "0004",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459426246328328",
+      "account_code": "224102",
+      "account_name": "其他应付款_单位",
+      "auxiliary_fields": [
+        {
+          "code": "yssupplier.aa_vendorBasicref",
+          "field": "vr4",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "供应商",
+          "MultiDimensionExt_code": "0004",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459366116786178",
+      "account_code": "220201",
+      "account_name": "应付账款_供应商",
+      "auxiliary_fields": [
+        {
+          "code": "yssupplier.aa_vendorBasicref",
+          "field": "vr4",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "供应商",
+          "MultiDimensionExt_code": "0004",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459263037571073",
+      "account_code": "100201",
+      "account_name": "银行存款_人民币",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.bd_enterprisebankacct",
+          "field": "vr12",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "银行账号",
+          "MultiDimensionExt_code": "0013",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459434836262920",
+      "account_code": "300102",
+      "account_name": "实收资本_单位",
+      "auxiliary_fields": [
+        {
+          "code": "yssupplier.aa_vendorBasicref",
+          "field": "vr4",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": false,
+          "name": "供应商",
+          "MultiDimensionExt_code": "0004",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        },
+        {
+          "code": "productcenter.baseMerchantRef",
+          "field": "vr5",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": false,
+          "name": "客户",
+          "MultiDimensionExt_code": "0005",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2418601818953613321",
+      "account_code": "43010303",
+      "account_name": "研发支出_费用化支出（明细）_折旧摊销",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.bd_projectNewRef",
+          "field": "vr2",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "项目",
+          "MultiDimensionExt_code": "0002",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459263037571077",
+      "account_code": "100202",
+      "account_name": "银行存款_美元",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.bd_enterprisebankacct",
+          "field": "vr12",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "银行账号",
+          "MultiDimensionExt_code": "0013",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459263037571079",
+      "account_code": "100203",
+      "account_name": "银行存款_欧元",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.bd_enterprisebankacct",
+          "field": "vr12",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "银行账号",
+          "MultiDimensionExt_code": "0013",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2418601269190983685",
+      "account_code": "43010301",
+      "account_name": "研发支出_费用化支出（明细）_直接投入",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.bd_projectNewRef",
+          "field": "vr2",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "项目",
+          "MultiDimensionExt_code": "0002",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271468746325360650",
+      "account_code": "1122",
+      "account_name": "应收账款",
+      "auxiliary_fields": [
+        {
+          "code": "productcenter.baseMerchantRef",
+          "field": "vr5",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "客户",
+          "MultiDimensionExt_code": "0005",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459366116786180",
+      "account_code": "2203",
+      "account_name": "预收账款",
+      "auxiliary_fields": [
+        {
+          "code": "yssupplier.aa_vendorBasicref",
+          "field": "vr4",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "供应商",
+          "MultiDimensionExt_code": "0004",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459288807374852",
+      "account_code": "112201",
+      "account_name": "应收账款_人民币",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.bd_projectNewRef",
+          "field": "vr2",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": false,
+          "name": "项目",
+          "MultiDimensionExt_code": "0002",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        },
+        {
+          "code": "productcenter.baseMerchantRef",
+          "field": "vr5",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "客户",
+          "MultiDimensionExt_code": "0005",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459297397309455",
+      "account_code": "140301",
+      "account_name": "原材料_不锈钢产品",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.001",
+          "field": "vr13",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "存货档案",
+          "MultiDimensionExt_code": "0015",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459314577178635",
+      "account_code": "140508",
+      "account_name": "库存商品_附件",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.001",
+          "field": "vr13",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "存货档案",
+          "MultiDimensionExt_code": "0015",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459314577178633",
+      "account_code": "140507",
+      "account_name": "库存商品_金属产品",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.001",
+          "field": "vr13",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "存货档案",
+          "MultiDimensionExt_code": "0015",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271468754915295240",
+      "account_code": "112205",
+      "account_name": "应收账款_英镑",
+      "auxiliary_fields": [
+        {
+          "code": "productcenter.baseMerchantRef",
+          "field": "vr5",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "客户",
+          "MultiDimensionExt_code": "0005",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2418601664327974920",
+      "account_code": "43010302",
+      "account_name": "研发支出_费用化支出（明细）_人工费用",
+      "auxiliary_fields": [
+        {
+          "code": "ucfbasedoc.bd_projectNewRef",
+          "field": "vr2",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "项目",
+          "MultiDimensionExt_code": "0002",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271468754915295242",
+      "account_code": "112206",
+      "account_name": "应收账款_卢布",
+      "auxiliary_fields": [
+        {
+          "code": "productcenter.baseMerchantRef",
+          "field": "vr5",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "客户",
+          "MultiDimensionExt_code": "0005",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    },
+    {
+      "account_id": "2271459434836262916",
+      "account_code": "300101",
+      "account_name": "实收资本_个人",
+      "auxiliary_fields": [
+        {
+          "code": "ucf-staff-center.bd_staff_leave_ref",
+          "field": "vr3",
+          "datatype": "doc",
+          "textTypeValue": null,
+          "mustinput": true,
+          "name": "人员",
+          "MultiDimensionExt_code": "0003",
+          "docCodeAttr": "code",
+          "docNameAttr": "name"
+        }
+      ]
+    }
+  ],
+  "auxiliary_types": [
+    {
+      "code": "yssupplier.aa_vendorBasicref",
+      "field": "vr4",
+      "datatype": "doc",
+      "textTypeValue": null,
+      "mustinput": true,
+      "name": "供应商",
+      "MultiDimensionExt_code": "0004",
+      "docCodeAttr": "code",
+      "docNameAttr": "name"
+    },
+    {
+      "code": "ucfbasedoc.001",
+      "field": "vr13",
+      "datatype": "doc",
+      "textTypeValue": null,
+      "mustinput": true,
+      "name": "存货档案",
+      "MultiDimensionExt_code": "0015",
+      "docCodeAttr": "code",
+      "docNameAttr": "name"
+    },
+    {
+      "code": "ucfbasedoc.bd_enterprisebankacct",
+      "field": "vr12",
+      "datatype": "doc",
+      "textTypeValue": null,
+      "mustinput": true,
+      "name": "银行账号",
+      "MultiDimensionExt_code": "0013",
+      "docCodeAttr": "code",
+      "docNameAttr": "name"
+    },
+    {
+      "code": "ucf-staff-center.bd_staff_leave_ref",
+      "field": "vr3",
+      "datatype": "doc",
+      "textTypeValue": null,
+      "mustinput": true,
+      "name": "人员",
+      "MultiDimensionExt_code": "0003",
+      "docCodeAttr": "code",
+      "docNameAttr": "name"
+    },
+    {
+      "code": "ucfbasedoc.bd_projectNewRef",
+      "field": "vr2",
+      "datatype": "doc",
+      "textTypeValue": null,
+      "mustinput": true,
+      "name": "项目",
+      "MultiDimensionExt_code": "0002",
+      "docCodeAttr": "code",
+      "docNameAttr": "name"
+    },
+    {
+      "code": "productcenter.baseMerchantRef",
+      "field": "vr5",
+      "datatype": "doc",
+      "textTypeValue": null,
+      "mustinput": true,
+      "name": "客户",
+      "MultiDimensionExt_code": "0005",
+      "docCodeAttr": "code",
+      "docNameAttr": "name"
+    }
+  ]
+}

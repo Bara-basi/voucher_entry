@@ -1,0 +1,58 @@
+{
+  "url": "https://c3.yonyoucloud.com/yonbip-fi-egl/bill/list?locale=zh_CN&busiObj=glVoucher&serviceCode=queryvoucher&terminalType=1",
+  "method": "POST",
+  "payload": {
+    "page": {
+      "pageSize": "1000",
+      "pageIndex": 11,
+      "totalCount": 10049
+    },
+    "billnum": "bd_voucherlist",
+    "condition": {
+      "commonVOs": [
+        {
+          "itemName": "schemeName",
+          "value1": "默认方案"
+        },
+        {
+          "itemName": "isDefault",
+          "value1": true
+        },
+        {
+          "itemName": "accbook",
+          "value2": "{\"ruleSelect\":{\"selected\":[],\"nonSelected\":[\"2269106239432556551\"]},\"externalData\":{\"ruleSelect\":true},\"showForbidden\":[]}"
+        },
+        {
+          "value1": "2025-01,2026-12,0",
+          "itemName": "rangeperiod"
+        },
+        {
+          "value1": [
+            "b396cf98-f9e3-4718-b3d2-d44b92cda5bf"
+          ],
+          "itemName": "maker"
+        },
+        {
+          "value1": "26MT",
+          "itemName": "bodydescription"
+        }
+      ],
+      "filtersId": "1571845916980285496",
+      "solutionId": "1571845916980285525"
+    },
+    "bClick": true,
+    "bEmptyWithoutFilterTree": false,
+    "locale": "zh_CN",
+    "busiObj": "glVoucher",
+    "serviceCode": "queryvoucher",
+    "ownDomain": "yonbip-fi-egl",
+    "tplid": "1571845916976091154"
+  },
+  "scope": {
+    "ledger": "嘉兴迈拓不锈钢有限公司",
+    "maker": "马云凤",
+    "summary_contains": "26MT",
+    "period": "2025-01 至 2026-12"
+  },
+  "note": "已验证的查询条件；账簿、制单人以内部ID表示，换账簿或人员需重新取得ID。"
+}
