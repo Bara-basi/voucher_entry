@@ -74,15 +74,18 @@ def snapshot(key: str):
 
 
 @router.get("/batches")
-def batches():
+def batches(workbench: bool = False):
     with store.connect() as db:
-        return store.all_items(db, "batch")
+        return svc.workbench_batches(db) if workbench else store.all_items(db, "batch")
 
 
 @router.get("/batches/{key}")
-def batch(key: str):
+def batch(key: str, workbench: bool = False):
     with store.connect() as db:
         value = svc.required(db, "batch", key)
+        if workbench:
+            value = next((b for b in svc.workbench_batches(db) if b["id"] == key),
+                         {**value, "draft_ids": []})
         value["drafts"] = [svc.required(db, "draft", d) for d in value["draft_ids"]]
         version = svc.mapping_state(db)["version"]
     for d in value["drafts"]:

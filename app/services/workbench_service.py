@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import calendar
 import datetime as dt
 import hashlib
 import json
@@ -51,6 +52,31 @@ def required(db, kind, key):
     if obj is None:
         fail(404, "未找到记录")
     return obj
+
+
+def workbench_batches(db, now=None):
+    moment = now or dt.datetime.now(store.TZ)
+    year, month = (moment.year, moment.month - 1) if moment.month > 1 else (moment.year - 1, 12)
+    cutoff = moment.replace(year=year, month=month, day=min(moment.day, calendar.monthrange(year, month)[1]))
+    def recent(value):
+        try:
+            stamp = dt.datetime.fromisoformat(value)
+            if stamp.tzinfo is None:
+                stamp = stamp.replace(tzinfo=store.TZ)
+            return cutoff <= stamp <= moment
+        except (ValueError, TypeError):
+            return False
+    drafts = {d["id"]: d for d in store.all_items(db, "draft")}
+    result = []
+    for batch in store.all_items(db, "batch"):
+        if not recent(batch.get("created_at")):
+            continue
+        keys = [key for key in batch["draft_ids"] if key in drafts
+                and not drafts[key].get("exports")
+                and recent(drafts[key].get("created_at", batch["created_at"]))]
+        if keys:
+            result.append({**batch, "draft_ids": keys})
+    return sorted(result, key=lambda b: b["created_at"], reverse=True)[:20]
 
 
 def catalog():

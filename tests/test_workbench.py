@@ -24,6 +24,26 @@ from app.services import workbench_store as store
 
 
 class WorkbenchTests(unittest.TestCase):
+    def test_workbench_recent_unexported_batches(self):
+        now = dt.datetime(2026, 10, 20, 12, tzinfo=store.TZ)
+        with store.connect(True) as db:
+            for i in range(25):
+                stamp = (now - dt.timedelta(days=i)).isoformat()
+                store.put(db, "draft", str(i), {"id": str(i), "created_at": stamp, "exports": []})
+                store.put(db, "batch", str(i), {"id": str(i), "created_at": stamp, "draft_ids": [str(i)]})
+            store.put(db, "draft", "exported", {"id": "exported", "created_at": now.isoformat(), "exports": ["file"]})
+            store.put(db, "batch", "mixed", {"id": "mixed", "created_at": now.isoformat(), "draft_ids": ["0", "exported"]})
+            store.put(db, "batch", "done", {"id": "done", "created_at": now.isoformat(), "draft_ids": ["exported"]})
+            old = (now - dt.timedelta(days=31)).isoformat()
+            store.put(db, "draft", "old", {"id": "old", "created_at": old, "exports": []})
+            store.put(db, "batch", "old", {"id": "old", "created_at": old, "draft_ids": ["old"]})
+        with store.connect() as db:
+            rows = svc.workbench_batches(db, now)
+        self.assertEqual(len(rows), 20)
+        self.assertFalse(any(b["id"] in ("old", "done") for b in rows))
+        self.assertEqual(next(b for b in rows if b["id"] == "mixed")["draft_ids"], ["0"])
+        self.assertTrue(all("exported" not in b["draft_ids"] for b in rows))
+
     def test_local_catalog_edits_and_conflicts(self):
         before = svc.catalog()
         subject = next(r for r in before["subjects"] if r["code"] == "112202")

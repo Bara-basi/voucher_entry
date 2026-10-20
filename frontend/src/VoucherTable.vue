@@ -6,7 +6,7 @@ import CatalogInput from './CatalogInput.vue'
 import { ArrowUp, ArrowDown, Trash2, Plus, CircleAlert } from 'lucide-vue-next'
 import type { Draft, Row } from './api'
 import { amount } from './api'
-const props = defineProps<{ draft: Draft; catalogs: Record<string, any[]> }>()
+const props = defineProps<{ draft: Draft; catalogs: Record<string, any[]>; readonly?: boolean }>()
 const emit = defineEmits<{ change: []; blur: []; error: [message: string] }>()
 const bad = (row: Row, field: string) => props.draft.issues.some(i => i.row_id === row.id && i.field === field)
 const reason = (row: Row, field: string) => props.draft.issues.filter(i => i.row_id === row.id && i.field === field).map(i => i.message).join('；') || undefined
@@ -71,6 +71,7 @@ const quantityEditing = ref('')
 </script>
 
 <template>
+  <fieldset class="voucher-fields" :disabled="readonly" :class="{ 'read-only': readonly }">
   <div class="voucher-scroll">
     <table class="voucher-grid">
       <colgroup><col style="width:4%"><col style="width:15%"><col style="width:15%"><col style="width:16%"><col style="width:5%"><col style="width:11%"><col style="width:10%"><col style="width:11%"><col style="width:12%"></colgroup>
@@ -107,5 +108,6 @@ const quantityEditing = ref('')
       <tfoot><tr><td colspan="7">合计 <span class="muted">人民币 · CNY</span></td><td>{{ amount(draft.totals.debit) }}</td><td>{{ amount(draft.totals.credit) }}</td></tr></tfoot>
     </table>
   </div>
-  <button class="add-row" @click="add"><Plus :size="14" /> 添加分录</button>
+  <button v-if="!readonly" class="add-row" @click="add"><Plus :size="14" /> 添加分录</button>
+  </fieldset>
 </template>
