@@ -236,3 +236,192 @@ button:active:not(:disabled){transform:translateY(1px) scale(.985)}
 .review-mode .workspace{height:100dvh}.review-mode .voucher-area{min-height:0;padding:48px 0 16px}
 @media(max-width:1200px){.query-line{flex-wrap:wrap;gap:8px}.query-actions{margin-left:auto}.query-line .date-range{order:0;width:auto}.workspace-page:not(.review-mode) .inspector{width:200px;min-width:200px}.workspace-page:not(.review-mode) .voucher-list{width:190px;min-width:190px}.shared{display:none}}
 @media(max-width:760px){.topbar{height:48px;min-height:48px;padding:0 10px;gap:10px}.topbar nav button{padding:0 8px}.workspace-page:not(.review-mode) .workbench{padding:8px 8px 0}.workspace-page:not(.review-mode) .workspace{flex-wrap:wrap;overflow:auto}.workspace-page:not(.review-mode) .voucher-list{width:100%;max-height:220px}.workspace-page:not(.review-mode) .voucher-area{width:100%;min-height:400px}.workspace-page:not(.review-mode) .inspector{width:100%;min-height:200px}.query-actions{padding-left:8px}.query-line .primary,.query-line .secondary{padding:0 9px}.source-strip{font-size:10px}}
+
+/* 002 — navigation rail, task queue and document canvas. */
+.layout-002:not(.review-mode){height:100dvh;min-height:0;padding-left:176px;display:flex;flex-direction:column;overflow:hidden;background:#f0f1f4}
+.layout-002:not(.review-mode)>.topbar{position:fixed;inset:0 auto 0 0;z-index:30;width:176px;height:100dvh;padding:24px 12px;display:flex;flex-direction:column;align-items:stretch;gap:34px;background:#20242c;border-right:1px solid #343944}
+.layout-002 .brand{padding:0 4px;gap:8px}.layout-002 .brand small{display:block;font-size:9px;letter-spacing:1px;color:#b8c1d2;margin-top:6px}
+.layout-002 .brand b{font-size:14px;letter-spacing:0}.layout-002 .brand-mark{background:#d7f267;color:#20242c}.layout-002 .brand-mark span{color:#20242c}
+.layout-002 .topbar nav{display:flex;flex-direction:column;grid-template-columns:none;height:auto;gap:8px}.layout-002 .topbar nav:after{display:none}
+.layout-002 .topbar nav button{width:100%;height:43px;justify-content:flex-start;padding:0 12px;border-radius:7px;gap:9px}
+.layout-002 .topbar nav button.active{background:#d7f267;color:#20242c;font-weight:600}
+.layout-002 .shared{margin:auto 0 0;display:flex;flex-wrap:wrap;font-size:11px;gap:8px;padding:0 5px}
+.layout-002 .demo-badge{order:3;width:100%;margin-top:9px;border-color:#555d6c;color:#c9d0dc}
+.layout-002 .primary{background:#282e3b;color:#fff;border:1px solid #282e3b;box-shadow:none}.layout-002 .primary:hover:not(:disabled){background:#404a5e}
+.layout-002 .secondary{background:#fff;color:#343c4d;border-color:#c4cad5}.layout-002 .secondary:hover{background:#e6e9ef}
+.layout-002.workspace-page:not(.review-mode) .workbench{padding:0 20px;gap:12px}
+.desk-command{display:flex;align-items:center;justify-content:space-between;min-height:82px;flex:none;gap:16px}
+.desk-kicker{font-size:10px;color:#596476;letter-spacing:1px}.desk-command h1{font-size:22px;letter-spacing:0;margin-top:5px;color:#242a36}
+.desk-command h1 span{font-size:12px;font-weight:400;margin-left:10px;color:#596476}.desk-actions{display:flex;gap:10px}
+.layout-002 .query-card{animation:desk-reveal .2s ease-out}.layout-002 .query-line{flex-wrap:wrap}.layout-002 .query-submit{background:#d7f267;border-color:#bccf79;color:#283019}
+.layout-002.workspace-page:not(.review-mode) .workspace{border:0;border-radius:0;box-shadow:none;background:transparent;gap:16px;position:relative}
+.layout-002.workspace-page:not(.review-mode) .voucher-list{width:232px;min-width:232px;border:1px solid #d5d9e0;border-radius:10px;background:#fff;overflow:hidden}
+.layout-002 .list-heading{padding:16px}.layout-002 .voucher-item.selected{background:#eff4df;border-color:#b8c694}.layout-002 .voucher-item.selected:before{background:#677b30}
+.layout-002 .list-tabs button.active{color:#36452b}.layout-002 .list-tabs button.active:after{background:#778d46}
+.layout-002.workspace-page:not(.review-mode) .voucher-area{padding:0 12px 24px;position:relative;border-radius:10px;background:#e2e5eb;overscroll-behavior:contain}
+.layout-002 .voucher-toolbar{position:sticky;top:0;z-index:15;height:52px;min-height:52px;background:#e2e5ebf2;border-bottom:1px solid #ced3dc;margin:0 -12px 18px;padding:0 14px;backdrop-filter:blur(12px);gap:12px}
+.layout-002 .voucher-toolbar{background:#e2e5ebf2}
+.canvas-identity{display:flex;align-items:center;gap:12px;min-width:0}.canvas-identity span{font-size:11px;color:#526074;white-space:nowrap}
+.canvas-tools{display:flex;align-items:center;gap:3px}.canvas-tools button{height:30px;border-radius:5px;white-space:nowrap}
+.canvas-tools button:hover,.canvas-tools button[aria-pressed=true]{background:#fff}.zoom-value{font-size:11px;min-width:38px;text-align:center;font-variant-numeric:tabular-nums}
+.tool-separator{height:18px;border-left:1px solid #b7bfcd;margin:0 6px}.canvas-tools .focus-button{margin-left:8px;padding:0 10px;background:#fff;border:1px solid #b6bfce;color:#2e394e}
+.layout-002 .voucher-paper{min-width:1200px;border-radius:8px;background:#fff;box-shadow:0 6px 22px #25304a14;margin:0 auto;transform-origin:top center}
+.layout-002.workspace-page:not(.review-mode) .inspector{position:absolute;right:0;top:52px;bottom:8px;z-index:22;width:300px;min-width:300px;border:1px solid #c4cbd7;border-radius:10px;background:#fff;box-shadow:-12px 6px 32px #26334b22;animation:desk-reveal .2s ease-out}
+.layout-002 .issue-card{background:#fff;border-color:#d5d9e0;border-left:3px solid #b64e40}.layout-002 .issue-card:hover{background:#f5f6f8}
+.layout-002 .issue-card p{color:#3e4859}.layout-002 .issue-card small{color:#5a6474}
+.layout-002 .management{width:100%;max-width:none;flex:1;min-height:0;padding:0 24px 18px;display:flex;flex-direction:column;overflow:hidden}
+.layout-002 .management>.page-heading{min-height:82px;padding:18px 0;flex:none}
+.layout-002 .management-card{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;border-radius:10px;background:#fff}
+.layout-002 .management-tabs,.layout-002 .table-tools{flex:none}.layout-002 .management-tabs{background:#f6f7f9;padding:0 20px;gap:25px}
+.layout-002 .management-tabs button{padding:15px 0}.layout-002 .table-tools{padding:14px 20px}
+.data-scroll{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}.data-scroll thead{position:sticky;top:0;z-index:2}.data-scroll th{background:#eef0f4}
+.layout-002 .data-table td{padding:13px 20px}.layout-002 .data-table tbody tr:nth-child(even){background:#f8f9fb}
+.layout-002 .review-header{z-index:40}.layout-002.review-mode .desk-command{display:none}
+.layout-002.review-mode .voucher-paper{min-width:1200px}.layout-002.review-mode .voucher-area{overflow:visible}
+.voucher-grid .invalid{position:relative;background:transparent!important;box-shadow:none!important;padding-right:22px}
+.voucher-grid td.invalid{background:#fff!important}.voucher-grid tbody tr:nth-child(even) td.invalid{background:#e9e9e9!important}
+.cell-issue{position:absolute;right:3px;top:3px;z-index:3;color:#ba3c34;background:#fff;border:1px solid #e3c4c0;border-radius:50%;width:18px;height:18px;padding:0;cursor:help}
+.cell-issue:hover,.cell-issue:focus-visible{background:#fff;border-color:#ba3c34;box-shadow:0 0 0 3px #ba3c341a}
+.voucher-grid label.invalid>.cell-issue{top:0}.voucher-grid .invalid.modified:after{right:23px}
+.quantity-empty:has(.invalid){opacity:1}
+@keyframes desk-reveal{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:1200px){.layout-002:not(.review-mode){padding-left:64px}.layout-002:not(.review-mode)>.topbar{width:64px;padding:20px 8px}.layout-002 .brand>div,.layout-002 .shared{display:none}.layout-002 .brand{padding:0;justify-content:center}.layout-002 .topbar nav button{font-size:0;justify-content:center;padding:0}.layout-002 .topbar nav button svg{width:20px;height:20px}.canvas-identity>span{display:none}.layout-002.workspace-page:not(.review-mode) .voucher-list{width:205px;min-width:205px}.canvas-tools .issues-toggle{font-size:11px}}
+@media(max-width:760px){.layout-002.workspace-page:not(.review-mode) .workbench{padding:0 8px}.desk-command{min-height:72px}.desk-command h1{font-size:17px}.desk-kicker,.desk-command h1 span{display:none}.desk-actions{gap:5px}.desk-actions button{padding:8px;font-size:11px}.layout-002.workspace-page:not(.review-mode) .voucher-list{width:100%;max-height:210px}.layout-002 .canvas-identity{display:none}.layout-002 .management{padding:0 10px 10px}.layout-002 .management-tabs{gap:16px;overflow:auto}}
+
+/* 003 — frosted floating surfaces; keep the accounting document opaque. */
+.theme-glass:not(.review-mode){
+  --navy:#4c60be;--muted:#526079;--line:#c7d2e1;
+  padding-left:204px;
+  background:radial-gradient(ellipse at 88% 0%,#c9c8eeaa,transparent 53%),radial-gradient(ellipse at 8% 85%,#b7d9e0bb,transparent 55%),linear-gradient(125deg,#eef1f8,#dfe8ef 58%,#e9e7f2);
+}
+.theme-glass:not(.review-mode)>.topbar{
+  inset:14px auto 14px 14px;width:180px;height:calc(100dvh - 28px);
+  padding:23px 12px;gap:35px;border:1px solid #ffffffc7;border-radius:22px;
+  background:#ffffff65;color:#26354c;backdrop-filter:blur(24px) saturate(135%);
+  box-shadow:0 14px 45px #34466d0c,inset 0 1px 0 #fff;
+}
+.theme-glass .brand{color:#273c5a}.theme-glass .brand small{color:#566881}
+.theme-glass .brand-mark{width:34px;height:34px;background:linear-gradient(145deg,#778edc,#4961ac);color:#fff;border:1px solid #fff8;box-shadow:0 4px 12px #455da528}
+.theme-glass .brand-mark span{color:#dbe6ff}
+.theme-glass .topbar nav{display:flex;flex-direction:column;grid-template-columns:none;gap:10px;width:100%}
+.theme-glass .topbar nav button{height:45px;flex:none;color:#40536d;border:1px solid transparent;border-radius:12px;transition:background .2s,box-shadow .2s,border-color .2s}
+.theme-glass .topbar nav button.active{background:#ffffffe0;border-color:#fff;color:#344d9c;box-shadow:0 5px 18px #5263a018,inset 0 1px 0 #fff}
+.theme-glass .topbar nav button:hover:not(.active){background:#ffffff85;border-color:#ffffffa8}
+.theme-glass .shared{color:#4f6078}.theme-glass .demo-badge{color:#59657a;border-color:#b9c5d6;background:#ffffff5c;border-radius:7px;line-height:1.6}
+.theme-glass.workspace-page:not(.review-mode) .workbench{padding:0 18px 0 8px;gap:10px}
+.theme-glass .desk-command{min-height:82px;padding:0 6px}.theme-glass .desk-kicker{color:#566582;letter-spacing:1.5px}
+.theme-glass .desk-command h1{color:#26354a;font-weight:600;font-size:23px}
+.theme-glass .primary{background:linear-gradient(130deg,#566fca,#4f58a7);border:1px solid #6375bf;color:#fff;border-radius:10px;box-shadow:0 5px 16px #4d61b329,inset 0 1px 0 #ffffff30}
+.theme-glass .primary:hover:not(:disabled){background:linear-gradient(130deg,#4d65bd,#434c99);box-shadow:0 7px 20px #4d61b333}
+.theme-glass .secondary{background:#ffffff95;border:1px solid #ffffffde;color:#344b6e;border-radius:10px;box-shadow:0 3px 12px #526a9510;backdrop-filter:blur(12px)}
+.theme-glass .secondary:hover{background:#fff;border-color:#c6d2e8}
+.theme-glass .query-card{background:#ffffff8c;border:1px solid #ffffffe0;border-radius:16px;backdrop-filter:blur(20px);box-shadow:0 5px 18px #5c6d8e0a}
+.theme-glass .query-submit{background:#e9edfc;color:#394e90;border-color:#bdc9e7}
+.theme-glass .source-strip{background:#ffffff40;border-color:#ffffff70;border-radius:0 0 16px 16px;color:#53627a}
+.theme-glass.workspace-page:not(.review-mode) .workspace{gap:12px}
+.theme-glass.workspace-page:not(.review-mode) .voucher-list{
+  width:224px;min-width:224px;background:#ffffff70;border:1px solid #ffffffe0;border-radius:18px;
+  backdrop-filter:blur(22px);box-shadow:0 10px 30px #5267890a,inset 0 1px 0 #fff;
+}
+.theme-glass .list-heading{padding:16px 14px 12px}.theme-glass .count{background:#dfe7f6;color:#405272;border-radius:7px}
+.theme-glass .batch-picker,.theme-glass .search-box{background:#ffffff90;border-color:#c4d0e2;border-radius:9px}
+.theme-glass .list-tabs{border-color:#cdd7e5}.theme-glass .list-tabs button.active{color:#3f529e}.theme-glass .list-tabs button.active:after{background:#6277c0}
+.theme-glass .voucher-item{border-radius:11px;padding:11px;margin-bottom:6px}
+.theme-glass .voucher-item.selected{background:#f7f9ffdc;border-color:#aebee6;box-shadow:0 4px 14px #5872ac13}
+.theme-glass .voucher-item.selected:before{background:#687dc3;left:0;top:15px;bottom:15px}
+.theme-glass .voucher-item:hover:not(.selected){background:#ffffff9c}
+.theme-glass.workspace-page:not(.review-mode) .voucher-area{
+  background:#ffffff30;border:1px solid #ffffffa0;border-radius:18px;padding:0 16px 20px;
+  box-shadow:inset 0 1px 0 #ffffffb0;backdrop-filter:blur(16px);
+}
+.theme-glass .voucher-toolbar{
+  height:48px;min-height:48px;margin:8px -8px 16px;padding:0 10px;
+  background:#f4f7fbd9;border:1px solid #fff;border-radius:12px;top:8px;
+  backdrop-filter:blur(22px);box-shadow:0 4px 16px #4256750b;
+}
+.theme-glass .canvas-tools button{border-radius:7px;color:#354965}.theme-glass .canvas-tools .focus-button{background:#e7edfc;border-color:#b5c4e7;color:#344b88}
+.theme-glass .canvas-tools button:hover{background:#fff}.theme-glass .tool-separator{border-color:#bdc9dc}
+.theme-glass .voucher-paper{border-color:#cbd3df;border-radius:10px;box-shadow:0 12px 32px #34476617,0 2px 5px #3447660b}
+.theme-glass.workspace-page:not(.review-mode) .inspector{top:64px;right:10px;bottom:10px;background:#f9fbfff0;border-color:#fff;border-radius:16px;backdrop-filter:blur(22px);box-shadow:-8px 10px 32px #34476624}
+.theme-glass .issue-card{border-radius:10px}.theme-glass .actionbar .pager{background:#ffffff95;border:1px solid #ffffffd9;border-radius:24px;padding:4px 12px;gap:16px;backdrop-filter:blur(12px)}
+.theme-glass .pager button{border:0;border-radius:50%;background:#edf1f9}
+.theme-glass .management{padding:0 18px 16px 8px}
+.theme-glass .management>.page-heading{padding:18px 6px;min-height:82px}
+.theme-glass .management-card{background:#ffffff9e;border:1px solid #ffffffe0;border-radius:18px;backdrop-filter:blur(24px);box-shadow:0 12px 34px #4257750c}
+.theme-glass .management-tabs{background:#ffffff50;border-color:#cdd7e6}
+.theme-glass .management-tabs button.active{color:#3e529b}.theme-glass .management-tabs button.active:after{background:#697bc3}
+.theme-glass .table-tools{background:#ffffff30}
+.theme-glass .data-scroll th{background:#eaf0f8;color:#45546d}
+.theme-glass .data-table tbody tr:nth-child(even){background:#edf2f888}.theme-glass .data-table td{border-color:#d8e0eb}
+.theme-glass .data-table tbody tr:hover{background:#fff}
+.theme-glass.review-mode{background:radial-gradient(ellipse at top,#293243,#181d27 75%)}
+@supports not (backdrop-filter:blur(1px)){.theme-glass:not(.review-mode)>.topbar,.theme-glass .management-card,.theme-glass.workspace-page:not(.review-mode) .voucher-list{background:#edf2f8}}
+@media(max-width:1200px){
+  .theme-glass:not(.review-mode){padding-left:88px}.theme-glass:not(.review-mode)>.topbar{inset:12px auto 12px 10px;width:68px;height:calc(100dvh - 24px);padding:20px 8px;border-radius:18px}
+  .theme-glass .topbar nav button{justify-content:center;padding:0}.theme-glass.workspace-page:not(.review-mode) .voucher-list{width:200px;min-width:200px}
+  .theme-glass.workspace-page:not(.review-mode) .voucher-area{padding-left:12px;padding-right:12px}
+}
+@media(max-width:760px){.theme-glass.workspace-page:not(.review-mode) .voucher-list{width:100%}.theme-glass .desk-command h1{font-size:18px}.theme-glass .voucher-toolbar{margin-left:0;margin-right:0;gap:4px}.theme-glass.workspace-page:not(.review-mode) .workbench{padding-right:8px}.theme-glass .management{padding-right:8px}}
+
+/* Compact information rows: readable type, aligned identifiers, restrained accents. */
+.theme-glass{font-family:"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif}
+.theme-glass .data-table{font-size:14px;color:#27354b}
+.theme-glass .mapping-table,.theme-glass .reference-table,.theme-glass .export-table{table-layout:fixed;min-width:880px}
+.theme-glass .data-table th{font-size:12px;font-weight:600;color:#465976;padding:10px 16px;letter-spacing:.2px}
+.theme-glass .data-table td{padding:10px 16px;line-height:1.45;vertical-align:middle}
+.theme-glass .data-table tbody tr:hover{background:#f3f6ff}
+.row-name{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;font-weight:500;color:#25354d}
+.archive-line{display:flex;gap:10px;align-items:center;min-width:0}
+.archive-line .row-name{flex:1}
+.code-chip{display:inline-block;flex:none;font-family:"Cascadia Mono",Consolas,monospace;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;color:#405690;background:#e9eef9;border:1px solid #d4def1;padding:2px 6px;border-radius:5px;white-space:nowrap}
+.row-caption{display:block;color:#58677f;font-size:12px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.theme-glass .timestamp{font-size:12px;color:#4e6079;white-space:nowrap;font-variant-numeric:tabular-nums}
+.theme-glass .table-count{font-size:12px;color:#4e6079;white-space:nowrap}
+.theme-glass .badge{font-size:11px;padding:3px 7px;border-radius:5px}
+.theme-glass .badge.success{color:#415985;background:#e5edf9}
+.theme-glass .badge.neutral{color:#566172;background:#e9ecf1}
+.theme-glass .table-actions{white-space:normal}
+.theme-glass .table-actions button,.theme-glass .table-actions a{font-size:12px;line-height:1.4;padding:4px 6px;margin:2px 4px 2px 0;color:#425b9b;background:#edf1fa;border-radius:5px;white-space:nowrap}
+.theme-glass .table-actions button:hover,.theme-glass .table-actions a:hover{background:#dce5f7;color:#2d4381}
+.theme-glass .file-title{gap:10px;min-width:0;color:#5069ac}
+.theme-glass .file-title>svg{flex:none}.theme-glass .file-title>div{min-width:0;flex:1}
+.theme-glass .file-title b{font-size:13px;font-weight:600;color:#2d4166;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.theme-glass .file-title small{font-size:12px;margin-top:4px;color:#55667f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.export-volume{white-space:nowrap;font-size:12px}.export-volume>b{font-size:16px;color:#405893}
+.theme-glass .export-table .block{font-size:12px;color:#53647b;margin-top:3px}
+.theme-glass .rate-table{width:max-content;min-width: min(100%,720px);table-layout:auto}
+.theme-glass .rate-table th,.theme-glass .rate-table td{min-width:126px;padding:13px 22px;text-align:right;white-space:nowrap}
+.theme-glass .rate-table th:first-child{min-width:130px;text-align:left}
+.theme-glass .rate-table tbody th{position:sticky;left:0;z-index:1;background:#f1f5fb;color:#354965;font-size:13px}
+.theme-glass .rate-table td{font-size:14px;font-weight:500;font-variant-numeric:tabular-nums;color:#344c83}
+.rate-conflict{display:inline-flex;align-items:center;gap:5px;color:#a74335}
+.theme-glass .voucher-item{padding:10px;margin-bottom:4px}
+.theme-glass .voucher-item strong{font-size:14px;font-weight:600;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#293c62}
+.theme-glass .voucher-item>small{font-size:12px;color:#52627b;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
+.theme-glass .item-top{margin-bottom:5px}.theme-glass .item-bottom{margin-top:6px;font-size:12px;color:#52627b}
+.theme-glass .voucher-grid textarea{font-family:inherit;line-height:1.35;overflow:auto}
+.theme-glass .voucher-grid .aux-entry>small{font-size:11px;line-height:13px;color:#465570;font-weight:600}
+.theme-glass .voucher-grid .catalog-input{font-weight:400;letter-spacing:0}
+.theme-glass .voucher-grid th{font-size:14px;letter-spacing:.2px;padding:10px 5px}
+.theme-glass .voucher-grid td{padding:4px 6px}
+.theme-glass .voucher-grid .invalid{padding-right:22px}
+.theme-glass .voucher-grid .money input,.theme-glass .voucher-grid .original .original-amount input{font-size:16px;letter-spacing:0;font-weight:600}
+.theme-glass .voucher-grid .sequence{font-size:12px;color:#536079}
+.theme-glass .voucher-meta,.theme-glass .paper-footer,.theme-glass .paper-heading>span:first-child{color:#4b5b72}
+.theme-glass .data-scroll{scrollbar-width:thin;scrollbar-color:#b3bfd4 transparent}
+.theme-glass .rate-table{width:100%;min-width:640px;table-layout:fixed}
+.theme-glass .rate-table th,.theme-glass .rate-table td{min-width:0;text-align:right;padding:12px 22px}
+.rate-edit{width:100%;justify-content:flex-end;font:inherit;color:inherit;padding:6px 8px;border:1px solid transparent}
+.rate-edit:hover,.rate-edit:focus-visible{background:#edf2ff;border-color:#b8c8ed}
+.theme-glass .data-table .group-row th{text-align:left;background:#e6edf8;color:#405580;font-size:12px;padding:8px 16px;border-top:1px solid #cbd7ea}
+.group-row span{margin-left:8px;font-weight:400;color:#586b8c}
+.aux-config-row{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid #dde4ee}
+.aux-config-row label{display:flex;align-items:center;gap:7px;font-size:13px}
+.form-stack select{display:block;margin-top:7px;max-width:100%;width:100%}
+.theme-glass .badge.export-neutral{color:#4c618d;background:#e6edf8;border:1px solid #cedaee}
+.export-row-actions{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.theme-glass .export-row-actions>a,.theme-glass .export-row-actions>button{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:30px;padding:0 9px;margin:0;line-height:1;border:1px solid #d5dff0;background:#edf2fc}
+.export-row-actions svg{flex-shrink:0}
+.completed-file{display:flex;gap:12px;align-items:center;background:#edf2fb;border:1px solid #d6e0f1;border-radius:10px;padding:16px;margin-bottom:16px;color:#435c99}
+.completed-file svg{flex:none}.completed-file b{font-size:14px;overflow-wrap:anywhere;line-height:1.5}
+.export-complete>p{font-size:13px;line-height:1.8;color:#4f607b}

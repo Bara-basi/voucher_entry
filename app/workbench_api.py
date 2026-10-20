@@ -120,6 +120,18 @@ def mappings():
         return svc.mapping_state(db)
 
 
+@router.get("/catalog-edits")
+def catalog_edits():
+    with store.connect() as db:
+        state = store.get(db, "settings", "catalog_edits") or {"version": 1}
+    return {"version": state["version"]}
+
+
+@router.put("/catalogs/{kind}")
+def save_catalog(kind: str, request: dict, x_session_id: str = Header(default="anonymous")):
+    return svc.save_catalog(kind, request, x_session_id)
+
+
 @router.put("/mappings/{kind}")
 def save_mapping(kind: str, request: dict, x_session_id: str = Header(default="anonymous")):
     return svc.save_mapping(kind, request, x_session_id)

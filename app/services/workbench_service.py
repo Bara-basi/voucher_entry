@@ -57,6 +57,16 @@ def catalog():
     result = {}
     for kind, filename in CATALOG_FILES.items():
         records = legacy.read_json(ROOT / "mappings/platform" / (filename + ".json"))["records"]
+        by_id = {str(r["id"]): r for r in records}
+        for record in records:
+            parent = by_id.get(str(record.get("parent", "")))
+            path = str(record.get("path", "")).strip("|").split("|")
+            if not parent and len(path) > 1:
+                parent = by_id.get(path[-2])
+            if parent:
+                record["group_name"] = str(parent["code"]) + " · " + parent["name"]
+            elif kind == "customers" and record.get("customerClass_name"):
+                record["group_name"] = record["customerClass_name"]
         if kind == "inventory":
             records = [r for r in records if r.get("isEnd")]
             for record in records:
@@ -70,7 +80,95 @@ def catalog():
     result["aux_by_code"] = {r["account_code"]: r["auxiliary_fields"] for r in aux}
     rates = ROOT / "data/fx_rates_ai_snapshot.json"
     result["rates"] = legacy.read_json(rates).get("records", []) if rates.exists() else []
+    with store.connect() as db:
+        edits = store.get(db, "settings", "catalog_edits") or {"version": 1, "items": {}}
+    for kind, items in edits["items"].items():
+        for key, patch in items.items():
+            row = next((r for r in result[kind] if catalog_key(kind, r) == key), None)
+            if row is not None:
+                row.update(copy.deepcopy(patch))
+            elif kind == "rates":
+                result[kind].append(copy.deepcopy(patch))
+    for kind in CATALOG_FILES:
+        result[kind + "_by_code"] = {str(r["code"]): r for r in result[kind]}
+    result["aux_by_code"] = {r["account_code"]: r["auxiliary_fields"] for r in result["aux"]}
+    for row in result["aux"]:
+        subject = result["subjects_by_code"].get(row["account_code"], {})
+        row["group_name"] = subject.get("group_name", "")
+        row["account_name"] = subject.get("displayname", row["account_name"])
     return result
+
+
+def catalog_key(kind, row):
+    return str(row.get("record_id") or row.get("id")) if kind == "rates" else str(row.get("account_code") if kind == "aux" else row.get("code"))
+
+
+def save_catalog(kind, payload, session):
+    if kind not in ("subjects", "aux", "rates"):
+        fail(422, "请使用映射编辑接口")
+    catalogs = catalog()
+    key = str(payload.get("key") or "")
+    old = next((r for r in catalogs[kind] if catalog_key(kind, r) == key), None)
+    item = payload.get("item", {})
+    if not isinstance(item, dict):
+        fail(422, "无效记录")
+    if kind == "rates":
+        fields = item.get("fields", {})
+        try:
+            year, month = int(fields["实际年份"]), int(fields["实际月份"])
+            currency = str(fields["币种"]).strip().upper()
+            value = engine.number(fields["汇率"])
+            if not 1900 <= year <= 2200 or not 1 <= month <= 12 or not currency.isascii() or not currency.isalpha() or len(currency) != 3 or value is None or value <= 0:
+                raise ValueError()
+            if currency in ("CNY", "RMB") and value != 1:
+                raise ValueError()
+        except (KeyError, TypeError, ValueError):
+            fail(422, "请填写有效年月、三位币种和大于零的汇率")
+        if old:
+            original = old["fields"]
+            curr = original["币种"]
+            curr = curr[0] if isinstance(curr, list) else curr
+            if (year, month, currency) != (int(original["实际年份"]), int(original["实际月份"]), curr):
+                fail(422, "已有汇率的年月和币种不可更改，请新增记录")
+        else:
+            for r in catalogs["rates"]:
+                f = r["fields"]; curr = f.get("币种")
+                curr = curr[0] if isinstance(curr, list) and curr else curr
+                if (str(f.get("实际年份")), str(f.get("实际月份")).zfill(2), curr) == (str(year), str(month).zfill(2), currency):
+                    fail(422, "该年月币种已有记录，请编辑原记录")
+            key = "local-" + uuid.uuid4().hex
+        patch = {**(old or {}), "id": key, "record_id": key,
+                 "fields": {**((old or {}).get("fields", {})), "实际年份": str(year), "实际月份": str(month),
+                            "币种": [currency], "汇率": str(value), "数据来源": str(fields.get("数据来源", "本地维护"))}}
+    elif not old:
+        fail(404, "未找到档案")
+    elif kind == "subjects":
+        name = str(item.get("name", "")).strip()
+        if not name or item.get("direction") not in ("Debit", "Credit"):
+            fail(422, "请填写科目名称和借贷方向")
+        prefix = old.get("displayname", "").rsplit("_", 1)[0] if "_" in old.get("displayname", "") else ""
+        patch = {"name": name, "displayname": prefix + "_" + name if prefix else name, "direction": item["direction"]}
+    else:
+        fields = item.get("auxiliary_fields")
+        templates = {f["code"]: f for r in catalogs["aux"] for f in r["auxiliary_fields"]}
+        if not isinstance(fields, list) or any(not isinstance(f, dict) or f.get("code") not in templates or not isinstance(f.get("mustinput"), bool) for f in fields):
+            fail(422, "请选择有效辅助项及必填设置")
+        if len({f["code"] for f in fields}) != len(fields):
+            fail(422, "辅助项不能重复")
+        patch = {"auxiliary_fields": [{**templates[f["code"]], "mustinput": f["mustinput"]} for f in fields]}
+    with LOCK, store.connect(True) as db:
+        state = store.get(db, "settings", "catalog_edits") or {"version": 1, "items": {}}
+        if payload.get("version") != state["version"]:
+            fail(409, "数据源已被修改，请刷新后重试；当前输入已保留")
+        state["items"].setdefault(kind, {})[key] = patch
+        state["version"] += 1
+        store.put(db, "settings", "catalog_edits", state)
+        mappings = mapping_state(db)
+        mappings["version"] += 1
+        store.put(db, "settings", "mappings", mappings)
+        store.audit(db, "catalog:" + kind + ":" + key, session, "save_catalog", old, patch)
+    legacy.MASTERS = None
+    return {"version": state["version"]}
 
 
 def mapping_state(db):
@@ -112,6 +210,10 @@ def masters_for(db):
                 masters.supplier_aliases[row["alias"]] = row["platform_code"]
             else:
                 masters.inventory[row["alias"]] = row["platform_code"]
+    edits = store.get(db, "settings", "catalog_edits") or {"items": {}}
+    for row in edits["items"].get("rates", {}).values():
+        f = row["fields"]
+        masters.rates[(f["实际年份"], f["实际月份"], f["币种"][0])] = engine.number(f["汇率"])
     return masters, state["version"]
 
 

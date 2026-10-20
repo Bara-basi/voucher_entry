@@ -24,6 +24,42 @@ from app.services import workbench_store as store
 
 
 class WorkbenchTests(unittest.TestCase):
+    def test_local_catalog_edits_and_conflicts(self):
+        before = svc.catalog()
+        subject = next(r for r in before["subjects"] if r["code"] == "112202")
+        svc.save_catalog("subjects", {"version": 1, "key": "112202",
+                         "item": {"name": "美元本地名称", "direction": "Debit"}}, "test")
+        self.assertEqual(svc.catalog()["subjects_by_code"]["112202"]["name"], "美元本地名称")
+        self.assertNotEqual(subject["name"], "美元本地名称")
+        with self.assertRaises(HTTPException) as conflict:
+            svc.save_catalog("subjects", {"version": 1, "key": "112202",
+                             "item": {"name": "冲突", "direction": "Debit"}}, "other")
+        self.assertEqual(conflict.exception.status_code, 409)
+        original = before["aux_by_code"]["112202"]
+        changed = [{**original[0], "mustinput": False}]
+        svc.save_catalog("aux", {"version": 2, "key": "112202",
+                         "item": {"auxiliary_fields": changed}}, "test")
+        self.assertFalse(svc.catalog()["aux_by_code"]["112202"][0]["mustinput"])
+        with store.connect() as db:
+            self.assertEqual(svc.mapping_state(db)["version"], 3)
+            self.assertEqual(len(store.all_items(db, "audit")), 2)
+
+    def test_rate_override_reaches_rule_engine(self):
+        record = next(r for r in svc.catalog()["rates"] if r["fields"]["币种"] == ["USD"])
+        fields = {**record["fields"], "币种": "USD", "汇率": "7.123456"}
+        key = svc.catalog_key("rates", record)
+        svc.save_catalog("rates", {"version": 1, "key": key, "item": {"fields": fields}}, "test")
+        with store.connect() as db:
+            masters, _ = svc.masters_for(db)
+            self.assertEqual(str(masters.rates[(fields["实际年份"], fields["实际月份"], "USD")]), "7.123456")
+        self.assertEqual(next(r for r in svc.catalog()["rates"] if svc.catalog_key("rates", r) == key)["fields"]["汇率"], "7.123456")
+        with self.assertRaises(HTTPException):
+            svc.save_catalog("rates", {"version": 2, "item": {"fields": fields}}, "test")
+        for invalid in ("NaN", "-1", "0"):
+            with self.assertRaises(HTTPException):
+                svc.save_catalog("rates", {"version": 2, "key": key,
+                                 "item": {"fields": {**fields, "汇率": invalid}}}, "test")
+
     @classmethod
     def setUpClass(cls):
         cls.catalogs = svc.catalog()

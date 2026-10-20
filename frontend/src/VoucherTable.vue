@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import AmountInput from './AmountInput.vue'
 import { multiply } from './decimal'
 import CatalogInput from './CatalogInput.vue'
-import { ArrowUp, ArrowDown, Trash2, Plus } from 'lucide-vue-next'
+import { ArrowUp, ArrowDown, Trash2, Plus, CircleAlert } from 'lucide-vue-next'
 import type { Draft, Row } from './api'
 import { amount } from './api'
 const props = defineProps<{ draft: Draft; catalogs: Record<string, any[]> }>()
@@ -11,6 +11,10 @@ const emit = defineEmits<{ change: []; blur: []; error: [message: string] }>()
 const bad = (row: Row, field: string) => props.draft.issues.some(i => i.row_id === row.id && i.field === field)
 const reason = (row: Row, field: string) => props.draft.issues.filter(i => i.row_id === row.id && i.field === field).map(i => i.message).join('；') || undefined
 const edited = (row: Row, field: string) => props.draft.manual_fields.includes(row.id + '/' + field)
+function focusIssue(event: MouseEvent) {
+  const container = (event.currentTarget as HTMLElement).parentElement
+  container?.querySelector<HTMLElement>('input,textarea,select')?.focus()
+}
 function update(row: Row, field: string, event: Event) {
   setValue(row, field, (event.target as HTMLInputElement).value)
 }
@@ -76,26 +80,26 @@ const quantityEditing = ref('')
           <td class="sequence"><span>{{ index + 1 }}</span><div class="row-tools">
             <button title="上移" @click="move(index, -1)"><ArrowUp :size="12" /></button><button title="下移" @click="move(index, 1)"><ArrowDown :size="12" /></button>
             <button title="删除分录" @click="draft.rows.splice(index, 1); emit('change')"><Trash2 :size="12" /></button></div></td>
-          <td :class="{ invalid: bad(row, '摘要'), modified: edited(row, '摘要') }" :title="reason(row, '摘要')"><textarea :data-target="row.id + '/摘要'" aria-label="摘要" :value="row['摘要']" @input="update(row, '摘要', $event)" @blur="emit('blur')" /></td>
-          <td :class="{ invalid: bad(row, '科目编码'), modified: edited(row, '科目编码') }" :title="reason(row, '科目编码')">
+          <td :class="{ invalid: bad(row, '摘要'), modified: edited(row, '摘要') }" :title="reason(row, '摘要')"><button v-if="bad(row, '摘要')" type="button" class="cell-issue" :aria-label="reason(row, '摘要')" :title="reason(row, '摘要')" @click.stop.prevent="focusIssue"><CircleAlert :size="15" /></button><textarea :data-target="row.id + '/摘要'" aria-label="摘要" :value="row['摘要']" @input="update(row, '摘要', $event)" @blur="emit('blur')" /></td>
+          <td :class="{ invalid: bad(row, '科目编码'), modified: edited(row, '科目编码') }" :title="reason(row, '科目编码')"><button v-if="bad(row, '科目编码')" type="button" class="cell-issue" :aria-label="reason(row, '科目编码')" :title="reason(row, '科目编码')" @click.stop.prevent="focusIssue"><CircleAlert :size="15" /></button>
             <CatalogInput :model-value="row['科目编码']" :items="catalogs.subjects?.filter(s => s.leaf) || []" label="科目编码" :target="row.id + '/科目编码'" @update:model-value="setCode(row, '科目编码', $event)" @blur="emit('blur')" />
           </td>
-          <td><div v-for="a in visibleAux(row)" :key="a.field" class="aux-entry" :class="{ invalid: bad(row, a.field), modified: edited(row, a.field) }" :title="reason(row, a.field)">
+          <td><div v-for="a in visibleAux(row)" :key="a.field" class="aux-entry" :class="{ invalid: bad(row, a.field), modified: edited(row, a.field) }" :title="reason(row, a.field)"><button v-if="bad(row, a.field)" type="button" class="cell-issue" :aria-label="reason(row, a.field)" :title="reason(row, a.field)" @click.stop.prevent="focusIssue"><CircleAlert :size="15" /></button>
             <small>【{{ a.label }}】</small><CatalogInput :model-value="row[a.field]" :items="catalogs[a.kind] || []" :label="a.field" :target="row.id + '/' + a.field" @update:model-value="setCode(row, a.field, $event)" @blur="emit('blur')" />
           </div></td>
-          <td :class="{ invalid: bad(row, '币种名称') }" :title="reason(row, '币种名称')"><select aria-label="币种" :value="row['币种名称']" @change="update(row, '币种名称', $event)"><option v-for="c in ['CNY','USD','EUR','GBP','JPY']">{{ c }}</option></select></td>
+          <td :class="{ invalid: bad(row, '币种名称') }" :title="reason(row, '币种名称')"><button v-if="bad(row, '币种名称')" type="button" class="cell-issue" :aria-label="reason(row, '币种名称')" :title="reason(row, '币种名称')" @click.stop.prevent="focusIssue"><CircleAlert :size="15" /></button><select aria-label="币种" :value="row['币种名称']" @change="update(row, '币种名称', $event)"><option v-for="c in ['CNY','USD','EUR','GBP','JPY']">{{ c }}</option></select></td>
           <td class="original"><div class="original-stack"><small>{{ draft.header.posting_date }}　基准汇率</small>
-            <label :class="{ invalid: bad(row, '汇率') }" :title="reason(row, '汇率')"><span>*</span><AmountInput :model-value="row['汇率']" label="汇率" :target="row.id + '/汇率'" :places="6" :blank-zero="false" :candidates="candidates(row, '汇率')" @update:model-value="setValue(row, '汇率', $event)" @blur="emit('blur')" @error="emit('error', $event)" /></label>
-            <label class="original-amount" :class="{ invalid: bad(row, originalField(row)) }" :title="reason(row, originalField(row))">
+            <label :class="{ invalid: bad(row, '汇率') }" :title="reason(row, '汇率')"><button v-if="bad(row, '汇率')" type="button" class="cell-issue" :aria-label="reason(row, '汇率')" :title="reason(row, '汇率')" @click.stop.prevent="focusIssue"><CircleAlert :size="15" /></button><span>*</span><AmountInput :model-value="row['汇率']" label="汇率" :target="row.id + '/汇率'" :places="6" :blank-zero="false" :candidates="candidates(row, '汇率')" @update:model-value="setValue(row, '汇率', $event)" @blur="emit('blur')" @error="emit('error', $event)" /></label>
+            <label class="original-amount" :class="{ invalid: bad(row, originalField(row)) }" :title="reason(row, originalField(row))"><button v-if="bad(row, originalField(row))" type="button" class="cell-issue" :aria-label="reason(row, originalField(row))" :title="reason(row, originalField(row))" @click.stop.prevent="focusIssue"><CircleAlert :size="15" /></button>
               <AmountInput :model-value="row[originalField(row)]" :label="originalField(row)" :target="row.id + '/' + originalField(row)" :candidates="candidates(row, originalField(row))" @update:model-value="setValue(row, originalField(row), $event)" @blur="emit('blur')" @error="emit('error', $event)" /></label>
           </div></td>
           <td class="quantities" @focusin="quantityEditing = row.id" @focusout="quantityEditing = ''; emit('blur')">
             <div class="quantity-content" :class="{ 'quantity-empty': !hasQuantity(row) && quantityEditing !== row.id }">
-              <label :class="{ invalid: bad(row, quantityField(row)) }" :title="reason(row, quantityField(row))"><small>数量:</small><AmountInput :model-value="row[quantityField(row)]" :label="quantityField(row)" :target="row.id + '/' + quantityField(row)" :candidates="candidates(row, quantityField(row))" @update:model-value="setValue(row, quantityField(row), $event)" @blur="emit('blur')" @error="emit('error', $event)" /><span>KG</span></label>
-              <label :class="{ invalid: bad(row, '单价') }" :title="reason(row, '单价')"><small>单价:</small><AmountInput :model-value="row['单价']" label="单价" :target="row.id + '/单价'" :candidates="candidates(row, '单价')" @update:model-value="setValue(row, '单价', $event)" @blur="emit('blur')" @error="emit('error', $event)" /></label>
+              <label :class="{ invalid: bad(row, quantityField(row)) }" :title="reason(row, quantityField(row))"><button v-if="bad(row, quantityField(row))" type="button" class="cell-issue" :aria-label="reason(row, quantityField(row))" :title="reason(row, quantityField(row))" @click.stop.prevent="focusIssue"><CircleAlert :size="15" /></button><small>数量:</small><AmountInput :model-value="row[quantityField(row)]" :label="quantityField(row)" :target="row.id + '/' + quantityField(row)" :candidates="candidates(row, quantityField(row))" @update:model-value="setValue(row, quantityField(row), $event)" @blur="emit('blur')" @error="emit('error', $event)" /><span>KG</span></label>
+              <label :class="{ invalid: bad(row, '单价') }" :title="reason(row, '单价')"><button v-if="bad(row, '单价')" type="button" class="cell-issue" :aria-label="reason(row, '单价')" :title="reason(row, '单价')" @click.stop.prevent="focusIssue"><CircleAlert :size="15" /></button><small>单价:</small><AmountInput :model-value="row['单价']" label="单价" :target="row.id + '/单价'" :candidates="candidates(row, '单价')" @update:model-value="setValue(row, '单价', $event)" @blur="emit('blur')" @error="emit('error', $event)" /></label>
             </div>
           </td>
-          <td v-for="f in ['借方金额','贷方金额']" :key="f" class="money" :class="{ invalid: bad(row, f), modified: edited(row, f) }" :title="reason(row, f)">
+          <td v-for="f in ['借方金额','贷方金额']" :key="f" class="money" :class="{ invalid: bad(row, f), modified: edited(row, f) }" :title="reason(row, f)"><button v-if="bad(row, f)" type="button" class="cell-issue" :aria-label="reason(row, f)" :title="reason(row, f)" @click.stop.prevent="focusIssue"><CircleAlert :size="15" /></button>
             <AmountInput :model-value="row[f]" :label="f" :target="row.id + '/' + f" :candidates="candidates(row, f)" @update:model-value="setValue(row, f, $event)" @blur="emit('blur')" @error="emit('error', $event)" />
           </td>
         </tr>
