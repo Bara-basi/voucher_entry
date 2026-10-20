@@ -4,7 +4,7 @@ import { FileSpreadsheet, Database, History, Search, Download, ChevronLeft, Chev
   Check, AlertCircle, RefreshCw, X, Plus, CheckCircle2, Clock3, PanelRightClose, PanelRightOpen, ExternalLink, Minus, Scan, SlidersHorizontal } from 'lucide-vue-next'
 import VoucherTable from './VoucherTable.vue'
 import { rateMatrix, scalar } from './rates'
-import { api, clone, amount, type Draft, type Issue } from './api'
+import { api, clone, amount, newId, type Draft, type Issue } from './api'
 
 const page = ref('workbench'), meta = ref<any>({}), catalogs = ref<Record<string, any[]>>({})
 const reviewMode = ref(false), reviewSearch = ref(false), scopeOpen = ref(false)
@@ -153,7 +153,7 @@ async function loadBatch(id: string) {
 async function runTask(kind: string, payload: any, existing?: any) {
   busy.value = true
   try {
-    let task = existing || await api('/tasks', 'POST', { kind, payload, request_id: crypto.randomUUID() })
+    let task = existing || await api('/tasks', 'POST', { kind, payload, request_id: newId() })
     activeTask.value = task
     while (!['done','failed'].includes(task.status)) {
       await new Promise(resolve => setTimeout(resolve, 700))

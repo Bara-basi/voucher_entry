@@ -33,6 +33,22 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="凭证构建工作台", version="0.2.0", lifespan=lifespan)
+
+
+@app.middleware("http")
+async def cache_headers(request, call_next):
+    """Always revalidate the HTML entry point; hashed assets may be cached for long."""
+    response = await call_next(request)
+    path = request.url.path
+    if path.startswith("/assets/"):
+        response.headers.setdefault("Cache-Control", "public, max-age=31536000, immutable")
+    elif path.startswith("/api/") or path == "/health":
+        response.headers.setdefault("Cache-Control", "no-store")
+    else:
+        response.headers.setdefault("Cache-Control", "no-cache")
+    return response
+
+
 app.include_router(workbench_router)
 
 

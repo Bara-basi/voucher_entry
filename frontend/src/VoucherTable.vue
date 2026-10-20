@@ -5,7 +5,7 @@ import { multiply } from './decimal'
 import CatalogInput from './CatalogInput.vue'
 import { ArrowUp, ArrowDown, Trash2, Plus, CircleAlert } from 'lucide-vue-next'
 import type { Draft, Row } from './api'
-import { amount } from './api'
+import { amount, newId } from './api'
 const props = defineProps<{ draft: Draft; catalogs: Record<string, any[]>; readonly?: boolean }>()
 const emit = defineEmits<{ change: []; blur: []; error: [message: string] }>()
 const bad = (row: Row, field: string) => props.draft.issues.some(i => i.row_id === row.id && i.field === field)
@@ -44,7 +44,7 @@ function move(index: number, direction: number) {
   emit('change')
 }
 function add() {
-  props.draft.rows.push({ id: crypto.randomUUID(), 摘要: '', 科目编码: '', 币种名称: 'CNY', 汇率: '1',
+  props.draft.rows.push({ id: newId(), 摘要: '', 科目编码: '', 币种名称: 'CNY', 汇率: '1',
     原币借方: '0', 原币贷方: '0', 借方金额: '0', 贷方金额: '0', 客户编码: '', 供应商编码: '', 存货档案: '', 单价: '', 借方数量: '', 贷方数量: '' })
   emit('change')
 }
