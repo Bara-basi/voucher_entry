@@ -26,6 +26,7 @@ SUPPLIER_PATH = ROOT / "mappings/platform/供应商档案.json"
 CUSTOMER_ALIAS_PATH = ROOT / "mappings/customer_alias_mappings.json"
 CUSTOMER_HISTORY_PATH = ROOT / "mappings/customer_resolution_history.json"
 SUPPLIER_ALIAS_PATH = ROOT / "mappings/finance_supplier_alias_mappings.json"
+CUSTOMER_USAGE_PATH = ROOT / "mappings/customer_usage.json"
 RATE_PATH = ROOT / "data/fx_rates_ai_snapshot.json"
 
 EXCLUDED_MAKERS = {"王益"}          # 王益 = 导入测试样例
@@ -95,6 +96,14 @@ class MasterData:
 
     def __init__(self):
         self.inventory = self._load_inventory()
+        # Workbench-maintained overrides are separate from the read-only platform archive.
+        product_alias_path = ROOT / "mappings/product_alias_mappings.json"
+        if product_alias_path.exists():
+            for item in read_json(product_alias_path).get("mappings", []):
+                if item.get("enabled", True):
+                    self.inventory[item["alias"]] = str(item["platform_code"])
+                else:
+                    self.inventory.pop(item["alias"], None)
         self.customers = read_json(CUSTOMER_PATH)["records"]
         self.suppliers = read_json(SUPPLIER_PATH)["records"]
         self.customer_aliases = {normalize_name(a["alias"]): a["platform_code"]
@@ -108,6 +117,10 @@ class MasterData:
         self.customer_by_name = collections.defaultdict(set)
         for customer in self.customers:
             self.customer_by_name[normalize_name(customer["name"])].add(customer["code"])
+        self.customer_shortname = {str(c["code"]): str(c.get("shortname") or "")
+                                   for c in self.customers}
+        self.customer_usage = (read_json(CUSTOMER_USAGE_PATH)
+                               if CUSTOMER_USAGE_PATH.exists() else {})
         self.rates = self._load_rates()
 
     @staticmethod
@@ -157,10 +170,13 @@ class MasterData:
             if not name:
                 continue
             normalized = normalize_name(name)
-            code = self.customer_aliases.get(normalized) or self.customer_history.get(normalized)
+            code = self.customer_aliases.get(normalized)
             if code:
                 return code
             candidates = set(self.customer_by_name.get(normalized, set()))
+            history = self.customer_history.get(normalized)
+            if history:
+                candidates.add(history)
             if not candidates:
                 # 档案全名常带括号补充说明（如 TOROCA(SECIME...)），允许唯一前缀匹配
                 key = normalized.replace("and", "")
@@ -169,13 +185,27 @@ class MasterData:
                         other = archive_key.replace("and", "")
                         if other.startswith(key) or key.startswith(other):
                             candidates |= codes
+            if candidates:
+                # 同一简称（如 3-095）的档案是同一客户的不同版本，一并纳入比较
+                shortnames = {self.customer_shortname.get(c, "") for c in candidates}
+                shortnames.discard("")
+                if len(shortnames) == 1:
+                    only = next(iter(shortnames))
+                    candidates |= {c for c, sn in self.customer_shortname.items() if sn == only}
             if len(candidates) == 1:
                 return next(iter(candidates))
             if len(candidates) > 1:
-                # 同名多条时优先用正式的数字编码（如 020155 而非 2-010）
+                shortnames = {self.customer_shortname.get(c, "") for c in candidates}
+                if len(shortnames) == 1 and "" not in shortnames:
+                    usage = self.customer_usage
+                    ranked = sorted(candidates, key=lambda c: (-int(usage.get(c, 0)), c))
+                    return ranked[0]
+                # 否则优先正式的数字编码（如 020155 而非 2-010）
                 numeric = [c for c in candidates if str(c).isdigit()]
                 if len(numeric) == 1:
                     return numeric[0]
+                if history:
+                    return history
         return None
 
     def supplier_code(self, short_name: str, full_name: str = "") -> str | None:
@@ -256,19 +286,31 @@ def build_voucher(records, masters: MasterData | None = None) -> list[dict]:
         })
 
     income_summary = contract + ("外销收入" if method == "出口" else "内销收入")
+    # 应收行本币由收入区其余各行倒算，保证账簿币借贷分毫不差：
+    # 应收 = 不含税收入 + 销项税额 + |运费| + |保费|
+    revenue_local = round(total_revenue, 2)
+    tax_local = round(total_tax, 2)
+    freight_local = round(-total_freight * rate, 2)
+    insurance_local = round(-total_insurance * rate, 2)
+    receivable_local = round(revenue_local + tax_local - freight_local - insurance_local, 2)
+    fob_local = round(total_export * rate, 2)
+    if abs(receivable_local - fob_local) > 1.0:
+        raise VoucherError(
+            "收入区金额不平：报关金额×汇率=%.2f，收入+销项税+运保费=%.2f"
+            % (fob_local, receivable_local))
     add(income_summary, receivable, aux_customer=customer, currency_code=currency,
-        original=total_export, local=total_export * rate, debit=True)
+        original=total_export, local=receivable_local, debit=True)
     add(income_summary, revenue, currency_code=currency,
-        original=total_revenue / rate, local=total_revenue, debit=False)
+        original=total_revenue / rate, local=revenue_local, debit=False)
     if total_tax != 0:
         add(income_summary, "22210102", currency_code="CNY",
-            original=total_tax, local=total_tax, debit=False)
+            original=total_tax, local=tax_local, debit=False)
     if total_freight != 0:
         add(income_summary, freight_account, currency_code=currency,
-            original=-total_freight, local=-total_freight * rate, debit=True)
+            original=-total_freight, local=freight_local, debit=True)
     if total_insurance != 0:
         add(income_summary, "560107", currency_code=currency,
-            original=-total_insurance, local=-total_insurance * rate, debit=True)
+            original=-total_insurance, local=insurance_local, debit=True)
 
     for record in records:
         product_name = to_text(record.get("报关品名"))
@@ -278,7 +320,10 @@ def build_voucher(records, masters: MasterData | None = None) -> list[dict]:
         category = PRODUCT_CODE_MAPPING.get(inventory_code[:4], "其他产品")
         subject = INVENTORY_SUBJECT[category]
 
-        cost = to_float(record.get("不含税成本"))
+        cost = round(to_float(record.get("不含税成本")), 2)
+        if cost <= 0 and round(to_float(record.get("采购金额")), 2) <= 0:
+            # 没有采购成本/金额时不能生成采购与结转分录（0 元分录无法保存）
+            raise VoucherError("采购金额为0，无法生成采购分录")
         weight = to_float(record.get("报关重量"), default=0.0) or None
         unit_price = round(cost / weight, 2) if weight else None
         supplier_raw = to_text(record.get("供应商"))
@@ -293,15 +338,22 @@ def build_voucher(records, masters: MasterData | None = None) -> list[dict]:
             original=cost, local=cost, debit=True, quantity=weight, unit_price=unit_price)
         input_tax = to_float(record.get("进项税额"))
         rebate = to_float(record.get("退税额"))
+        effective_tax = rebate if (input_tax == 0 and rebate != 0) else input_tax
+        effective_tax = round(effective_tax, 2)
+        payable = round(cost + effective_tax, 2)
+        source_payable = round(to_float(record.get("采购金额")), 2)
+        if abs(payable - source_payable) > 1.0:
+            raise VoucherError(
+                "采购区金额不平：不含税成本+税额=%.2f，采购金额=%.2f"
+                % (payable, source_payable))
         if input_tax == 0 and rebate != 0:
             add(contract + "采购商品-专票", "22210103",
-                original=rebate, local=rebate, debit=True)
+                original=effective_tax, local=effective_tax, debit=True)
         else:
             add(contract + "采购商品-专票", "22210101",
-                original=input_tax, local=input_tax, debit=True)
+                original=effective_tax, local=effective_tax, debit=True)
         add(contract + "采购商品", "220201", aux_supplier=supplier,
-            original=to_float(record.get("采购金额")), local=to_float(record.get("采购金额")),
-            debit=False)
+            original=payable, local=payable, debit=False)
         add(contract + "结转采购成本", cost_account, original=cost, local=cost, debit=True)
         add(contract + "结转采购成本", subject, aux_inventory=inventory_code,
             original=cost, local=cost, debit=False, quantity=weight, unit_price=unit_price)
@@ -315,43 +367,62 @@ def read_template_header() -> list[str]:
     return [str(sheet.cell_value(0, col)) for col in range(sheet.ncols)]
 
 
-def write_template_xls(rows, path: Path, posting_date: datetime.date):
-    """把一张凭证的分录写成 53 列 .xls。"""
+def _write_row(sheet, column, row_index, row, voucher_id, posting_date):
+    values = {
+        "凭证ID": voucher_id,
+        "会计年": posting_date.year,
+        "会计期间": posting_date.month,
+        "制单日期": posting_date.isoformat(),
+        "凭证类别": "记",
+        "制单人": "王益",
+        "科目编码": row["科目编码"],
+        "摘要": row["摘要"],
+        "币种名称": row["币种名称"],
+        "汇率": row["汇率"],
+        "单价": row["单价"],
+        "借方数量": row["借方数量"],
+        "贷方数量": row["贷方数量"],
+        "原币借方": row["原币借方"],
+        "原币贷方": row["原币贷方"],
+        "借方金额": row["借方金额"],
+        "贷方金额": row["贷方金额"],
+        "客户编码": row["客户编码"],
+        "供应商编码": row["供应商编码"],
+        "存货档案": row["存货档案"],
+    }
+    for key, value in values.items():
+        if key not in column or value is None:
+            continue
+        sheet.write(row_index, column[key], value)
+
+
+def _new_sheet(path: Path):
     header = read_template_header()
     book = xlwt.Workbook(encoding="utf-8")
     sheet = book.add_sheet("凭证")
     for index, name in enumerate(header):
         sheet.write(0, index, name)
     column = {name.lstrip("* "): idx for idx, name in enumerate(header)}
+    return book, sheet, column
 
+
+def write_template_xls(rows, path: Path, posting_date: datetime.date, voucher_id: int = 1):
+    """把一张凭证的分录写成 53 列 .xls。"""
+    book, sheet, column = _new_sheet(path)
     for row_index, row in enumerate(rows, start=1):
-        values = {
-            "凭证ID": 1,
-            "会计年": posting_date.year,
-            "会计期间": posting_date.month,
-            "制单日期": posting_date.isoformat(),
-            "凭证类别": "记",
-            "制单人": "王益",
-            "科目编码": row["科目编码"],
-            "摘要": row["摘要"],
-            "币种名称": row["币种名称"],
-            "汇率": row["汇率"],
-            "单价": row["单价"],
-            "借方数量": row["借方数量"],
-            "贷方数量": row["贷方数量"],
-            "原币借方": row["原币借方"],
-            "原币贷方": row["原币贷方"],
-            "借方金额": row["借方金额"],
-            "贷方金额": row["贷方金额"],
-            "客户编码": row["客户编码"],
-            "供应商编码": row["供应商编码"],
-            "存货档案": row["存货档案"],
-        }
-        for key, value in values.items():
-            if key not in column or value is None:
-                continue
-            sheet.write(row_index, column[key], value)
+        _write_row(sheet, column, row_index, row, voucher_id, posting_date)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    book.save(str(path))
 
+
+def write_multi_template(vouchers, path: Path, posting_date: datetime.date):
+    """把多张凭证写进同一个 .xls，凭证ID 从 1 递增。"""
+    book, sheet, column = _new_sheet(path)
+    row_index = 1
+    for voucher_id, rows in enumerate(vouchers, start=1):
+        for row in rows:
+            _write_row(sheet, column, row_index, row, voucher_id, posting_date)
+            row_index += 1
     path.parent.mkdir(parents=True, exist_ok=True)
     book.save(str(path))
 
@@ -366,6 +437,66 @@ def group_records(records, group_key="报关单号"):
     return groups
 
 
+# 附加订单的写法很随意：-ADD / ADD / 空格ADD / 直接连写 / ADD1 都可能出现；
+# 末尾的 -A / -B 是批次标记（如 06H056ADD1-A），属于合法写法。
+# `&ADD` 是联合订单（一张报关单对应多个订单），不能拆解或继承，必须先排除。
+ADD_SUFFIX = re.compile(r"^(?P<base>.+?)[-_\s]?ADD\d*(?:-[A-Z])?$", re.IGNORECASE)
+
+
+def apply_add_inheritance(records) -> tuple[list[dict], list[dict]]:
+    """附加订单（-ADD / ADD / 空格ADD / 连写 ADD1 等）缺客户或供应商时，继承原始订单的同名字段。
+
+    附加订单只补空值，不覆盖已有数据；原始订单有多个供应商时不推断，保持为空。
+    注意：含 `&` 的是联合订单（一张报关单对应多个订单），不属于附加订单，不参与继承。
+    """
+    by_contract = collections.defaultdict(list)
+    for record in records:
+        by_contract[to_text(record.get("合同号_1"))].append(record)
+
+    notes = []
+    for contract, group in by_contract.items():
+        if "&" in contract:
+            # 含 & 的是联合订单，不是附加订单
+            continue
+        match = ADD_SUFFIX.match(contract)
+        if not match:
+            continue
+        base_contract = match.group("base")
+        base_records = by_contract.get(base_contract)
+        if not base_records and base_contract.upper().endswith("Y"):
+            # Y 是佣金标记，基础订单可能不带 Y（如 07C210Y-ADD → 07C210）
+            base_contract = base_contract[:-1]
+            base_records = by_contract.get(base_contract)
+        if not base_records:
+            continue
+
+        customer = ""
+        for base in base_records:
+            customer = to_text(base.get("买方英文名")) or to_text(base.get("客户名称_脚本用"))
+            if customer:
+                break
+        suppliers = {to_text(r.get("供应商")) for r in base_records if to_text(r.get("供应商"))}
+        short_names = {to_text(r.get("供应商简称")) for r in base_records
+                       if to_text(r.get("供应商简称"))}
+        single_supplier = next(iter(suppliers)) if len(suppliers) == 1 else ""
+        single_short = next(iter(short_names)) if len(short_names) == 1 else ""
+
+        for record in group:
+            changed = []
+            if not to_text(record.get("买方英文名")) and not to_text(record.get("客户名称_脚本用")):
+                if customer:
+                    record["买方英文名"] = customer
+                    changed.append("客户")
+            if not to_text(record.get("供应商")) and single_supplier:
+                record["供应商"] = single_supplier
+                record["供应商简称"] = single_short
+                changed.append("供应商")
+            if changed:
+                notes.append({"合同号_1": contract, "报关单号": to_text(record.get("报关单号")),
+                              "从": base_contract, "继承": "、".join(changed)})
+    return records, notes
+
+
 def generate_all(records, output_dir: Path, posting_date: datetime.date | None = None) -> dict:
     """全量生成：一个报关单号 → 一张凭证 → 一个 .xls。"""
     masters = get_masters()
@@ -373,6 +504,7 @@ def generate_all(records, output_dir: Path, posting_date: datetime.date | None =
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    records, inherit_notes = apply_add_inheritance(list(records))
     groups = group_records(records)
     generated, skipped = [], []
     for index, (customs_no, group) in enumerate(groups.items(), start=1):
@@ -389,5 +521,75 @@ def generate_all(records, output_dir: Path, posting_date: datetime.date | None =
         generated.append({"报关单号": customs_no, "合同号_1": contract,
                           "记录数": len(group), "行数": len(rows), "文件": filename})
 
-    return {"generated": generated, "skipped": skipped,
+    return {"generated": generated, "skipped": skipped, "inherited": inherit_notes,
             "posting_date": posting_date.isoformat(), "output_dir": str(output_dir)}
+
+
+# 对外（财务人员）可见的错误文案，不暴露内部异常/代码
+FRIENDLY_ERRORS = [
+    ("缺失字段: 供应商", "缺少供应商信息，请补全后重试"),
+    ("缺失字段: 报关品名", "缺少报关品名，请补全后重试"),
+    ("缺失字段: 报关金额", "缺少报关金额，请补全后重试"),
+    ("缺失字段: 合同号_1", "缺少合同号，请补全后重试"),
+    ("缺失字段: 销售方式", "缺少销售方式，请补全后重试"),
+    ("缺失字段: 币种", "缺少币种，请补全后重试"),
+    ("缺失字段: 不含税人民币收入", "缺少不含税人民币收入，请补全后重试"),
+    ("缺失字段: 不含税成本", "缺少不含税成本，请补全后重试"),
+    ("缺失字段: 采购金额", "缺少采购金额，请补全后重试"),
+    ("无法匹配客户", "未找到对应客户档案，请确认客户名称"),
+    ("无法匹配供应商", "未找到对应供应商档案，请确认供应商名称"),
+    ("供应商字段包含多个名称", "供应商填写了多个名称，请拆分为单条后重试"),
+    ("用友存货档案中不存在品名", "存货档案中没有该品名，请补充存货档案或核对品名后重试"),
+    ("收入区金额不平", "收入、税额与报关金额不一致，请核对后重试"),
+    ("采购区金额不平", "采购金额与成本、税额不一致，请核对后重试"),
+    ("缺少汇率", "缺少当月汇率，请补充汇率表后重试"),
+    ("采购金额为0", "没有采购金额和成本，请补全采购信息后重试"),
+]
+
+
+def friendly_error(message: str) -> str:
+    """把内部错误转成财务人员看得懂的简短提示。"""
+    text = str(message or "")
+    for prefix, friendly in FRIENDLY_ERRORS:
+        if text.startswith(prefix):
+            if prefix == "用友存货档案中不存在品名":
+                name = text.split(":", 1)[-1].strip()
+                return "存货档案中没有品名「%s」，请补充或核对后重试" % name
+            return friendly
+    return "生成凭证时遇到问题，请检查数据后重试"
+
+
+def generate_batch(records, output_path: Path, posting_date: datetime.date | None = None) -> dict:
+    """多张凭证合并到一个 .xls：每个报关单号一张凭证，凭证ID 递增。"""
+    masters = get_masters()
+    posting_date = posting_date or datetime.date.today()
+    records, inherit_notes = apply_add_inheritance(list(records))
+    groups = group_records(records)
+
+    vouchers, successes, failures = [], [], []
+    for customs_no, group in groups.items():
+        contract = to_text(group[0].get("合同号_1"))
+        try:
+            rows = build_voucher(group, masters)
+        except VoucherError as error:
+            reason = friendly_error(str(error))
+            failures.append({"报关单号": customs_no, "合同号_1": contract,
+                             "原因": reason, "记录": group})
+            continue
+        except Exception:  # noqa: BLE001 - 不向财务暴露内部异常
+            failures.append({"报关单号": customs_no, "合同号_1": contract,
+                             "原因": "生成凭证时遇到问题，请检查数据后重试", "记录": group})
+            continue
+        vouchers.append(rows)
+        successes.append({"报关单号": customs_no, "合同号_1": contract,
+                          "记录": group, "行数": len(rows)})
+
+    if vouchers:
+        output_path = Path(output_path)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        write_multi_template(vouchers, output_path, posting_date)
+
+    return {"file": str(output_path) if vouchers else "",
+            "vouchers": len(vouchers), "successes": successes,
+            "failures": failures, "inherited": inherit_notes,
+            "posting_date": posting_date.isoformat()}

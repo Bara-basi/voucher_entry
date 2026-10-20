@@ -3,18 +3,37 @@ from __future__ import annotations
 
 import datetime
 import json
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from app.services import voucher_service as svc
+from app.services import feishu_service as feishu
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_PATH = ROOT / "data/ai_customs_source.json"
 DEFAULT_OUTPUT = ROOT / "outputs/single_voucher"
+BATCH_OUTPUT = ROOT / "outputs/batch"
 
-app = FastAPI(title="凭证构建工作台", version="0.1.0")
+PENDING_FIELD = "是否开凭证"
+VOUCHER_DATE_FIELD = "凭证开具日期"
+VOUCHER_RESULT_FIELD = "凭证开具结果"
+
+from app.workbench_api import router as workbench_router
+from app.services.workbench_service import resume as resume_workbench
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    resume_workbench()
+    yield
+
+
+app = FastAPI(title="凭证构建工作台", version="0.2.0", lifespan=lifespan)
+app.include_router(workbench_router)
 
 
 class GenerateRequest(BaseModel):
@@ -23,6 +42,20 @@ class GenerateRequest(BaseModel):
     contract_prefix: str = "26MT"
     sale_method: str = "出口"
     output_dir: str | None = None
+
+
+class PendingRequest(BaseModel):
+    """待开凭证一键生成。"""
+    mark: bool = True
+    posting_date: str | None = None
+
+
+class BulkRequest(BaseModel):
+    """按出口日期范围批量生成。"""
+    start_date: str
+    end_date: str
+    mark: bool = False
+    posting_date: str | None = None
 
 
 def load_source() -> list[dict]:
@@ -85,3 +118,130 @@ def generate(request: GenerateRequest):
         "skipped": len(result["skipped"]),
         "skipped_detail": result["skipped"],
     }
+
+
+def _within_scope(record) -> bool:
+    contract = str(record.get("合同号_1") or "").upper()
+    return contract.startswith("26MT") and str(record.get("销售方式")) == "出口"
+
+
+def _export_ts(record):
+    value = record.get("出口日期")
+    return value if isinstance(value, (int, float)) else None
+
+
+@app.get("/vouchers/pending")
+def pending_list():
+    """列出飞书中凭证状态为「待开」的记录。"""
+    records = [r for r in feishu.list_records()
+               if _within_scope(r) and str(r.get(PENDING_FIELD)) == "待开"]
+    return {"total": len(records),
+            "contracts": sorted({str(r.get("合同号_1")) for r in records})}
+
+
+@app.post("/vouchers/generate-pending")
+def generate_pending(request: PendingRequest):
+    """读取「待开」记录 → 合并生成一个导入模板 → 写回飞书状态。"""
+    records = [r for r in feishu.list_records()
+               if _within_scope(r) and str(r.get(PENDING_FIELD)) == "待开"]
+    if not records:
+        raise HTTPException(status_code=422, detail="当前没有状态为「待开」的凭证记录")
+
+    posting_date = (datetime.date.fromisoformat(request.posting_date)
+                    if request.posting_date else datetime.date.today())
+    stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    output = BATCH_OUTPUT / ("待开凭证_%s.xls" % stamp)
+    result = svc.generate_batch(records, output, posting_date)
+
+    written = 0
+    if request.mark:
+        month = posting_date.strftime("%Y-%m")
+        updates = []
+        for success in result["successes"]:
+            for record in success["记录"]:
+                updates.append({"record_id": record.get("record_id"),
+                                "fields": {PENDING_FIELD: "已开",
+                                           VOUCHER_DATE_FIELD: month,
+                                           VOUCHER_RESULT_FIELD: "保存成功"}})
+        for failure in result["failures"]:
+            for record in failure["记录"]:
+                updates.append({"record_id": record.get("record_id"),
+                                "fields": {VOUCHER_RESULT_FIELD: failure["原因"]}})
+        feishu.batch_update(updates)
+        written = len(updates)
+
+    return {
+        "file": result["file"],
+        "vouchers": result["vouchers"],
+        "records": len(records),
+        "written": written,
+        "failures": [{"合同号_1": f["合同号_1"], "报关单号": f["报关单号"],
+                      "原因": f["原因"]} for f in result["failures"]],
+        "inherited": result["inherited"],
+    }
+
+
+@app.post("/vouchers/generate-bulk")
+def generate_bulk(request: BulkRequest):
+    """按出口日期范围批量生成（默认不写回，mark=true 时回写状态）。"""
+    try:
+        start = datetime.date.fromisoformat(request.start_date)
+        end = datetime.date.fromisoformat(request.end_date)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="日期格式应为 YYYY-MM-DD") from None
+    if start > end:
+        raise HTTPException(status_code=422, detail="开始日期不能晚于结束日期")
+
+    start_ts = datetime.datetime.combine(start, datetime.time.min).timestamp() * 1000
+    end_ts = datetime.datetime.combine(end, datetime.time.max).timestamp() * 1000
+    records = []
+    for record in feishu.list_records():
+        if not _within_scope(record):
+            continue
+        if str(record.get(PENDING_FIELD)) == "已开":
+            continue
+        export_ts = _export_ts(record)
+        if export_ts is None or not (start_ts <= export_ts <= end_ts):
+            continue
+        records.append(record)
+    if not records:
+        raise HTTPException(status_code=422, detail="该日期范围内没有待开具凭证的记录")
+
+    posting_date = (datetime.date.fromisoformat(request.posting_date)
+                    if request.posting_date else datetime.date.today())
+    stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    output = BATCH_OUTPUT / ("批量凭证_%s_%s_%s.xls"
+                             % (request.start_date, request.end_date, stamp))
+    result = svc.generate_batch(records, output, posting_date)
+
+    written = 0
+    if request.mark:
+        month = posting_date.strftime("%Y-%m")
+        updates = []
+        for success in result["successes"]:
+            for record in success["记录"]:
+                updates.append({"record_id": record.get("record_id"),
+                                "fields": {PENDING_FIELD: "已开",
+                                           VOUCHER_DATE_FIELD: month,
+                                           VOUCHER_RESULT_FIELD: "保存成功"}})
+        for failure in result["failures"]:
+            for record in failure["记录"]:
+                updates.append({"record_id": record.get("record_id"),
+                                "fields": {VOUCHER_RESULT_FIELD: failure["原因"]}})
+        feishu.batch_update(updates)
+        written = len(updates)
+
+    return {
+        "file": result["file"],
+        "vouchers": result["vouchers"],
+        "records": len(records),
+        "written": written,
+        "failures": [{"合同号_1": f["合同号_1"], "报关单号": f["报关单号"],
+                      "原因": f["原因"]} for f in result["failures"]],
+    }
+
+
+# Mount only built assets. Business data, credentials and mappings are never served.
+FRONTEND_DIST = Path(__file__).resolve().parents[1] / "frontend/dist"
+if FRONTEND_DIST.is_dir():
+    app.mount("/", StaticFiles(directory=FRONTEND_DIST, html=True), name="workbench")

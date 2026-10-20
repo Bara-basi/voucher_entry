@@ -5,3 +5,7 @@ data/*
 !data/.gitkeep
 tmp/
 .workdeps
+outputs/*
+frontend/node_modules/
+frontend/dist/
+*.json.tmp
