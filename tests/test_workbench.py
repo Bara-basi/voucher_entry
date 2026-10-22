@@ -24,6 +24,29 @@ from app.services import workbench_store as store
 
 
 class WorkbenchTests(unittest.TestCase):
+    def test_local_group_selection_and_reset(self):
+        code = svc.catalog()["suppliers"][0]["code"]
+        with store.connect() as db:
+            version = svc.mapping_state(db)["version"]
+        state = svc.save_mapping("suppliers", {"version": version, "item": {
+            "alias": "测试分组供应商", "platform_code": code, "enabled": True,
+            "group_override": "  新建分组  "}}, "test")
+        row = next(r for r in state["items"]["suppliers"] if r["alias"] == "测试分组供应商")
+        self.assertEqual(row["group_override"], "新建分组")
+        state = svc.save_mapping("suppliers", {"version": state["version"], "item": {
+            **row, "group_override": ""}}, "test")
+        self.assertEqual(next(r for r in state["items"]["suppliers"] if r["id"] == row["id"])["group_override"], "")
+        subject = svc.catalog()["subjects_by_code"]["112202"]
+        svc.save_catalog("subjects", {"version": 1, "key": "112202", "item": {
+            **subject, "group_override": "收款核对"}}, "test")
+        self.assertEqual(svc.catalog()["subjects_by_code"]["112202"]["group_name"], "收款核对")
+        svc.save_catalog("subjects", {"version": 2, "key": "112202", "item": {
+            **subject, "group_override": None}}, "test")
+        self.assertEqual(svc.catalog()["subjects_by_code"]["112202"].get("group_name"), subject.get("group_name"))
+        with self.assertRaises(HTTPException):
+            svc.save_catalog("subjects", {"version": 3, "key": "112202", "item": {
+                **subject, "group_override": "a" * 81}}, "test")
+
     def test_workbench_recent_unexported_batches(self):
         now = dt.datetime(2026, 10, 20, 12, tzinfo=store.TZ)
         with store.connect(True) as db:

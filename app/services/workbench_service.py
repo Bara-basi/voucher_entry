@@ -122,11 +122,24 @@ def catalog():
         subject = result["subjects_by_code"].get(row["account_code"], {})
         row["group_name"] = subject.get("group_name", "")
         row["account_name"] = subject.get("displayname", row["account_name"])
+    for kind in (*CATALOG_FILES, "aux"):
+        for row in result[kind]:
+            if row.get("group_override") is not None:
+                row["group_name"] = row["group_override"]
     return result
 
 
 def catalog_key(kind, row):
     return str(row.get("record_id") or row.get("id")) if kind == "rates" else str(row.get("account_code") if kind == "aux" else row.get("code"))
+
+
+def group_override(item, old=None):
+    value = item.get("group_override", (old or {}).get("group_override"))
+    if value is None:
+        return None
+    if not isinstance(value, str) or len(value.strip()) > 80 or any(ord(c) < 32 for c in value):
+        fail(422, "分组名称须为80字以内的单行文本")
+    return value.strip()
 
 
 def save_catalog(kind, payload, session):
@@ -182,6 +195,8 @@ def save_catalog(kind, payload, session):
         if len({f["code"] for f in fields}) != len(fields):
             fail(422, "辅助项不能重复")
         patch = {"auxiliary_fields": [{**templates[f["code"]], "mustinput": f["mustinput"]} for f in fields]}
+    if kind != "rates":
+        patch["group_override"] = group_override(item, old)
     with LOCK, store.connect(True) as db:
         state = store.get(db, "settings", "catalog_edits") or {"version": 1, "items": {}}
         if payload.get("version") != state["version"]:
@@ -276,7 +291,8 @@ def save_mapping(kind, payload, session):
         old = next((r for r in rows if r["id"] == key), None)
         item = {**(old or {}), "id": key, "alias": alias, "platform_code": code,
                 "platform_name": catalogs[kind + "_by_code"][code]["name"],
-                "enabled": bool(incoming.get("enabled", True)), "updated_at": store.now()}
+                "enabled": bool(incoming.get("enabled", True)), "updated_at": store.now(),
+                "group_override": group_override(incoming, old)}
         state["items"][kind] = [r for r in rows if r["id"] != key] + [item]
         state["version"] += 1
         store.put(db, "settings", "mappings", state)

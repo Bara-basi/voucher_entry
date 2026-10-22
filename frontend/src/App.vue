@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onBeforeUnmount, reactive, watch, nextTick } 
 import { FileSpreadsheet, Database, History, Search, Download, ChevronLeft, ChevronRight, ChevronDown, ArrowRight,
   Check, AlertCircle, RefreshCw, X, Plus, CheckCircle2, Clock3, PanelRightClose, PanelRightOpen, ExternalLink, Minus, Scan, SlidersHorizontal } from 'lucide-vue-next'
 import VoucherTable from './VoucherTable.vue'
+import GroupPicker from './GroupPicker.vue'
 import { rateMatrix, scalar } from './rates'
 import { api, clone, amount, newId, type Draft, type Issue } from './api'
 
@@ -48,12 +49,17 @@ const history = ref<any[] | null>(null), historyTitle = ref('')
 const mappings = ref<any>({ version: 1, items: {} }), mapKind = ref('inventory'), mapQuery = ref('')
 const mapEdit = ref<any>(null), mapError = ref('')
 const referenceEdit = ref<any>(null), referenceError = ref(''), referenceVersion = ref(1), referenceSaving = ref(false)
+const groupValid = ref(true)
+const groupOptions = computed(() => [...new Set([
+  ...(catalogs.value[mapKind.value] || []).map(r => r.group_name),
+  ...(mappings.value.items[mapKind.value] || []).map((r: any) => r.group_override),
+].filter((v): v is string => typeof v === 'string' && !!v.trim()))])
 const auxOptions = computed(() => [...new Map((catalogs.value.aux || []).flatMap(r => r.auxiliary_fields).map(f => [f.code, f])).values()])
 function grouped(rows: any[], kind: string) {
   const groups = new Map<string, any[]>()
   for (const row of rows) {
     const archive = row.platform_code ? catalogs.value[kind]?.find(r => String(r.code) === row.platform_code) : row
-    const group = archive?.group_name || '未分组'
+    const group = (row.group_override ?? archive?.group_name) || '未分组'
     if (!groups.has(group)) groups.set(group, [])
     groups.get(group)!.push(row)
   }
@@ -76,6 +82,7 @@ function toggleAux(option: any, checked: boolean) {
   referenceEdit.value.auxiliary_fields = checked ? [...fields, {...option, mustinput: false}] : fields.filter((f: any) => f.code !== option.code)
 }
 async function saveReference() {
+  if (mapKind.value !== 'rates' && !groupValid.value) { referenceError.value = '请填写新分组名称'; return }
   referenceSaving.value = true; referenceError.value = ''
   try {
     const row = referenceEdit.value
@@ -317,6 +324,7 @@ async function loadMappings() {
   mapEdit.value = null
 }
 async function saveMap() {
+  if (!groupValid.value) { mapError.value = '请填写新分组名称'; return }
   mapError.value = ''
   try {
     mappings.value = await api('/mappings/' + mapKind.value, 'PUT', { version: mappings.value.version, item: mapEdit.value })
@@ -455,8 +463,8 @@ onBeforeUnmount(() => {
       <template v-if="mapKind === 'subjects'"><p>{{ referenceEdit.code }} · {{ referenceEdit.displayname }}</p><label>科目名称<input v-model="referenceEdit.name"></label><label>余额方向<select v-model="referenceEdit.direction"><option value="Debit">借方</option><option value="Credit">贷方</option></select></label></template>
       <template v-else-if="mapKind === 'aux'"><p>{{ referenceEdit.account_code }} · {{ referenceEdit.account_name }}</p><div v-for="option in auxOptions" :key="option.code" class="aux-config-row"><label><input type="checkbox" :checked="referenceEdit.auxiliary_fields.some((f: any) => f.code === option.code)" @change="toggleAux(option, ($event.target as HTMLInputElement).checked)">{{ option.name }}</label><label v-if="referenceEdit.auxiliary_fields.some((f: any) => f.code === option.code)"><input type="checkbox" v-model="referenceEdit.auxiliary_fields.find((f: any) => f.code === option.code).mustinput">必填</label></div></template>
       <template v-else><label v-if="rateChoices.length > 1">同月来源记录<select :value="referenceEdit.record_id || referenceEdit.id" @change="selectRate(($event.target as HTMLSelectElement).value)"><option v-for="r in rateChoices" :value="r.record_id || r.id">{{ scalar(r.fields['汇率']) }} · {{ scalar(r.fields['数据来源']) }}</option></select></label><label>年份<input v-model="referenceEdit.fields['实际年份']" :disabled="!!referenceEdit.id"></label><label>月份<input v-model="referenceEdit.fields['实际月份']" :disabled="!!referenceEdit.id"></label><label>币种<input v-model="referenceEdit.fields['币种']" :disabled="!!referenceEdit.id"></label><label>汇率<input v-model="referenceEdit.fields['汇率']" inputmode="decimal"></label><label>来源说明<input v-model="referenceEdit.fields['数据来源']"></label></template>
-      <p class="error-text" role="alert">{{ referenceError }}</p></div><footer class="modal-footer"><span>仅更新工作台本地配置</span><button class="primary" :disabled="referenceSaving" @click="saveReference">{{ referenceSaving ? '保存中…' : '保存' }}</button></footer></section></div>
-    <div v-if="mapEdit" class="modal-backdrop"><section class="modal small"><div class="modal-heading"><h2>{{ mapEdit.id ? '编辑' : '新增' }}{{ mapLabels[mapKind] }}映射</h2><button @click="mapEdit = null"><X :size="20" /></button></div><div class="form-stack"><label>来源名称<input v-model="mapEdit.alias"></label><label>用友档案编码<input list="mapping-options" v-model="mapEdit.platform_code" placeholder="输入编码或搜索档案名称"></label><datalist id="mapping-options"><option v-for="r in catalogs[mapKind]" :value="String(r.code)">{{ r.name }}</option></datalist><p class="muted">{{ catalogs[mapKind]?.find((r: any) => String(r.code) === mapEdit.platform_code)?.name || '选择有效档案后可保存' }}</p><label class="checkbox-label"><input type="checkbox" v-model="mapEdit.enabled">启用此映射</label><p class="error-text">{{ mapError }}</p></div><footer class="modal-footer"><span>保存后后台立即更新</span><button class="primary" @click="saveMap">保存映射</button></footer></section></div>
+      <GroupPicker v-if="mapKind !== 'rates'" v-model="referenceEdit.group_override" :options="groupOptions" @validity="groupValid = $event" /><p class="error-text" role="alert">{{ referenceError }}</p></div><footer class="modal-footer"><span>仅更新工作台本地配置</span><button class="primary" :disabled="referenceSaving || (mapKind !== 'rates' && !groupValid)" @click="saveReference">{{ referenceSaving ? '保存中…' : '保存' }}</button></footer></section></div>
+    <div v-if="mapEdit" class="modal-backdrop"><section class="modal small"><div class="modal-heading"><h2>{{ mapEdit.id ? '编辑' : '新增' }}{{ mapLabels[mapKind] }}映射</h2><button @click="mapEdit = null"><X :size="20" /></button></div><div class="form-stack"><label>来源名称<input v-model="mapEdit.alias"></label><label>用友档案编码<input list="mapping-options" v-model="mapEdit.platform_code" placeholder="输入编码或搜索档案名称"></label><datalist id="mapping-options"><option v-for="r in catalogs[mapKind]" :value="String(r.code)">{{ r.name }}</option></datalist><p class="muted">{{ catalogs[mapKind]?.find((r: any) => String(r.code) === mapEdit.platform_code)?.name || '选择有效档案后可保存' }}</p><GroupPicker v-model="mapEdit.group_override" :options="groupOptions" @validity="groupValid = $event" /><label class="checkbox-label"><input type="checkbox" v-model="mapEdit.enabled">启用此映射</label><p class="error-text">{{ mapError }}</p></div><footer class="modal-footer"><span>保存后后台立即更新</span><button class="primary" :disabled="!groupValid" @click="saveMap">保存映射</button></footer></section></div>
     <div v-if="conflict" class="modal-backdrop"><section class="modal"><div class="modal-heading"><h2>这张凭证已在其他窗口修改</h2></div><p>你的输入已保存在当前浏览器。比较版本后选择保留哪一份。</p><div class="conflict-columns"><div><b>本地输入 · 版本 {{ conflict.local.version }}</b><pre>{{ JSON.stringify({ header: conflict.local.header, rows: conflict.local.rows, overrides: conflict.local.overrides }, null, 2) }}</pre></div><div><b>服务器 · 版本 {{ conflict.remote.version }}</b><pre>{{ JSON.stringify({ header: conflict.remote.header, rows: conflict.remote.rows, overrides: conflict.remote.overrides }, null, 2) }}</pre></div></div><footer class="modal-footer"><button class="secondary" @click="guard(() => resolveConflict(false))">采用服务器版本</button><button class="primary" @click="guard(() => resolveConflict(true))">确认以本地输入覆盖</button></footer></section></div>
     <div v-if="history" class="modal-backdrop"><section class="modal wide"><div class="modal-heading"><h2>{{ historyTitle }}</h2><button @click="history = null"><X :size="20" /></button></div><div class="modal-scroll"><div v-for="h in history" class="history-item"><b>{{ h.at.replace('T',' ') }}</b><span>浏览器 {{ h.session.slice(0,8) }} · {{ ({edit:'编辑',build:'生成',recalculate:'重新计算',save_mapping:'维护映射',save_catalog:'维护数据源'} as any)[h.action] || h.action }}</span><details><summary>查看该版本内容</summary><pre>{{ JSON.stringify(h.after, null, 2) }}</pre></details></div><p v-if="!history.length">暂无修改记录</p></div></section></div>
     <div v-if="exportDetail" class="modal-backdrop"><section class="modal archive-modal" role="dialog" aria-modal="true" aria-labelledby="archive-title"><div class="modal-heading"><div><small>已导出快照 · 只读</small><h2 id="archive-title">历史核算</h2></div><span class="archive-filename" :title="exportDetail.filename">{{ exportDetail.filename }}</span><button aria-label="关闭历史核算" @click="exportDetail = null"><X :size="20" /></button></div><div class="archive-toolbar"><div class="search-box"><Search :size="16" /><input v-model="archiveQuery" placeholder="搜索合同号 / 报关单号" aria-label="搜索历史核算"></div><div class="pager"><button aria-label="上一张历史凭证" :disabled="archiveIndex <= 0" @click="archiveIndex--"><ChevronLeft :size="18" /></button><span>{{ archiveCurrent ? archiveIndex + 1 : 0 }} / {{ archiveDrafts.length }}</span><button aria-label="下一张历史凭证" :disabled="archiveIndex >= archiveDrafts.length - 1" @click="archiveIndex++"><ChevronRight :size="18" /></button></div><a class="secondary" :href="'/api/exports/' + exportDetail.id + '/download'"><Download :size="15" />下载此版本</a></div><div class="modal-scroll"><div v-if="archiveCurrent" class="voucher-paper"><div class="paper-heading"><span>{{ archiveCurrent.contracts.join(' / ') }}</span><h2>记账凭证</h2><span>版本 {{ archiveCurrent.version }}</span></div><div class="voucher-meta"><span>日期 {{ archiveCurrent.header.posting_date }}</span><span>类别 {{ archiveCurrent.header.category }}</span><span>报关单号 {{ archiveCurrent.customs_no }}</span></div><VoucherTable :key="archiveCurrent.id" :draft="archiveCurrent" :catalogs="catalogs" readonly /><div class="paper-footer"><span>制单人 {{ archiveCurrent.header.maker }}</span><span>借贷差额 {{ amount(archiveCurrent.totals.difference) }}</span></div></div><p v-else class="empty-list">没有匹配的凭证</p></div></section></div>
