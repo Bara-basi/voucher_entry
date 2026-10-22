@@ -24,6 +24,165 @@ from app.services import workbench_store as store
 
 
 class WorkbenchTests(unittest.TestCase):
+    def test_unchanged_catalog_and_mapping_saves_are_noops(self):
+        for kind in ("inventory", "suppliers", "customers"):
+            with store.connect() as db:
+                state = svc.mapping_state(db)
+                row = copy.deepcopy(state["items"][kind][0])
+            result = svc.save_mapping(kind, {"version": state["version"], "item": row}, "test")
+            self.assertEqual(result["version"], state["version"])
+        for kind in ("subjects", "aux", "rates"):
+            row = copy.deepcopy(svc.catalog()[kind][0])
+            if kind == "rates":
+                row["fields"]["币种"] = legacy.to_text(row["fields"]["币种"])
+                row["fields"]["汇率"] = str(row["fields"]["汇率"]) + "0" if "." in str(row["fields"]["汇率"]) else str(row["fields"]["汇率"]) + ".0"
+            result = svc.save_catalog(kind, {"version": 1, "key": svc.catalog_key(kind, row), "item": row}, "test")
+            self.assertFalse(result["changed"], kind)
+        with store.connect() as db:
+            self.assertEqual(svc.mapping_state(db)["version"], 1)
+            self.assertEqual(store.all_items(db, "audit"), [])
+
+    def test_mapping_recalculation_preserves_manual_fields_and_deleted_rows(self):
+        draft = copy.deepcopy(self.draft)
+        draft["rows"][0]["摘要"] = "财务核对过的摘要"
+        draft = svc.save_draft(draft["id"], draft, "test")
+        with store.connect(True) as db:
+            state = svc.mapping_state(db); state["version"] += 1
+            store.put(db, "settings", "mappings", state)
+        result = svc.recalculate_mappings({**svc.mapping_recalculation_plan(), "preserve_manual": True}, "test")[0]
+        self.assertEqual(result["rows"][0]["摘要"], "财务核对过的摘要")
+        self.assertTrue(result["manual_fields"])
+        result["rows"].pop()
+        result = svc.save_draft(result["id"], result, "test")
+        rebuilt = svc.recalculate(result["id"], {"version": result["version"], "preserve_manual": True}, "test")
+        self.assertEqual(rebuilt["rows"], result["rows"])
+
+    def test_explicit_status_conflict_selection_can_build(self):
+        records = copy.deepcopy(self.draft["source"])
+        records[0]["是否开凭证"] = "待开"
+        records.append({**records[0], "record_id": "already-open", "是否开凭证": "已开"})
+        result = svc.query_job(self.task("query", {"mode": "pending"}, {"records": records, "fetched": True}))
+        with store.connect() as db:
+            snap = store.get(db, "snapshot", result["snapshot_id"])
+        group = snap["groups"][0]
+        self.assertTrue(group["blocked"])
+        self.assertEqual(group["hard_blocked"], [])
+        payload = {"snapshot_id": snap["id"], "keys": [group["key"]], "posting_date": "2026-10-22"}
+        with self.assertRaises(HTTPException):
+            svc.build_job(self.task("build", payload))
+        payload["acknowledged_groups"] = [group["key"]]
+        built = svc.build_job(self.task("build", payload))
+        with store.connect() as db:
+            batch = store.get(db, "batch", built["batch_id"])
+            draft = store.get(db, "draft", batch["draft_ids"][0])
+        self.assertEqual(draft["status_acknowledgement"]["session"], "test-browser")
+        # Explicitly reopening an exported draft must remain visible in the workbench.
+        with store.connect(True) as db:
+            draft["exports"] = ["prior-export"]
+            store.put(db, "draft", draft["id"], draft)
+        reopen = self.task("build", payload)
+        reopen["id"] = "build-reopen"
+        svc.build_job(reopen)
+        with store.connect() as db:
+            self.assertTrue(any(draft["id"] in b["draft_ids"] for b in svc.workbench_batches(db)))
+        group["hard_blocked"] = ["缺少报关单号，请在飞书补充后重新检索"]
+        with store.connect(True) as db:
+            store.put(db, "snapshot", snap["id"], snap)
+        with self.assertRaises(HTTPException):
+            svc.build_job(self.task("build", payload))
+
+    def test_manual_exception_blocks_export_and_persists(self):
+        payload = copy.deepcopy(self.draft)
+        payload["manual_exception"] = True
+        saved = svc.save_draft(payload["id"], payload, "finance")
+        self.assertFalse(saved["valid"])
+        self.assertEqual(len(svc.export_plan([saved["id"]])["excluded"]), 1)
+        rebuilt = svc.recalculate(saved["id"], {"version": saved["version"]}, "finance")
+        self.assertTrue(rebuilt["manual_exception"])
+        rebuilt["manual_exception"] = False
+        fixed = svc.save_draft(rebuilt["id"], rebuilt, "finance")
+        self.assertTrue(fixed["valid"], fixed["issues"])
+
+    def test_deleted_row_clears_only_its_build_issues(self):
+        draft = copy.deepcopy(self.draft)
+        row = {**draft["rows"][0], "id": "zero-row", "借方金额": "0", "贷方金额": "0",
+               "原币借方": "0", "原币贷方": "0"}
+        draft["rows"].append(row)
+        draft["build_issues"].append({"id": "zero", "row_id": row["id"], "field": "借方金额",
+                                      "severity": "error", "message": "无效行"})
+        with store.connect(True) as db:
+            store.put(db, "draft", draft["id"], draft)
+        self.assertFalse(engine.validate(draft, self.catalogs)["valid"])
+        draft["rows"].pop()
+        saved = svc.save_draft(draft["id"], draft, "finance")
+        self.assertTrue(saved["valid"], saved["issues"])
+        saved["rows"].pop(0)
+        self.assertFalse(svc.save_draft(saved["id"], saved, "finance")["valid"])
+        saved["blocking_issues"] = [{"id": "global", "severity": "error", "message": "来源冲突"}]
+        self.assertTrue(any(i["id"] == "global" for i in engine.validate(saved, self.catalogs)["issues"]))
+
+    def test_mapping_bulk_atomic_manual_protection(self):
+        with store.connect(True) as db:
+            state = svc.mapping_state(db)
+            state["version"] += 1
+            store.put(db, "settings", "mappings", state)
+            other = {**copy.deepcopy(self.draft), "id": "other", "manual_fields": ["__rows__/structure"]}
+            store.put(db, "draft", "other", other)
+            store.put(db, "draft", "exported", {**copy.deepcopy(self.draft), "id": "exported", "exports": ["file"]})
+        plan = svc.mapping_recalculation_plan()
+        self.assertEqual(len(plan["drafts"]), 2)
+        # Place the manual draft second to prove that a prior recalculation rolls back.
+        plan["drafts"].sort(key=lambda d: d["manual"])
+        with self.assertRaises(HTTPException):
+            svc.recalculate_mappings(plan, "finance")
+        with store.connect() as db:
+            self.assertEqual(store.get(db, "draft", self.draft["id"])["version"], 1)
+        stale = copy.deepcopy(plan)
+        stale["drafts"][0]["version"] = 999
+        with self.assertRaises(HTTPException):
+            svc.recalculate_mappings({**stale, "replace_manual": True}, "finance")
+        results = svc.recalculate_mappings({**plan, "replace_manual": True}, "finance")
+        self.assertTrue(all(not d["mapping_stale"] and d["mapping_version"] == 2 for d in results))
+        self.assertEqual(svc.mapping_recalculation_plan()["drafts"], [])
+        with store.connect() as db:
+            self.assertEqual(store.get(db, "draft", "exported")["version"], 1)
+
+    def test_filtered_pending_group_resume_and_parent_dependencies(self):
+        pending = {**self.draft["source"][0], "record_id": "pending", "合同号_1": "26MT-01T001Y-ADD",
+                   "报关单号": "group", "是否开凭证": "待开"}
+        opened = {**pending, "record_id": "opened", "是否开凭证": "已开"}
+        parent = {**pending, "record_id": "parent", "合同号_1": "26MT-01T001", "报关单号": "parent-group"}
+        task = self.task("query", {"mode": "pending"})
+        calls = []
+        def response(records, more=False):
+            return {"code": 0, "data": {"items": [{"record_id": r["record_id"], "fields": r} for r in records],
+                                        "has_more": more, "page_token": "next" if more else None}}
+        def request(url, **kwargs):
+            calls.append((url, kwargs))
+            self.assertEqual(kwargs["method"], "POST")
+            condition = kwargs["data"]["filter"]["conditions"][0]
+            if condition["field_name"] == "是否开凭证":
+                self.assertEqual(condition["value"], ["待开"])
+                return response([pending])
+            if condition["field_name"] == "报关单号":
+                if "page_token=next" not in url:
+                    return response([pending], True)
+                return response([opened])
+            return response([parent])
+        with patch.object(svc.feishu, "_request", side_effect=request):
+            records = svc.filtered_pending_records(task, "mock/records", "mock")
+            count = len(calls)
+            self.assertEqual(svc.filtered_pending_records(task, "mock/records", "mock"), records)
+            self.assertEqual(len(calls), count)
+        self.assertEqual({r["record_id"] for r in records}, {"pending", "opened"})
+        cp = {**task["checkpoint"], "records": records, "fetched": True}
+        result = svc.query_job(self.task("query", {"mode": "pending"}, cp))
+        with store.connect() as db:
+            snapshot = store.get(db, "snapshot", result["snapshot_id"])
+        self.assertEqual(len(snapshot["groups"]), 1)
+        self.assertTrue(snapshot["groups"][0]["blocked"])
+        self.assertEqual({r["record_id"] for r in snapshot["all_records"]}, {"pending", "opened", "parent"})
+
     def test_local_group_selection_and_reset(self):
         code = svc.catalog()["suppliers"][0]["code"]
         with store.connect() as db:
@@ -291,7 +450,7 @@ class WorkbenchTests(unittest.TestCase):
             return {"record_id": r["record_id"], "fields": {k: v for k, v in r.items() if k != "record_id"}}
         def ok(data):
             return {"code": 0, "data": data}
-        task = self.task("query", {"mode": "pending"})
+        task = self.task("query", {"mode": "date", "start_date": "2020-01-01", "end_date": "2030-12-31"})
         responses = [ok({"app": {"name": "2026年  海关AI"}}),
                      ok({"items": [{"table_id": "source", "name": "2026年报关数据"}, {"table_id": "fx", "name": "汇率"}]}),
                      ok({"items": [], "has_more": False}),

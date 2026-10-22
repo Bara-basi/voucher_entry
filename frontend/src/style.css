@@ -482,3 +482,20 @@ button:active:not(:disabled){transform:translateY(1px) scale(.985)}
 .group-picker label{display:block;font-size:12px;color:#4b5e7c;margin:10px 0}
 .group-picker input,.group-picker select{display:block;width:100%;margin-top:7px;border-color:#c6d3e7;background:#f8faff;color:#344b6f}
 .group-picker small{display:block;color:#5e6f88;font-size:11px;line-height:1.6}
+
+/* Review shortcuts and export selection share the frosted workbench controls. */
+kbd { display:inline-flex; align-items:center; justify-content:center; min-width:26px; padding:2px 7px; border:1px solid #bac8e1; border-bottom-width:3px; border-radius:6px; background:#f4f7ff; color:#344c79; font-family:inherit; font-weight:600; font-size:14px; }
+.review-shortcuts { max-width:480px; }
+.review-shortcuts p { display:flex; align-items:center; gap:18px; color:#344766; }
+.review-shortcuts p > :first-child { flex-shrink:0; min-width:68px; }
+.theme-glass.review-mode .review-header .exception-toggle.marked { background:#fbeaf0; color:#9b3354; border-color:#e6b9c8; }
+.export-selection-tools { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:12px 0; }
+.export-selection-tools .search-box { flex:1; min-width:210px; }
+.export-choice { cursor:pointer; }
+.export-choice input[type=checkbox] { width:17px; height:17px; flex:none; accent-color:#5979c4; }
+.export-choice:has(input:checked) { background:rgba(111,139,205,.10); }
+
+.review-shortcut-toast{position:fixed;z-index:100;top:64px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:24px;padding:14px 22px;border:1px solid #d3dff0;border-radius:14px;background:rgba(245,248,255,.94);box-shadow:0 12px 36px #344d7830;backdrop-filter:blur(18px);color:#344766;pointer-events:none;white-space:nowrap}
+.review-shortcut-toast>span{display:flex;align-items:center;gap:6px}.review-shortcut-toast svg{stroke-width:3}
+.review-tip-enter-active,.review-tip-leave-active{transition:opacity .25s,top .25s}.review-tip-enter-from,.review-tip-leave-to{opacity:0;top:52px}
+@media(prefers-reduced-motion:reduce){.review-tip-enter-active,.review-tip-leave-active{transition:none}}

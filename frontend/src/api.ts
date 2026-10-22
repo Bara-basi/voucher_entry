@@ -4,7 +4,7 @@ export type Draft = {
   id: string; version: number; customs_no: string; contracts: string[]; search_index: string;
   rows: Row[]; header: Record<string, string>; source: Record<string, any>[];
   overrides: Record<string, Record<string, any>>; issues: Issue[];
-  manual_fields: string[]; valid: boolean; mapping_stale?: boolean; exports: string[];
+  manual_exception?: boolean; manual_fields: string[]; valid: boolean; mapping_stale?: boolean; exports: string[];
   incoming_source?: Record<string, any>[];
   totals: { debit: string; credit: string; difference: string }; updated_at: string;
 }

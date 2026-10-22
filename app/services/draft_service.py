@@ -180,7 +180,10 @@ def build(records, masters, catalogs):
 def validate(draft, catalogs):
     issues = copy.deepcopy(draft.get("blocking_issues", []))
     manual = set(draft.get("manual_fields", []))
+    row_ids = {r["id"] for r in draft["rows"]}
     for issue in draft.get("build_issues", []):
+        if issue.get("row_id") and issue["row_id"] not in row_ids:
+            continue
         target = issue["row_id"] + "/" + issue["field"]
         if not issue["row_id"] or target not in manual:
             issues.append(issue)
@@ -189,6 +192,8 @@ def validate(draft, catalogs):
         issues.append({"id": f"validate:{row}:{field}:{len(issues)}", "message": message,
                        "row_id": row, "field": field, "severity": "error"})
 
+    if draft.get("manual_exception"):
+        err("财务已标记为异常，请核实后取消标记再导出")
     if draft.get("overrides", {}) != draft.get("calculated_overrides", {}):
         err("来源补充值已修改，请重新计算后导出")
     if draft.get("incoming_source"):

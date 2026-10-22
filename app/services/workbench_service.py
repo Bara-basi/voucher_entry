@@ -72,8 +72,8 @@ def workbench_batches(db, now=None):
         if not recent(batch.get("created_at")):
             continue
         keys = [key for key in batch["draft_ids"] if key in drafts
-                and not drafts[key].get("exports")
-                and recent(drafts[key].get("created_at", batch["created_at"]))]
+                and (not drafts[key].get("exports") or drafts[key].get("pending_revision"))
+                and recent(drafts[key].get("updated_at") if drafts[key].get("pending_revision") else drafts[key].get("created_at", batch["created_at"]))]
         if keys:
             result.append({**batch, "draft_ids": keys})
     return sorted(result, key=lambda b: b["created_at"], reverse=True)[:20]
@@ -178,7 +178,7 @@ def save_catalog(kind, payload, session):
             key = "local-" + uuid.uuid4().hex
         patch = {**(old or {}), "id": key, "record_id": key,
                  "fields": {**((old or {}).get("fields", {})), "实际年份": str(year), "实际月份": str(month),
-                            "币种": [currency], "汇率": str(value), "数据来源": str(fields.get("数据来源", "本地维护"))}}
+                            "币种": [currency], "汇率": str(value), "数据来源": str(fields.get("数据来源", "" if old else "本地维护"))}}
     elif not old:
         fail(404, "未找到档案")
     elif kind == "subjects":
@@ -201,6 +201,19 @@ def save_catalog(kind, payload, session):
         state = store.get(db, "settings", "catalog_edits") or {"version": 1, "items": {}}
         if payload.get("version") != state["version"]:
             fail(409, "数据源已被修改，请刷新后重试；当前输入已保留")
+        if old:
+            if kind == "rates":
+                a, b = old["fields"], patch["fields"]
+                unchanged = (engine.number(a.get("汇率")) == engine.number(b["汇率"])
+                             and legacy.to_text(a.get("数据来源")) == legacy.to_text(b.get("数据来源")))
+            elif kind == "subjects":
+                unchanged = all(old.get(k) == patch.get(k) for k in ("name", "direction", "group_override"))
+            else:
+                signature = lambda fields: sorted((f["code"], bool(f.get("mustinput"))) for f in fields)
+                unchanged = (signature(old["auxiliary_fields"]) == signature(patch["auxiliary_fields"])
+                             and old.get("group_override") == patch.get("group_override"))
+            if unchanged:
+                return {"version": state["version"], "changed": False}
         state["items"].setdefault(kind, {})[key] = patch
         state["version"] += 1
         store.put(db, "settings", "catalog_edits", state)
@@ -209,7 +222,7 @@ def save_catalog(kind, payload, session):
         store.put(db, "settings", "mappings", mappings)
         store.audit(db, "catalog:" + kind + ":" + key, session, "save_catalog", old, patch)
     legacy.MASTERS = None
-    return {"version": state["version"]}
+    return {"version": state["version"], "changed": True}
 
 
 def mapping_state(db):
@@ -293,6 +306,9 @@ def save_mapping(kind, payload, session):
                 "platform_name": catalogs[kind + "_by_code"][code]["name"],
                 "enabled": bool(incoming.get("enabled", True)), "updated_at": store.now(),
                 "group_override": group_override(incoming, old)}
+        if old and all(old.get(k, True if k == "enabled" else None) == item.get(k)
+                       for k in ("alias", "platform_code", "enabled", "group_override")):
+            return state
         state["items"][kind] = [r for r in rows if r["id"] != key] + [item]
         state["version"] += 1
         store.put(db, "settings", "mappings", state)
@@ -375,6 +391,59 @@ def in_scope(r):
     return legacy.to_text(r.get("合同号_1")).upper().removeprefix("PI-").startswith("26MT") and r.get("销售方式") == "出口"
 
 
+def filtered_pending_records(task, url, token):
+    """Search only pending groups; persist each page, including inheritance dependencies."""
+    cp = task["checkpoint"]
+
+    def search(key, conditions):
+        state = cp.setdefault(key, {"records": [], "done": False})
+        while not state["done"]:
+            params = {"page_size": 500}
+            if state.get("cursor"):
+                params["page_token"] = state["cursor"]
+            body = feishu._request(url + "/search?" + urlencode(params), method="POST", token=token,
+                                   data={"filter": {"conjunction": "or", "conditions": conditions}})
+            if body.get("code") != 0:
+                raise feishu.FeishuError("飞书筛选失败，请检查字段类型与读取权限后重试")
+            data = body.get("data") or {}
+            more, cursor = data.get("has_more"), data.get("page_token")
+            if more and (not cursor or cursor == state.get("cursor")):
+                raise feishu.FeishuError("飞书筛选分页信息不完整")
+            state["records"] += [dict(r.get("fields", {}), record_id=r["record_id"])
+                                  for r in data.get("items", [])]
+            state.update(cursor=cursor, done=not more)
+            checkpoint(task, progress=sum(len(v.get("records", [])) for v in cp.values() if isinstance(v, dict)))
+        return state["records"]
+
+    def condition(field, value):
+        return {"field_name": field, "operator": "is", "value": [value]}
+
+    pending = search("pending_search", [condition("是否开凭证", "待开")])
+    records = [r for r in pending if in_scope(r)]
+    declarations = sorted({legacy.to_text(r.get("报关单号")) for r in records} - {""})
+    for offset in range(0, len(declarations), 20):
+        records += search("group_search_" + str(offset),
+                          [condition("报关单号", v) for v in declarations[offset:offset + 20]])
+    records = list({r["record_id"]: r for r in records}.values())
+    parents = set()
+    for record in records:
+        contract = legacy.to_text(record.get("合同号_1"))
+        match = legacy.ADD_SUFFIX.match(contract) if "&" not in contract else None
+        if match:
+            base = match.group("base")
+            parents.add(base)
+            if base.upper().endswith("Y"):
+                parents.add(base[:-1])
+    dependencies = []
+    parents = sorted(parents)
+    for offset in range(0, len(parents), 20):
+        dependencies += search("parent_search_" + str(offset),
+                               [condition("合同号_1", v) for v in parents[offset:offset + 20]])
+    # Parent orders supply inheritance only; they must never become selected groups.
+    cp["inheritance_records"] = dependencies
+    return records
+
+
 def query_job(task):
     payload, cp = task["payload"], task["checkpoint"]
     mode = payload.get("mode", "pending")
@@ -451,23 +520,26 @@ def query_job(task):
             temporary.replace(rate_path)
             legacy.MASTERS = None
             url = f"{feishu.BASE}/bitable/v1/apps/{app_token}/tables/{table_id}/records"
-            cursor = cp.get("cursor")
-            while True:
-                params = {"page_size": 500}
-                if cursor:
-                    params["page_token"] = cursor
-                body = feishu._request(url + "?" + urlencode(params), token=token)
-                if body.get("code") != 0:
-                    raise feishu.FeishuError("读取飞书记录失败，请重试")
-                data = body.get("data") or {}
-                records += [dict(r.get("fields", {}), record_id=r["record_id"]) for r in data.get("items", [])]
-                cursor = data.get("page_token")
-                cp.update(records=records, cursor=cursor, fetched=not data.get("has_more"))
-                checkpoint(task, progress=len(records))
-                if cp["fetched"]:
-                    break
-                if not cursor:
-                    raise feishu.FeishuError("飞书分页信息不完整")
+            if mode == "pending":
+                records = filtered_pending_records(task, url, token)
+            else:
+                cursor = cp.get("cursor")
+                while True:
+                    params = {"page_size": 500}
+                    if cursor:
+                        params["page_token"] = cursor
+                    body = feishu._request(url + "?" + urlencode(params), token=token)
+                    if body.get("code") != 0:
+                        raise feishu.FeishuError("读取飞书记录失败，请重试")
+                    data = body.get("data") or {}
+                    records += [dict(r.get("fields", {}), record_id=r["record_id"]) for r in data.get("items", [])]
+                    cursor = data.get("page_token")
+                    cp.update(records=records, cursor=cursor, fetched=not data.get("has_more"))
+                    checkpoint(task, progress=len(records))
+                    if cp["fetched"]:
+                        break
+                    if not cursor:
+                        raise feishu.FeishuError("飞书分页信息不完整")
         cp.update(records=records, fetched=True)
         checkpoint(task, progress=len(records))
     # Deduplicate pages on service restart and preserve full declaration groups.
@@ -515,12 +587,12 @@ def query_job(task):
         result.append({"key": key, "customs_no": "" if key.startswith("missing:") else key,
                        "contracts": contracts, "search_index": engine.contract_index(contracts),
                        "count": len(group), "matched": len(hits), "added": len(group) - len(hits),
-                       "blocked": reasons, "records": group})
+                       "blocked": reasons, "hard_blocked": [r for r in reasons if r in ("缺少报关单号，请在飞书补充后重新检索", "同一报关单包含范围外记录")], "records": group})
     source_label = cp.get("actual_name", "") + " / 2026年报关数据" if cp.get("actual_name") else initial_source_label()
     snapshot = {"id": task["id"], "created_at": store.now(), "mode": mode, "groups": result,
                 "matched": len(selected), "excluded": excluded, "dateless": dateless,
                 "source": source_label, "offline": OFFLINE,
-                "all_records": records}
+                "all_records": list({r["record_id"]: r for r in cp.get("inheritance_records", []) + records}.values())}
     with store.connect(True) as db:
         store.put(db, "snapshot", snapshot["id"], snapshot)
         store.put(db, "settings", "source", {"label": source_label, "updated_at": store.now()})
@@ -537,8 +609,12 @@ def build_job(task):
     groups = [g for g in snap["groups"] if g["key"] in keys]
     if not groups or len(groups) != len(keys):
         fail(422, "请选择有效凭证范围")
-    if any(g["blocked"] for g in groups):
-        fail(422, "所选范围存在分组冲突，请核实后重新检索")
+    acknowledged = set(p.get("acknowledged_groups", []))
+    for g in groups:
+        hard = g.get("hard_blocked", [r for r in g["blocked"] if r in
+                   ("缺少报关单号，请在飞书补充后重新检索", "同一报关单包含范围外记录")])
+        if hard or (g["blocked"] and g["key"] not in acknowledged):
+            fail(422, "请主动勾选已核实的状态异常报关单；缺报关单号或范围外记录仍需修复")
     catalogs = catalog()
     inherited, notes = legacy.apply_add_inheritance(copy.deepcopy(snap["all_records"]))
     by_id = {r["record_id"]: r for r in inherited}
@@ -568,6 +644,12 @@ def build_job(task):
                 draft["version"] += 1
                 engine.validate(draft, catalogs)
                 store.put(db, "draft", key, draft)
+            if group["key"] in acknowledged and draft.get("status_acknowledgement", {}).get("task_id") != task["id"]:
+                draft["status_acknowledgement"] = {"reasons": group["blocked"], "session": task["session"], "at": store.now(), "task_id": task["id"]}
+                if draft.get("exports") and draft.get("reopened_task") != task["id"]:
+                    draft.update(pending_revision=True, reopened_task=task["id"], updated_at=store.now(), version=draft["version"] + 1)
+                store.put(db, "draft", key, draft)
+                store.audit(db, key, task["session"], "acknowledge_status", None, draft["status_acknowledgement"])
             batch["draft_ids"].append(key)
             store.put(db, "batch", batch["id"], batch)
         checkpoint(task, progress=i + 1, total=len(groups))
@@ -580,6 +662,8 @@ def save_draft(key, payload, session):
         if payload.get("version") != old["version"]:
             fail(409, "该凭证已被其他窗口修改，本地输入已保留，请比较后重新保存")
         draft = copy.deepcopy(old)
+        if payload.get("manual_exception") is not None:
+            draft["manual_exception"] = bool(payload["manual_exception"])
         draft["header"] = payload["header"]
         draft["rows"] = payload["rows"]
         allowed_columns = {"id", "摘要", "科目编码", "币种名称", *engine.NUMBERS, *engine.AUX}
@@ -612,34 +696,75 @@ def save_draft(key, payload, session):
 
 def recalculate(key, payload, session):
     with store.connect(True) as db:
-        old = required(db, "draft", key)
-        if old["version"] != payload["version"]:
-            fail(409, "凭证版本已更新，请刷新后重试")
-        if old["manual_fields"] and not payload.get("replace_manual"):
-            fail(409, "重新计算将覆盖人工分录修改，请明确确认；原版本会保留在修改历史")
-        if old.get("incoming_source") and not payload.get("refresh_source"):
-            fail(409, "飞书来源已更新，请确认采用最新来源后重新计算")
-        source = old.get("incoming_source") or old["source"]
-        effective = old.get("incoming_effective_source") or old.get("effective_source") or source
-        # Apply explicit overrides after inherited source values.
-        records = [dict(r, **old["overrides"].get(r["record_id"], {})) for r in effective]
-        masters, version = masters_for(db)
-        catalogs = catalog()
-        draft = copy.deepcopy(old)
-        draft["source"], draft["effective_source"] = source, effective
-        draft["overrides"] = {k: v for k, v in draft["overrides"].items()
-                              if k in {r["record_id"] for r in source}}
-        draft.pop("incoming_source", None)
-        draft.pop("incoming_effective_source", None)
-        draft["rows"], draft["build_issues"] = engine.build(records, masters, catalogs)
-        draft["calculated_overrides"] = copy.deepcopy(draft["overrides"])
-        draft["contracts"] = list(dict.fromkeys(legacy.to_text(r.get("合同号_1")) for r in records))
-        draft["search_index"] = engine.contract_index(draft["contracts"])
-        draft.update(manual_fields=[], mapping_version=version, version=old["version"] + 1, updated_at=store.now())
-        engine.validate(draft, catalogs)
-        store.put(db, "draft", key, draft)
-        store.audit(db, key, session, "recalculate", old, draft)
+        return _recalculate(db, key, payload, session)
+
+
+def _recalculate(db, key, payload, session):
+    old = required(db, "draft", key)
+    if old["version"] != payload["version"]:
+        fail(409, "凭证版本已更新，请刷新后重试")
+    if old["manual_fields"] and not (payload.get("replace_manual") or payload.get("preserve_manual")):
+        fail(409, "重新计算将覆盖人工分录修改，请明确确认；原版本会保留在修改历史")
+    if old.get("incoming_source") and not payload.get("refresh_source"):
+        fail(409, "飞书来源已更新，请确认采用最新来源后重新计算")
+    source = old.get("incoming_source") or old["source"]
+    effective = old.get("incoming_effective_source") or old.get("effective_source") or source
+    # Apply explicit overrides after inherited source values.
+    records = [dict(r, **old["overrides"].get(r["record_id"], {})) for r in effective]
+    masters, version = masters_for(db)
+    catalogs = catalog()
+    draft = copy.deepcopy(old)
+    draft["source"], draft["effective_source"] = source, effective
+    draft["overrides"] = {k: v for k, v in draft["overrides"].items()
+                          if k in {r["record_id"] for r in source}}
+    draft.pop("incoming_source", None)
+    draft.pop("incoming_effective_source", None)
+    draft["rows"], draft["build_issues"] = engine.build(records, masters, catalogs)
+    if payload.get("preserve_manual"):
+        if "__rows__/structure" in old["manual_fields"]:
+            draft["rows"] = copy.deepcopy(old["rows"])
+        else:
+            prior = {r["id"]: r for r in old["rows"]}
+            for row in draft["rows"]:
+                for field in row:
+                    if row["id"] + "/" + field in old["manual_fields"] and row["id"] in prior:
+                        row[field] = prior[row["id"]].get(field, "")
+    draft["calculated_overrides"] = copy.deepcopy(draft["overrides"])
+    draft["contracts"] = list(dict.fromkeys(legacy.to_text(r.get("合同号_1")) for r in records))
+    draft["search_index"] = engine.contract_index(draft["contracts"])
+    draft.update(manual_fields=old["manual_fields"] if payload.get("preserve_manual") else [], mapping_stale=False, mapping_version=version, version=old["version"] + 1, updated_at=store.now())
+    engine.validate(draft, catalogs)
+    store.put(db, "draft", key, draft)
+    store.audit(db, key, session, "recalculate", old, draft)
     return draft
+
+
+def mapping_recalculation_plan():
+    with store.connect() as db:
+        version = mapping_state(db)["version"]
+        drafts = [d for d in store.all_items(db, "draft")
+                  if not d.get("exports") and d["mapping_version"] != version]
+    return {"mapping_version": version, "drafts": [
+        {"id": d["id"], "version": d["version"], "manual": bool(d["manual_fields"]),
+         "incoming_source": bool(d.get("incoming_source"))} for d in drafts]}
+
+
+def recalculate_mappings(payload, session):
+    # One transaction: a conflict or calculation failure rolls back the entire update.
+    with store.connect(True) as db:
+        if mapping_state(db)["version"] != payload.get("mapping_version"):
+            fail(409, "映射再次更新，请重新发起统一计算")
+        targets = payload.get("drafts", [])
+        if not targets or len({d["id"] for d in targets}) != len(targets):
+            fail(422, "请选择需要更新的草稿")
+        for item in targets:
+            old = required(db, "draft", item["id"])
+            if old.get("exports") or old["version"] != item["version"]:
+                fail(409, "草稿已修改或导出，请重新发起统一计算")
+        return [_recalculate(db, item["id"], {**item,
+                 "replace_manual": payload.get("replace_manual", False),
+                 "preserve_manual": payload.get("preserve_manual", False),
+                 "refresh_source": payload.get("refresh_source", False)}, session) for item in targets]
 
 
 def export_plan(ids):
@@ -648,7 +773,7 @@ def export_plan(ids):
         catalogs = catalog()
         for key in dict.fromkeys(ids):
             draft = engine.validate(required(db, "draft", key), catalogs)
-            entry = {"id": key, "contracts": draft["contracts"], "version": draft["version"],
+            entry = {"id": key, "contracts": draft["contracts"], "customs_no": draft.get("customs_no", ""), "version": draft["version"],
                      "replaces": draft["exports"]}
             if draft["valid"]:
                 valid.append(entry)
@@ -716,6 +841,7 @@ def export_job(task):
             store.put(db, "export", eid, existing)
             for draft in drafts:
                 draft["exports"].append(eid)
+                draft.pop("pending_revision", None)
                 # Export metadata changes participate in optimistic locking.
                 draft["version"] += 1
                 store.put(db, "draft", draft["id"], draft)

@@ -21,6 +21,7 @@ class TaskRequest(BaseModel):
 
 class EditRequest(BaseModel):
     version: int
+    manual_exception: bool | None = None
     header: dict[str, str]
     rows: list[dict[str, str]]
     overrides: dict[str, dict[str, Any]] = Field(default_factory=dict)
@@ -91,6 +92,16 @@ def batch(key: str, workbench: bool = False):
     for d in value["drafts"]:
         d["mapping_stale"] = d["mapping_version"] != version
     return value
+
+
+@router.get("/mapping-recalculation")
+def mapping_recalculation_plan():
+    return svc.mapping_recalculation_plan()
+
+
+@router.post("/mapping-recalculation")
+def mapping_recalculation(request: dict, x_session_id: str = Header(default="anonymous")):
+    return svc.recalculate_mappings(request, x_session_id)
 
 
 @router.get("/drafts/{key}")

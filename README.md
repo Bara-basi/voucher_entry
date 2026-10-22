@@ -16,7 +16,7 @@ D:\python\python.exe scripts\serve_workbench.py --host 0.0.0.0 --port 8000
 
 从飞书多维表记录构建用友凭证导入模板，替代财务人员机械重复的录入工作。
 
-当前范围：**合同号以 26MT 开头、销售方式 = 出口**（内销暂缓）。
+当前范围：**合同号以 26MT 开头、销售方式 = 出口**。
 
 ## 目录结构
 
@@ -114,7 +114,7 @@ D:\python\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 - 服务代码放 `app/services/`，特殊脚本放 `scripts/`。
 - 缺数据、缺档案一律报异常，不猜测、不自动兼容。
 
-## 交接说明
+## 开发过程说明
 
 本目录最初是 2026-10-16 整理的精简交接包：`templates/` 为已验证模板，`mappings/` 为用友档案快照，
 `vouchers/` 为历史只读凭证，`scripts/` 为飞书/用友获取脚本。`.env` 含真实配置，不要上传公开仓库。

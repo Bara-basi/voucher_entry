@@ -44,6 +44,43 @@ const archiveCurrent = computed(() => archiveDrafts.value[archiveIndex.value])
 watch(archiveQuery, () => { archiveIndex.value = 0 })
 async function openArchive(id: string) { exportDetail.value = await api('/exports/' + id); archiveQuery.value = ''; archiveIndex.value = 0 }
 const exportPreview = ref<any>(null), exports = ref<any[]>([]), exportDetail = ref<any>(null)
+const exportSelection = ref<string[]>([]), exportQuery = ref(''), exportFilter = ref('all')
+const exportMatches = (d: any) => (d.contracts.join(' ') + (d.customs_no || '')).toUpperCase().includes(exportQuery.value.trim().toUpperCase())
+const exportVisible = computed(() => exportFilter.value === 'excluded' ? [] : (exportPreview.value?.valid || []).filter(exportMatches))
+const exportExcluded = computed(() => exportFilter.value === 'valid' ? [] : (exportPreview.value?.excluded || []).filter(exportMatches))
+const exportChosen = computed(() => (exportPreview.value?.valid || []).filter((d: any) => exportSelection.value.includes(d.id)))
+function selectExportVisible(checked: boolean) {
+  const ids = exportVisible.value.map((d: any) => d.id)
+  exportSelection.value = checked ? [...new Set([...exportSelection.value, ...ids])] : exportSelection.value.filter(id => !ids.includes(id))
+}
+const reviewHint = ref(false), recalculating = ref(false)
+let reviewHintTimer: ReturnType<typeof setTimeout> | undefined
+function enterReview() {
+  reviewMode.value = true; reviewHint.value = true
+  clearTimeout(reviewHintTimer)
+  reviewHintTimer = setTimeout(() => { reviewHint.value = false }, 2500)
+}
+function toggleException() {
+  if (!current.value || busy.value || recalculating.value) return
+  current.value.manual_exception = !current.value.manual_exception
+  markDirty()
+}
+async function recalculateMappings() {
+  await flushAll()
+  const plan = await api('/mapping-recalculation')
+  if (!plan.drafts.length) { drafts.value.forEach(d => { d.mapping_stale = false }); return }
+  recalculating.value = true
+  try {
+    const results: Draft[] = await api('/mapping-recalculation', 'POST', {...plan, preserve_manual: true, refresh_source: true})
+    for (const result of results) {
+      const draft = drafts.value.find(d => d.id === result.id)
+      if (draft) { delete draft.incoming_source; Object.assign(draft, result) }
+    }
+    await loadMappings()
+    toast(`已统一更新 ${results.length} 张草稿`)
+  } finally { recalculating.value = false }
+}
+
 const showInspector = ref(false), inspectorTab = ref('issues'), sourceIndex = ref(0)
 const history = ref<any[] | null>(null), historyTitle = ref('')
 const mappings = ref<any>({ version: 1, items: {} }), mapKind = ref('inventory'), mapQuery = ref('')
@@ -86,11 +123,11 @@ async function saveReference() {
   referenceSaving.value = true; referenceError.value = ''
   try {
     const row = referenceEdit.value
-    await api('/catalogs/' + mapKind.value, 'PUT', {version: referenceVersion.value, key: mapKind.value === 'rates' ? row.record_id || row.id : mapKind.value === 'aux' ? row.account_code : row.code, item: row})
+    const saved = await api('/catalogs/' + mapKind.value, 'PUT', {version: referenceVersion.value, key: mapKind.value === 'rates' ? row.record_id || row.id : mapKind.value === 'aux' ? row.account_code : row.code, item: row})
     referenceEdit.value = null
     await loadMappings()
-    drafts.value.forEach(d => { d.mapping_stale = true })
-    toast('数据源已保存；已有草稿可选择重新计算')
+    if (saved.changed) drafts.value.forEach(d => { d.mapping_stale = true })
+    toast(saved.changed ? '数据源已保存' : '内容未变化')
   } catch (e: any) { referenceError.value = e.message } finally { referenceSaving.value = false }
 }
 const conflict = ref<{ local: Draft; remote: Draft } | null>(null)
@@ -162,6 +199,7 @@ async function runTask(kind: string, payload: any, existing?: any) {
   try {
     let task = existing || await api('/tasks', 'POST', { kind, payload, request_id: newId() })
     activeTask.value = task
+    if (kind === 'build') showRange.value = false
     while (!['done','failed'].includes(task.status)) {
       await new Promise(resolve => setTimeout(resolve, 700))
       if (disposed) return
@@ -214,7 +252,7 @@ async function save(id: string): Promise<void> {
     saving.add(id)
     dirty.delete(id); saveErrors.delete(id)
     try {
-      const result: Draft = await api('/drafts/' + id, 'PATCH', { version: sent.version, header: sent.header, rows: sent.rows, overrides: sent.overrides })
+      const result: Draft = await api('/drafts/' + id, 'PATCH', { version: sent.version, header: sent.header, rows: sent.rows, overrides: sent.overrides, manual_exception: !!sent.manual_exception })
       if (dirty.has(id)) {
         d.version = result.version; d.issues = result.issues; d.manual_fields = result.manual_fields
         localStorage.setItem('voucher-draft-' + id, JSON.stringify(d))
@@ -256,13 +294,15 @@ function navigate(direction: number) {
   if (d) selectDraft(d.id)
 }
 function keyboard(e: KeyboardEvent) {
+  if (busy.value || recalculating.value || e.isComposing || e.ctrlKey || e.altKey || e.metaKey) return
   if (e.key === 'Escape' && batchMenu.value?.open) { batchMenu.value.open = false; return }
   if (exportDetail.value) { if (e.key === 'Escape') exportDetail.value = null; return }
   if (e.key === 'Escape' && reviewMode.value && !showRange.value && !exportPreview.value && !conflict.value && !history.value) { reviewMode.value = false; return }
   if (page.value !== 'workbench' || showRange.value || exportPreview.value || conflict.value || history.value || exportComplete.value) return
   if ((e.target as HTMLElement).closest('input,textarea,select,[contenteditable]')) return
-  if (e.key === 'ArrowLeft') navigate(-1)
-  if (e.key === 'ArrowRight') navigate(1)
+  if (reviewMode.value && e.key.toLowerCase() === 'e' && !e.repeat) { e.preventDefault(); toggleException(); return }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1) }
+  if (e.key === 'ArrowRight') { e.preventDefault(); navigate(1) }
 }
 function unload(e: BeforeUnloadEvent) {
   if (dirty.size || inflight.size) { e.preventDefault(); e.returnValue = '' }
@@ -302,6 +342,8 @@ async function recalculate() {
 async function openExport() {
   await flushAll()
   exportPreview.value = await api('/exports/preview', 'POST', { draft_ids: drafts.value.map(d => d.id) })
+  exportSelection.value = []
+  exportQuery.value = ''; exportFilter.value = 'all'
 }
 async function resolveConflict(keepLocal: boolean) {
   const value = conflict.value!
@@ -327,10 +369,12 @@ async function saveMap() {
   if (!groupValid.value) { mapError.value = '请填写新分组名称'; return }
   mapError.value = ''
   try {
+    const previousVersion = mappings.value.version
     mappings.value = await api('/mappings/' + mapKind.value, 'PUT', { version: mappings.value.version, item: mapEdit.value })
     mapEdit.value = null
-    drafts.value.forEach(d => { d.mapping_stale = true })
-    toast('映射已保存，后续生成立即生效')
+    const changed = previousVersion !== mappings.value.version
+    if (changed) drafts.value.forEach(d => { d.mapping_stale = true })
+    toast(changed ? '映射已保存' : '内容未变化')
   } catch (e: any) { mapError.value = e.message }
 }
 async function switchPage(value: string) {
@@ -351,6 +395,7 @@ onMounted(() => guard(async () => {
   window.addEventListener('beforeunload', unload)
 }))
 onBeforeUnmount(() => {
+  clearTimeout(reviewHintTimer)
   canvasObserver?.disconnect()
   disposed = true
   window.removeEventListener('pointerdown', dismissBatch)
@@ -384,7 +429,7 @@ onBeforeUnmount(() => {
       <div v-if="tasks.some(t => ['failed','queued','running'].includes(t.status))" class="recover-bar">
         <span>可恢复任务</span><button v-for="t in tasks.filter(t => ['failed','queued','running'].includes(t.status)).slice(0,3)" :disabled="busy" @click="guard(async () => runTask(t.kind, {}, await api('/tasks/' + t.id + '/retry', 'POST')))">{{ ({query:'数据检索',build:'凭证构建',export:'文件导出',writeback:'飞书回写'} as any)[t.kind] }} · {{ t.status === 'failed' ? '重试' : '查看进度' }}</button>
       </div>
-      <div v-if="reviewMode" class="review-header"><b>凭证核对</b><button class="review-search-toggle" title="搜索合同号" :aria-expanded="reviewSearch" @click="reviewSearch = !reviewSearch"><Search :size="17" /></button><div v-if="reviewSearch" class="search-box"><input aria-label="核对模式合同号搜索" v-model="query" placeholder="搜索合同号 / 报关单号"></div><span>{{ index < 0 ? 0 : index + 1 }} / {{ filtered.length }} 张</span><span class="review-save">{{ saveLabel }}</span><button class="secondary" @click="reviewMode = false"><X :size="16" />退出核对模式</button></div>
+      <div v-if="reviewMode" class="review-header"><b>凭证核对</b><button class="review-search-toggle" title="搜索合同号" :aria-expanded="reviewSearch" @click="reviewSearch = !reviewSearch"><Search :size="17" /></button><div v-if="reviewSearch" class="search-box"><input aria-label="核对模式合同号搜索" v-model="query" placeholder="搜索合同号 / 报关单号"></div><span>{{ index < 0 ? 0 : index + 1 }} / {{ filtered.length }} 张</span><button class="exception-toggle" :class="{marked: current?.manual_exception}" :aria-pressed="!!current?.manual_exception" :disabled="!current || busy || recalculating" @click="toggleException"><AlertCircle :size="16" />{{ current?.manual_exception ? '取消异常标记' : '标记为异常' }}<kbd>E</kbd></button><span class="review-save">{{ saveLabel }}</span><button class="secondary" @click="reviewMode = false"><X :size="16" />退出核对模式</button></div>
       <section class="workspace">
         <button v-if="reviewMode" class="review-arrow review-prev" aria-label="上一张凭证" :disabled="index <= 0" @click="navigate(-1)"><ChevronLeft :size="44" stroke-width="2.8" /></button>
         <button v-if="reviewMode" class="review-arrow review-next" aria-label="下一张凭证" :disabled="index < 0 || index >= filtered.length - 1" @click="navigate(1)"><ChevronRight :size="44" stroke-width="2.8" /></button>
@@ -400,8 +445,8 @@ onBeforeUnmount(() => {
         </aside>
         <section ref="canvasElement" class="voucher-area">
           <template v-if="current">
-            <div class="voucher-toolbar"><div class="canvas-identity"><b>{{ current.contracts[0] }}</b><span>{{ index + 1 }} / {{ filtered.length }}</span></div><div class="canvas-tools"><button title="缩小" aria-label="缩小凭证" :disabled="zoom <= .5" @click="changeZoom(-.1)"><Minus :size="16" /></button><span class="zoom-value">{{ Math.round(zoom * 100) }}%</span><button title="放大" aria-label="放大凭证" :disabled="zoom >= 1.4" @click="changeZoom(.1)"><Plus :size="16" /></button><button title="适应宽度" :aria-pressed="autoFit" @click="autoFit = true; fitPaper()"><Scan :size="17" /></button><span class="tool-separator"></span><button class="issues-toggle" :aria-expanded="showInspector" @click="showInspector = !showInspector; inspectorTab = 'issues'"><AlertCircle :size="16" />问题 {{ current.issues.length }}</button><button title="修改历史" @click="guard(() => openHistory(current!.id, '凭证修改历史'))"><History :size="16" /></button><button class="focus-button" @click="reviewMode = true">专注核对</button></div></div>
-            <div v-if="current.mapping_stale" class="inline-warning">映射已更新。当前草稿仍使用生成时的映射。<button @click="guard(recalculate)">重新计算</button></div>
+            <div class="voucher-toolbar"><div class="canvas-identity"><b>{{ current.contracts[0] }}</b><span>{{ index + 1 }} / {{ filtered.length }}</span></div><div class="canvas-tools"><button title="缩小" aria-label="缩小凭证" :disabled="zoom <= .5" @click="changeZoom(-.1)"><Minus :size="16" /></button><span class="zoom-value">{{ Math.round(zoom * 100) }}%</span><button title="放大" aria-label="放大凭证" :disabled="zoom >= 1.4" @click="changeZoom(.1)"><Plus :size="16" /></button><button title="适应宽度" :aria-pressed="autoFit" @click="autoFit = true; fitPaper()"><Scan :size="17" /></button><span class="tool-separator"></span><button class="issues-toggle" :aria-expanded="showInspector" @click="showInspector = !showInspector; inspectorTab = 'issues'"><AlertCircle :size="16" />问题 {{ current.issues.length }}</button><button title="修改历史" @click="guard(() => openHistory(current!.id, '凭证修改历史'))"><History :size="16" /></button><button class="focus-button" @click="enterReview">专注核对</button></div></div>
+            <div v-if="current.mapping_stale" class="inline-warning">映射已更新。<button :disabled="recalculating || busy" @click="guard(recalculateMappings)">重新计算</button></div>
             <div v-if="current.incoming_source" class="inline-warning">飞书来源已有更新，请核对后重新计算。<button @click="guard(recalculate)">采用最新来源</button></div>
 
             <div ref="paperElement" class="voucher-paper" :style="{ zoom }">
@@ -454,11 +499,19 @@ onBeforeUnmount(() => {
     </main>
 
     <div v-if="showRange" class="modal-backdrop"><section class="modal wide"><div class="modal-heading"><div><small>选取生成范围</small><h2>找到 {{ snapshot.groups.length }} 张凭证</h2></div><button @click="showRange = false"><X :size="20" /></button></div><p class="muted">命中 {{ snapshot.matched }} 条记录 · 已开或已导出排除 {{ snapshot.excluded }} 条 · 无有效日期 {{ snapshot.dateless }} 条</p>
-      <div class="modal-scroll"><table class="data-table"><thead><tr><th><input type="checkbox" aria-label="全选可生成凭证" :checked="selectedGroups.length === snapshot.groups.filter((g: any) => !g.blocked.length).length" @change="selectedGroups = ($event.target as HTMLInputElement).checked ? snapshot.groups.filter((g: any) => !g.blocked.length).map((g: any) => g.key) : []"></th><th>合同号 / 报关单号</th><th>记录</th><th>分组核验</th></tr></thead><tbody><tr v-for="g in snapshot.groups" :key="g.key"><td><input type="checkbox" :aria-label="'选择' + g.contracts.join(' ')" v-model="selectedGroups" :value="g.key" :disabled="g.blocked.length > 0"></td><td><b>{{ g.contracts.join(' / ') }}</b><small class="block muted">{{ g.customs_no || '缺少报关单号' }}</small></td><td>{{ g.count }} 条</td><td><span v-if="g.blocked.length" class="error-text">{{ g.blocked.join('；') }}</span><span v-else-if="g.added" class="warning-text">已补入同报关单 {{ g.added }} 条</span><span v-else class="success-text">分组完整</span><details><summary>查看来源</summary><p v-for="r in g.records">{{ r['合同号_1'] }} · {{ r['报关品名'] }} · {{ r['是否开凭证'] || '未标记' }}</p></details></td></tr></tbody></table></div>
-      <footer class="modal-footer"><span>已选 {{ selectedGroups.length }} 张 · 制单日期 {{ postingDate }}</span><button class="primary" :disabled="!selectedGroups.length || busy" @click="guard(() => runTask('build', { snapshot_id: snapshot.id, keys: selectedGroups, posting_date: postingDate }))">构建凭证草稿<ArrowRight :size="15" /></button></footer>
+      <div class="modal-scroll"><table class="data-table"><thead><tr><th><input type="checkbox" aria-label="全选可生成凭证" :checked="snapshot.groups.some((g: any) => !g.blocked.length) && snapshot.groups.filter((g: any) => !g.blocked.length).every((g: any) => selectedGroups.includes(g.key))" @change="selectedGroups = ($event.target as HTMLInputElement).checked ? snapshot.groups.filter((g: any) => !g.blocked.length).map((g: any) => g.key) : []"></th><th>合同号 / 报关单号</th><th>记录</th><th>分组核验</th></tr></thead><tbody><tr v-for="g in snapshot.groups" :key="g.key"><td><input type="checkbox" :aria-label="'选择' + g.contracts.join(' ')" v-model="selectedGroups" :value="g.key" :disabled="g.hard_blocked?.length > 0"></td><td><b>{{ g.contracts.join(' / ') }}</b><small class="block muted">{{ g.customs_no || '缺少报关单号' }}</small></td><td>{{ g.count }} 条</td><td><span v-if="g.blocked.length" :class="g.hard_blocked?.length ? 'error-text' : 'warning-text'">{{ g.blocked.join('；') }}<small v-if="!g.hard_blocked?.length" class="block">默认不选中，核实后可手动勾选</small></span><span v-else-if="g.added" class="warning-text">已补入同报关单 {{ g.added }} 条</span><span v-else class="success-text">分组完整</span><details><summary>查看来源</summary><p v-for="r in g.records">{{ r['合同号_1'] }} · {{ r['报关品名'] }} · {{ r['是否开凭证'] || '未标记' }}</p></details></td></tr></tbody></table></div>
+      <footer class="modal-footer"><span>已选 {{ selectedGroups.length }} 张 · 制单日期 {{ postingDate }}</span><button class="primary" :disabled="!selectedGroups.length || busy" @click="guard(() => runTask('build', { snapshot_id: snapshot.id, keys: selectedGroups, posting_date: postingDate, acknowledged_groups: snapshot.groups.filter((g: any) => g.blocked.length && selectedGroups.includes(g.key)).map((g: any) => g.key) }))">构建凭证草稿<ArrowRight :size="15" /></button></footer>
     </section></div>
     <div v-if="exportComplete" class="modal-backdrop"><section class="modal small export-complete" role="dialog" aria-modal="true" aria-labelledby="export-complete-title"><div class="modal-heading"><h2 id="export-complete-title">导出文件已生成</h2><button aria-label="关闭导出完成提示" @click="exportComplete = null"><X :size="20" /></button></div><div class="completed-file"><FileSpreadsheet :size="28" /><b>{{ exportComplete.filename }}</b></div><p>已发起下载。若浏览器未开始下载，可点击下方“再次下载”。文件已保存在导出记录中，可随时重复下载。</p><p v-if="exportComplete.writeback === 'failed'" class="error-text">文件已生成，但飞书回写失败，可在导出记录中重试回写。</p><footer class="modal-footer"><button class="secondary" @click="downloadExport(exportComplete)"><Download :size="15" />再次下载</button><button class="primary" @click="reviewMode = false; page = 'exports'; exportComplete = null">前往导出记录<ArrowRight :size="15" /></button></footer></section></div>
-    <div v-if="exportPreview" class="modal-backdrop"><section class="modal"><div class="modal-heading"><div><small>导出确认</small><h2>{{ exportPreview.valid.length }} 张凭证可以导出</h2></div><button @click="exportPreview = null"><X :size="20" /></button></div><p>{{ meta.offline ? '导出保存后的有效凭证，演示模式不回写飞书。' : '导出保存后的有效凭证，并将对应飞书记录标为「已开」。' }}生成后自动下载，也可在导出记录中重复下载。</p><div class="modal-scroll"><div v-for="d in exportPreview.valid" class="preview-item"><CheckCircle2 :size="16" class="success-text" /><b>{{ d.contracts.join(' / ') }}</b><span>版本 {{ d.version }}</span><small v-if="d.replaces.length" class="warning-text">替换已有导出</small></div><div v-if="exportPreview.excluded.length" class="inline-warning">以下 {{ exportPreview.excluded.length }} 张暂不导出，也不会回写飞书。</div><div v-for="d in exportPreview.excluded" class="excluded-item"><b>{{ d.contracts.join(' / ') }}</b><small>{{ d.issues.map((i: Issue) => i.message).join('；') }}</small></div></div><footer class="modal-footer"><span>53列 · Excel .xls</span><button class="primary" :disabled="!exportPreview.valid.length || busy" @click="guard(() => runTask('export', { drafts: exportPreview.valid.map((d: any) => ({ id: d.id, version: d.version })), replace_export: exportPreview.valid.some((d: any) => d.replaces.length) }))"><Download :size="15" />确认导出有效凭证</button></footer></section></div>
+    <div v-if="exportPreview" class="modal-backdrop"><section class="modal wide">
+      <div class="modal-heading"><div><small>导出确认</small><h2>已选 {{ exportChosen.length }} 张凭证</h2></div><button :disabled="busy" @click="exportPreview = null"><X :size="20" /></button></div>
+      <p>{{ meta.offline ? '演示模式不回写飞书。' : '仅将实际导出的来源记录回写为已开。' }}生成后自动下载，也可在导出记录中重复下载。</p>
+      <div class="export-selection-tools"><div class="search-box"><Search :size="16" /><input v-model="exportQuery" placeholder="搜索合同号 / 报关单号" aria-label="筛选导出凭证"></div><select v-model="exportFilter" aria-label="导出状态筛选"><option value="all">全部状态</option><option value="valid">可导出</option><option value="excluded">异常凭证</option></select><button :disabled="busy || !exportVisible.length" @click="selectExportVisible(true)">全选筛选结果</button><button :disabled="busy" @click="selectExportVisible(false)">取消筛选结果</button><button :disabled="busy" @click="exportSelection = []">清空选择</button></div>
+      <div class="modal-scroll"><label v-for="d in exportVisible" :key="d.id" class="preview-item export-choice"><input type="checkbox" v-model="exportSelection" :value="d.id" :disabled="busy"><b>{{ d.contracts.join(' / ') }}</b><span>版本 {{ d.version }}</span><small v-if="d.replaces.length" class="warning-text">替换已有导出</small></label><div v-if="exportExcluded.length" class="inline-warning">以下 {{ exportExcluded.length }} 张存在异常，不能导出。</div><div v-for="d in exportExcluded" :key="d.id" class="excluded-item"><b>{{ d.contracts.join(' / ') }}</b><small>{{ d.issues.map((i: Issue) => i.message).join('；') }}</small></div><p v-if="!exportVisible.length && !exportExcluded.length">没有匹配的凭证</p></div>
+      <footer class="modal-footer"><span>已选 {{ exportChosen.length }} / 可导出 {{ exportPreview.valid.length }} · 53列 .xls</span><button class="primary" :disabled="!exportChosen.length || busy" @click="guard(() => runTask('export', { drafts: exportChosen.map((d: any) => ({ id: d.id, version: d.version })), replace_export: exportChosen.some((d: any) => d.replaces.length) }))"><Download :size="15" />导出所选 {{ exportChosen.length }} 张</button></footer>
+    </section></div>
+    <Transition name="review-tip"><div v-if="reviewMode && reviewHint" class="review-shortcut-toast" role="status"><span><kbd>E</kbd> 标记 / 取消异常</span><span><kbd><ChevronLeft :size="18" /></kbd><kbd><ChevronRight :size="18" /></kbd> 切换凭证</span><span><kbd>Esc</kbd> 退出核对</span></div></Transition>
+    <div v-if="recalculating" class="modal-backdrop"><section class="modal" role="status"><h2>正在统一更新草稿…</h2><p>完成后自动关闭</p></section></div>
     <div v-if="referenceEdit" class="modal-backdrop"><section class="modal small"><div class="modal-heading"><h2>编辑{{ mapLabels[mapKind] }}</h2><button :disabled="referenceSaving" @click="referenceEdit = null"><X :size="20" /></button></div><div class="modal-scroll form-stack">
       <template v-if="mapKind === 'subjects'"><p>{{ referenceEdit.code }} · {{ referenceEdit.displayname }}</p><label>科目名称<input v-model="referenceEdit.name"></label><label>余额方向<select v-model="referenceEdit.direction"><option value="Debit">借方</option><option value="Credit">贷方</option></select></label></template>
       <template v-else-if="mapKind === 'aux'"><p>{{ referenceEdit.account_code }} · {{ referenceEdit.account_name }}</p><div v-for="option in auxOptions" :key="option.code" class="aux-config-row"><label><input type="checkbox" :checked="referenceEdit.auxiliary_fields.some((f: any) => f.code === option.code)" @change="toggleAux(option, ($event.target as HTMLInputElement).checked)">{{ option.name }}</label><label v-if="referenceEdit.auxiliary_fields.some((f: any) => f.code === option.code)"><input type="checkbox" v-model="referenceEdit.auxiliary_fields.find((f: any) => f.code === option.code).mustinput">必填</label></div></template>
