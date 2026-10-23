@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-15",
+  "updated_at": "2026-10-22",
   "scope": "本次51条客户映射异常及其确认别名；与平台主档分离保存",
   "ranking_rules": {
     "confirmed_alias_priority": true,
@@ -236,6 +236,16 @@
       "confirmed_date": "2026-10-15",
       "basis": "平台档案同一条记录列有俄文和拉丁字母转写",
       "affected_source_records": 0
+    },
+    {
+      "alias": "上海宝冶冶金工程有限公司",
+      "platform_code": "010251",
+      "platform_name": "上海宝冶集团有限公司",
+      "kind": "confirmed_name_alias",
+      "confirmed_by": "用户",
+      "confirmed_date": "2026-10-22",
+      "basis": "用户确认该公司与上海宝冶集团有限公司为同一新旧主体/注册账户关系",
+      "affected_source_records": 5
     }
   ]
 }
