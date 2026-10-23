@@ -7,6 +7,7 @@ import datetime as dt
 import hashlib
 import json
 import logging
+import math
 import os
 import re
 import threading
@@ -131,29 +132,67 @@ def workbench_batches(db, now=None):
 
 def catalog():
     result = {}
+    all_subjects = []
+    subject_by_id = {}
+
+    def root_subject(subject):
+        seen = set()
+        while subject.get("parent") and str(subject["parent"]) in subject_by_id:
+            parent_id = str(subject["parent"])
+            if parent_id in seen:
+                break
+            seen.add(str(subject["id"]))
+            subject = subject_by_id[parent_id]
+        return subject
+
     for kind, filename in CATALOG_FILES.items():
         records = legacy.read_json(ROOT / "mappings/platform" / (filename + ".json"))["records"]
         by_id = {str(r["id"]): r for r in records}
-        for record in records:
-            parent = by_id.get(str(record.get("parent", "")))
-            path = str(record.get("path", "")).strip("|").split("|")
-            if not parent and len(path) > 1:
-                parent = by_id.get(path[-2])
-            if parent:
-                record["group_name"] = str(parent["code"]) + " · " + parent["name"]
-            elif kind == "customers" and record.get("customerClass_name"):
-                record["group_name"] = record["customerClass_name"]
+        if kind == "subjects":
+            all_subjects = records
+            subject_by_id = by_id
+            for record in records:
+                top = root_subject(record)
+                record["group_name"] = str(top["code"]) + " · " + str(top["name"])
+            records = [r for r in records if r.get("leaf")]
+        else:
+            for record in records:
+                parent = by_id.get(str(record.get("parent", "")))
+                path = str(record.get("path", "")).strip("|").split("|")
+                if not parent and len(path) > 1:
+                    parent = by_id.get(path[-2])
+                if parent:
+                    record["group_name"] = str(parent["code"]) + " · " + parent["name"]
+                elif kind == "customers" and record.get("customerClass_name"):
+                    record["group_name"] = record["customerClass_name"]
+                elif kind == "customers":
+                    inferred = inferred_customer_group(record.get("name"))
+                    if inferred:
+                        record["group_name"] = inferred
         if kind == "inventory":
             records = [r for r in records if r.get("isEnd")]
             for record in records:
                 category = legacy.PRODUCT_CODE_MAPPING.get(str(record["code"])[:4], "其他产品")
                 record["subject_code"] = legacy.INVENTORY_SUBJECT[category]
                 record["subject_name"] = category
+                if not record.get("group_name"):
+                    record["group_name"] = record["subject_code"] + " · " + category
         result[kind] = records
         result[kind + "_by_code"] = {str(r["code"]): r for r in records}
-    aux = legacy.read_json(ROOT / "mappings/platform/科目辅助核算配置.json")["records"]
+    subject_by_code = {str(row["code"]): row for row in all_subjects}
+
+    aux = [
+        row for row in legacy.read_json(
+            ROOT / "mappings/platform/科目辅助核算配置.json"
+        )["records"]
+        if subject_by_code.get(str(row["account_code"]), {}).get("leaf")
+    ]
     result["aux"] = aux
     result["aux_by_code"] = {r["account_code"]: r["auxiliary_fields"] for r in aux}
+    for row in aux:
+        subject = subject_by_code[str(row["account_code"])]
+        root = root_subject(subject)
+        row["group_name"] = str(root["code"]) + " · " + str(root["name"])
     rates = ROOT / "data/fx_rates_ai_snapshot.json"
     result["rates"] = legacy.read_json(rates).get("records", []) if rates.exists() else []
     with store.connect() as db:
@@ -170,13 +209,23 @@ def catalog():
     result["aux_by_code"] = {r["account_code"]: r["auxiliary_fields"] for r in result["aux"]}
     for row in result["aux"]:
         subject = result["subjects_by_code"].get(row["account_code"], {})
-        row["group_name"] = subject.get("group_name", "")
         row["account_name"] = subject.get("displayname", row["account_name"])
     for kind in (*CATALOG_FILES, "aux"):
         for row in result[kind]:
             if row.get("group_override") is not None:
                 row["group_name"] = row["group_override"]
     return result
+
+
+def inferred_customer_group(name):
+    value = str(name or "").strip()
+    chinese = sum("\u3400" <= char <= "\u9fff" for char in value)
+    latin = sum(("A" <= char <= "Z") or ("a" <= char <= "z") for char in value)
+    if chinese and chinese >= latin:
+        return "国内"
+    if latin:
+        return "国外"
+    return ""
 
 
 def catalog_key(kind, row):
@@ -276,9 +325,10 @@ def save_catalog(kind, payload, session):
 
 
 def mapping_state(db):
-    state = store.get(db, "settings", "mappings")
+    stored = store.get(db, "settings", "mappings")
+    state = copy.deepcopy(stored)
     if state:
-        return state
+        return merge_domestic_customer_mappings(state)
     state = {"version": 1, "items": {}}
     for kind, (filename, key) in MAP_FILES.items():
         path = ROOT / "mappings" / filename
@@ -292,6 +342,129 @@ def mapping_state(db):
                  "alias": name, "platform_code": code, "platform_name": name,
                  "enabled": True, "updated_at": "", "basis": "同名存货档案"}
                 for name, code in legacy.MasterData._load_inventory().items()]
+    return merge_domestic_customer_mappings(state)
+
+
+def domestic_customer_mapping_rows():
+    rules_path = ROOT / "data/domestic_voucher_rules_fit.json"
+    customers_path = ROOT / "mappings/platform/客户档案.json"
+    source_paths = [
+        rules_path,
+        customers_path,
+        ROOT / "data/domestic_source_current.json",
+        ROOT / "data/ai_customs_source.json",
+        ROOT / "data/ruibei_buyer_mapping_2026.json",
+    ]
+    signature = (
+        str(ROOT),
+        tuple(
+            (str(path), path.stat().st_mtime_ns, path.stat().st_size)
+            if path.exists() else (str(path), 0, 0)
+            for path in source_paths
+        ),
+    )
+    return list(_domestic_customer_mapping_rows_cached(signature))
+
+
+@lru_cache(maxsize=16)
+def _domestic_customer_mapping_rows_cached(signature):
+    rules_path = ROOT / "data/domestic_voucher_rules_fit.json"
+    customers_path = ROOT / "mappings/platform/客户档案.json"
+    if not rules_path.exists() or not customers_path.exists():
+        return []
+    rules = legacy.read_json(rules_path)
+    known = (rules.get("mappings") or {}).get("customers") or {}
+    platform = legacy.read_json(customers_path).get("records", [])
+    by_code = {str(row["code"]): row for row in platform if row.get("code")}
+    by_name = {}
+    for row in platform:
+        name = legacy.normalize_name(row.get("name"))
+        if name:
+            by_name.setdefault(name, str(row["code"]))
+
+    names = []
+    for filename in ("domestic_source_current.json", "ai_customs_source.json"):
+        path = ROOT / "data" / filename
+        if not path.exists():
+            continue
+        for item in legacy.read_json(path).get("records", []):
+            fields = item.get("fields", item)
+            if domestic.text(fields.get("销售方式")) != "内销":
+                continue
+            names.extend([
+                domestic.text(fields.get("客户名称_脚本用")),
+                domestic.text(fields.get("买方英文名")),
+            ])
+    ruibei_path = ROOT / "data/ruibei_buyer_mapping_2026.json"
+    if ruibei_path.exists():
+        names.extend(
+            domestic.text(item.get("公司名称"))
+            for item in legacy.read_json(ruibei_path).get("results", [])
+            if item.get("状态") == "已获取"
+        )
+
+    rows, seen = [], set()
+    for alias in names:
+        alias = domestic.text(alias)
+        normalized = legacy.normalize_name(alias)
+        if not alias or not normalized or normalized in seen:
+            continue
+        # Chinese legal names should use an exact customer-archive match. English
+        # names and abbreviations retain the fitted voucher mapping because the same
+        # group may deliberately bill through a domestic subsidiary or trading entity.
+        chinese_name = any("\u3400" <= char <= "\u9fff" for char in alias)
+        code = str((by_name.get(normalized) if chinese_name else "") or known.get(normalized) or "")
+        if not code:
+            continue
+        seen.add(normalized)
+        archive = by_code.get(code)
+        rows.append({
+            "id": "domestic-customer-" + hashlib.sha256(
+                (normalized + "\0" + code).encode("utf-8")
+            ).hexdigest()[:20],
+            "alias": alias,
+            "platform_code": code,
+            "platform_id": str(archive.get("id") or "") if archive else "",
+            "platform_name": str(archive.get("name") or alias) if archive else alias,
+            "enabled": True,
+            "updated_at": "",
+            "basis": "内销规则与睿贝买方映射自动同步",
+        })
+    return sorted(rows, key=lambda row: (row["alias"].casefold(), row["platform_code"]))
+
+
+def merge_domestic_customer_mappings(state):
+    state = copy.deepcopy(state)
+    rows = state.setdefault("items", {}).setdefault("customers", [])
+    aliases = {
+        legacy.normalize_name(row.get("alias")): row
+        for row in rows if row.get("alias")
+    }
+    for row in domestic_customer_mapping_rows():
+        normalized = legacy.normalize_name(row["alias"])
+        existing = aliases.get(normalized)
+        if existing is None:
+            rows.append(row)
+            aliases[normalized] = row
+        elif (existing.get("basis") == row["basis"]
+              and existing.get("platform_code") != row["platform_code"]):
+            existing.update(
+                platform_code=row["platform_code"],
+                platform_id=row["platform_id"],
+                platform_name=row["platform_name"],
+                updated_at=store.now(),
+            )
+    return state
+
+
+def persist_mapping_migrations(db):
+    stored = store.get(db, "settings", "mappings")
+    state = mapping_state(db)
+    if stored is None:
+        store.put(db, "settings", "mappings", state)
+    elif state != stored:
+        state["version"] = int(stored.get("version", 1)) + 1
+        store.put(db, "settings", "mappings", state)
     return state
 
 
@@ -321,16 +494,21 @@ def masters_for(db):
     return masters, state["version"]
 
 
+def sync_mapping_file(kind, state):
+    filename, key = MAP_FILES[kind]
+    path = ROOT / "mappings" / filename
+    payload = legacy.read_json(path) if path.exists() else {key: []}
+    payload[key] = [r for r in state["items"][kind] if kind == "inventory" or r.get("enabled", True)]
+    payload["updated_at"] = store.now()
+    temp = path.with_suffix(".json.tmp")
+    temp.write_text(store.dumps(payload), encoding="utf-8")
+    temp.replace(path)
+
+
 def sync_mapping_files(state):
     """Atomic compatibility mirrors; DB is authoritative and repairs mirrors at startup."""
-    for kind, (filename, key) in MAP_FILES.items():
-        path = ROOT / "mappings" / filename
-        payload = legacy.read_json(path) if path.exists() else {key: []}
-        payload[key] = [r for r in state["items"][kind] if kind == "inventory" or r.get("enabled", True)]
-        payload["updated_at"] = store.now()
-        temp = path.with_suffix(".json.tmp")
-        temp.write_text(store.dumps(payload), encoding="utf-8")
-        temp.replace(path)
+    for kind in MAP_FILES:
+        sync_mapping_file(kind, state)
     legacy.MASTERS = None
 
 
@@ -374,11 +552,57 @@ def task_view(task):
                                     "result", "created_at", "updated_at")}
 
 
+def validate_task_payload(kind, payload):
+    if contains_non_finite(payload):
+        fail(422, "请求包含无效数值，请检查后重试")
+    if kind == "query":
+        if payload.get("mode", "pending") != "pending":
+            fail(422, "按日期检索已停用，请使用飞书待开范围")
+    elif kind == "build":
+        if not isinstance(payload.get("snapshot_id"), str) or not payload["snapshot_id"]:
+            fail(422, "请先检索并选择有效凭证范围")
+        keys = payload.get("keys")
+        if (not isinstance(keys, list) or not keys
+                or any(not isinstance(key, str) or not key for key in keys)
+                or len(set(keys)) != len(keys)):
+            fail(422, "凭证范围为空或包含重复项")
+        try:
+            dt.date.fromisoformat(payload.get("posting_date", ""))
+        except (TypeError, ValueError):
+            fail(422, "制单日期格式应为 YYYY-MM-DD")
+    elif kind == "export":
+        drafts = payload.get("drafts")
+        if not isinstance(drafts, list) or not drafts:
+            fail(422, "请选择要导出的凭证")
+        if any(not isinstance(item, dict) or not isinstance(item.get("id"), str)
+               or not item["id"] or not isinstance(item.get("version"), int)
+               or isinstance(item.get("version"), bool) or item["version"] < 1
+               for item in drafts):
+            fail(422, "导出凭证参数无效，请重新预览")
+        if len({item["id"] for item in drafts}) != len(drafts):
+            fail(422, "导出范围包含重复凭证")
+    elif kind == "writeback":
+        if not isinstance(payload.get("export_id"), str) or not payload["export_id"]:
+            fail(422, "缺少回写导出记录")
+
+
+def contains_non_finite(value):
+    if isinstance(value, float):
+        return not math.isfinite(value)
+    if isinstance(value, dict):
+        return any(contains_non_finite(key) or contains_non_finite(item)
+                   for key, item in value.items())
+    if isinstance(value, (list, tuple)):
+        return any(contains_non_finite(item) for item in value)
+    return False
+
+
 def create_task(kind, payload, session, key):
     if kind not in ("query", "build", "export", "writeback"):
         fail(422, "未知任务")
     if not key or len(key) > 150:
         fail(422, "缺少请求标识")
+    validate_task_payload(kind, payload)
     tid = hashlib.sha256((kind + ":" + key).encode()).hexdigest()[:32]
     with store.connect(True) as db:
         old = store.get(db, "task", tid)
@@ -427,12 +651,19 @@ def run(tid):
 
 
 def resume():
-    with store.connect() as db:
+    with store.connect(True) as db:
         tasks = store.all_items(db, "task")
-        state = store.get(db, "settings", "mappings")
+        state = persist_mapping_migrations(db)
     if state and not OFFLINE:
         sync_mapping_files(state)
     for task in reversed(tasks):
+        if task["kind"] == "query" and task["payload"].get("mode", "pending") != "pending":
+            if task["status"] in ("queued", "running"):
+                task.update(status="failed", message="按日期检索已停用，请使用飞书待开范围",
+                            updated_at=store.now())
+                with store.connect(True) as db:
+                    store.put(db, "task", task["id"], task)
+            continue
         if task["status"] in ("queued", "running"):
             submit(task["id"])
 
@@ -464,21 +695,6 @@ def group_identity(r):
     if legacy.to_text(r.get("销售方式")) == "内销":
         return "内销:" + (contract or "missing:" + r["record_id"])
     return "外销:" + (customs or "missing:" + r["record_id"])
-
-
-def record_day(r, kind):
-    field = "出运日期" if kind == "内销" else "出口日期"
-    value = r.get(field)
-    if isinstance(value, (int, float)):
-        return dt.datetime.fromtimestamp(float(value) / 1000, store.TZ).date()
-    raw = legacy.to_text(value)
-    match = re.search(r"(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})", raw)
-    if not match:
-        return None
-    try:
-        return dt.date(int(match.group(1)), int(match.group(2)), int(match.group(3)))
-    except ValueError:
-        return None
 
 
 def filtered_pending_records(task, url, token):
@@ -545,13 +761,8 @@ def filtered_pending_records(task, url, token):
 def query_job(task):
     payload, cp = task["payload"], task["checkpoint"]
     mode = payload.get("mode", "pending")
-    if mode not in ("pending", "date"):
-        fail(422, "请选择待开或日期模式")
-    start, end = None, None
-    if mode == "date":
-        start, end = dt.date.fromisoformat(payload["start_date"]), dt.date.fromisoformat(payload["end_date"])
-        if start > end:
-            fail(422, "开始日期不能晚于结束日期")
+    if mode != "pending":
+        fail(422, "按日期检索已停用，请使用飞书待开范围")
     records = cp.get("records", [])
     if not cp.get("fetched"):
         if OFFLINE:
@@ -597,26 +808,7 @@ def query_job(task):
                 temporary.replace(rate_path)
                 legacy.MASTERS = None
             url = f"{feishu.BASE}/bitable/v1/apps/{app_token}/tables/{table_id}/records"
-            if mode == "pending":
-                records = filtered_pending_records(task, url, token)
-            else:
-                cursor = cp.get("cursor")
-                while True:
-                    params = {"page_size": 500}
-                    if cursor:
-                        params["page_token"] = cursor
-                    body = feishu._request(url + "?" + urlencode(params), token=token)
-                    if body.get("code") != 0:
-                        raise feishu.FeishuError("读取飞书记录失败，请重试")
-                    data = body.get("data") or {}
-                    records += [dict(r.get("fields", {}), record_id=r["record_id"]) for r in data.get("items", [])]
-                    cursor = data.get("page_token")
-                    cp.update(records=records, cursor=cursor, fetched=not data.get("has_more"))
-                    checkpoint(task, progress=len(records))
-                    if cp["fetched"]:
-                        break
-                    if not cursor:
-                        raise feishu.FeishuError("飞书分页信息不完整")
+            records = filtered_pending_records(task, url, token)
         cp.update(records=records, fetched=True)
         checkpoint(task, progress=len(records))
     # Deduplicate pages on service restart and preserve full declaration groups.
@@ -625,7 +817,7 @@ def query_job(task):
     selected = set()
     with store.connect() as db:
         occupied = {k for e in store.all_items(db, "export") for k in e["record_ids"]}
-    excluded, dateless = 0, 0
+    excluded = 0
     for r in records:
         key = group_identity(r)
         groups.setdefault(key, []).append(r)
@@ -634,15 +826,7 @@ def query_job(task):
         if legacy.to_text(r.get("是否开凭证")) == "已开" or r["record_id"] in occupied:
             excluded += 1
             continue
-        if mode == "pending":
-            hit = legacy.to_text(r.get("是否开凭证")) == "待开"
-        else:
-            day = record_day(r, business_type(r))
-            if day is None:
-                dateless += 1
-                continue
-            hit = start <= day <= end
-        if hit:
+        if legacy.to_text(r.get("是否开凭证")) == "待开":
             selected.add(r["record_id"])
     result = []
     for key, group in groups.items():
@@ -683,7 +867,7 @@ def query_job(task):
     source_label = (cp.get("actual_name", "") + " / 2026年报关数据"
                     if cp.get("actual_name") else initial_source_label())
     snapshot = {"id": task["id"], "created_at": store.now(), "mode": mode, "groups": result,
-                "matched": len(selected), "excluded": excluded, "dateless": dateless,
+                "matched": len(selected), "excluded": excluded,
                 "source": source_label, "offline": OFFLINE,
                 "all_records": list({r["record_id"]: r for r in cp.get("inheritance_records", []) + records}.values())}
     with store.connect(True) as db:
@@ -706,27 +890,32 @@ def build_voucher_rows(records, masters, catalogs, kind):
     rows = []
     for index, row in enumerate(result["rows"]):
         item = dict(row)
-        item["id"] = f"domestic:{index}"
+        item["id"] = item.get("id") or f"domestic:{index}"
         rows.append(item)
-    issues = []
-    for index, warning in enumerate(result["warnings"]):
-        warning_index = int(warning.get("记录") or 0) - 1
-        issues.append({
-            "id": f"domestic-warning:{index}",
-            "message": warning.get("原因", "采购信息不完整"),
-            "row_id": "",
-            "field": "",
-            "record_id": result["record_ids"][warning_index]
-            if 0 <= warning_index < len(result["record_ids"]) else "",
-            "source_field": "",
-            "severity": "warning",
-        })
+    issues = result.get("issues")
+    if issues is None:
+        issues = []
+        for index, warning in enumerate(result["warnings"]):
+            warning_index = int(warning.get("记录") or 0) - 1
+            issues.append({
+                "id": f"domestic-warning:{index}",
+                "message": warning.get("原因", "采购信息不完整"),
+                "row_id": "",
+                "field": "",
+                "record_id": result["record_ids"][warning_index]
+                if 0 <= warning_index < len(result["record_ids"]) else "",
+                "source_field": "",
+                "severity": "warning",
+            })
     return rows, issues
 
 
 def build_job(task):
     p = task["payload"]
-    dt.date.fromisoformat(p["posting_date"])
+    try:
+        dt.date.fromisoformat(p["posting_date"])
+    except (KeyError, TypeError, ValueError):
+        fail(422, "制单日期格式应为 YYYY-MM-DD")
     with store.connect() as db:
         snap = required(db, "snapshot", p["snapshot_id"])
         masters, version = masters_for(db)
@@ -804,6 +993,19 @@ def build_job(task):
 
 
 def save_draft(key, payload, session):
+    if contains_non_finite(payload):
+        fail(422, "请求包含无效数值，请检查后重试")
+
+    def normalize_row(row):
+        normalized = {}
+        for field, value in row.items():
+            if value is not None and (
+                isinstance(value, bool) or not isinstance(value, (str, int, float))
+            ):
+                fail(422, "分录字段值必须是文本或数字")
+            normalized[str(field)] = "" if value is None else str(value)
+        return normalized
+
     with store.connect(True) as db:
         old = required(db, "draft", key)
         if payload.get("version") != old["version"]:
@@ -812,7 +1014,7 @@ def save_draft(key, payload, session):
         if payload.get("manual_exception") is not None:
             draft["manual_exception"] = bool(payload["manual_exception"])
         draft["header"] = payload["header"]
-        draft["rows"] = payload["rows"]
+        draft["rows"] = [normalize_row(row) for row in payload["rows"]]
         allowed_columns = {"id", "摘要", "科目编码", "币种名称", *engine.NUMBERS, *engine.AUX}
         if any(not r.get("id") or set(r) - allowed_columns for r in draft["rows"]):
             fail(422, "分录缺少标识或包含不支持的字段")
@@ -824,13 +1026,25 @@ def save_draft(key, payload, session):
         for rid, fields in draft["overrides"].items():
             if rid not in {r["record_id"] for r in draft["source"]} or set(fields) - allowed:
                 fail(422, "不允许修改该来源字段")
-        prior = {r["id"]: r for r in old["rows"]}
+            if any(not isinstance(value, str) for value in fields.values()):
+                fail(422, "来源补充值必须是文本")
+        prior = {r["id"]: normalize_row(r) for r in old["rows"]}
         manual = set(old["manual_fields"])
         if [r["id"] for r in old["rows"]] != [r["id"] for r in draft["rows"]]:
             manual.add("__rows__/structure")
+
+        def same_cell(before, after):
+            if before == after:
+                return True
+            before_number = engine.number(before)
+            after_number = engine.number(after)
+            return before_number is not None and after_number is not None and before_number == after_number
+
         for row in draft["rows"]:
             for field in row:
-                if field != "id" and row.get(field) != prior.get(row["id"], {}).get(field):
+                if field != "id" and not same_cell(
+                    row.get(field), prior.get(row["id"], {}).get(field)
+                ):
                     manual.add(row["id"] + "/" + field)
         draft["manual_fields"] = sorted(manual)
         draft["version"] += 1
@@ -839,6 +1053,32 @@ def save_draft(key, payload, session):
         store.put(db, "draft", key, draft)
         store.audit(db, key, session, "edit", old, draft)
     return draft
+
+
+def delete_batch(key, session):
+    with store.connect(True) as db:
+        batch = required(db, "batch", key)
+        if any(task["status"] in ("queued", "running")
+               for task in store.all_items(db, "task")):
+            fail(409, "当前有任务正在处理，请等待任务结束后再删除生成记录")
+        batches = [item for item in store.all_items(db, "batch") if item["id"] != key]
+        shared = {draft_id for item in batches for draft_id in item.get("draft_ids", [])}
+        deleted_drafts = []
+        for draft_id in batch.get("draft_ids", []):
+            if draft_id in shared:
+                continue
+            draft = store.get(db, "draft", draft_id)
+            if draft is not None:
+                store.audit(db, draft_id, session, "delete", draft, None)
+                store.delete(db, "draft", draft_id)
+                deleted_drafts.append(draft_id)
+        store.audit(db, "batch:" + key, session, "delete", batch, None)
+        store.delete(db, "batch", key)
+    return {
+        "deleted": key,
+        "draft_count": len(batch.get("draft_ids", [])),
+        "deleted_drafts": deleted_drafts,
+    }
 
 
 def recalculate(key, payload, session):
@@ -955,6 +1195,11 @@ def write_excel(drafts, path):
     temporary.replace(path)
 
 
+def validate_export_capacity(drafts):
+    if 1 + sum(len(draft["rows"]) for draft in drafts) > 65536:
+        fail(422, "超出xls单表行数限制，请减少导出范围")
+
+
 def export_job(task):
     eid = task["id"]
     with store.connect(True) as db:
@@ -971,8 +1216,7 @@ def export_job(task):
                 drafts.append(draft)
             if not drafts or len({d["id"] for d in drafts}) != len(drafts):
                 fail(422, "导出范围为空或重复")
-            if 1 + sum(len(d["rows"]) for d in drafts) > 65536:
-                fail(422, "超出xls单表行数限制，请减少导出范围")
+            validate_export_capacity(drafts)
             prior = store.all_items(db, "export")
             record_ids = [r["record_id"] for d in drafts for r in d["source"]]
             for existing_export in prior:

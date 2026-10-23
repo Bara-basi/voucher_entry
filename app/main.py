@@ -66,14 +66,6 @@ class PendingRequest(BaseModel):
     posting_date: str | None = None
 
 
-class BulkRequest(BaseModel):
-    """按出口日期范围批量生成。"""
-    start_date: str
-    end_date: str
-    mark: bool = False
-    posting_date: str | None = None
-
-
 def load_source() -> list[dict]:
     if not SOURCE_PATH.exists():
         raise HTTPException(status_code=503, detail="缺少飞书数据快照，请先运行 scripts/read_feishu.py")
@@ -84,7 +76,15 @@ def load_source() -> list[dict]:
 
 def in_scope(record, prefix: str, sale_method: str) -> bool:
     contract = str(record.get("合同号_1") or "").upper()
-    return contract.startswith(prefix.upper()) and str(record.get("销售方式")) == sale_method
+    expected = "出口" if sale_method in ("出口", "外销") else sale_method
+    return contract.startswith(prefix.upper()) and str(record.get("销售方式")) == expected
+
+
+def reject_unsupported_domestic_legacy(sale_method: str) -> None:
+    if sale_method == "内销":
+        raise HTTPException(status_code=422, detail="旧版 /vouchers 接口仅支持外销，内销请使用工作台")
+    if sale_method not in ("出口", "外销"):
+        raise HTTPException(status_code=422, detail="销售方式仅支持出口或内销")
 
 
 @app.get("/health")
@@ -96,6 +96,7 @@ def health():
 @app.get("/vouchers/groups")
 def list_groups(prefix: str = "26MT", sale_method: str = "出口"):
     """列出待生成的凭证明细分组（一个报关单号一组）。"""
+    reject_unsupported_domestic_legacy(sale_method)
     records = [r for r in load_source() if in_scope(r, prefix, sale_method)]
     groups = svc.group_records(records)
     return {"total": len(groups),
@@ -119,6 +120,7 @@ def preview(customs_no: str):
 @app.post("/vouchers/generate")
 def generate(request: GenerateRequest):
     """全量生成：一个报关单号 → 一张凭证 → 一个 .xls。"""
+    reject_unsupported_domestic_legacy(request.sale_method)
     records = [r for r in load_source()
                if in_scope(r, request.contract_prefix, request.sale_method)]
     if not records:
@@ -139,11 +141,6 @@ def generate(request: GenerateRequest):
 def _within_scope(record) -> bool:
     contract = str(record.get("合同号_1") or "").upper()
     return contract.startswith("26MT") and str(record.get("销售方式")) == "出口"
-
-
-def _export_ts(record):
-    value = record.get("出口日期")
-    return value if isinstance(value, (int, float)) else None
 
 
 @app.get("/vouchers/pending")
@@ -198,63 +195,8 @@ def generate_pending(request: PendingRequest):
 
 
 @app.post("/vouchers/generate-bulk")
-def generate_bulk(request: BulkRequest):
-    """按出口日期范围批量生成（默认不写回，mark=true 时回写状态）。"""
-    try:
-        start = datetime.date.fromisoformat(request.start_date)
-        end = datetime.date.fromisoformat(request.end_date)
-    except ValueError:
-        raise HTTPException(status_code=422, detail="日期格式应为 YYYY-MM-DD") from None
-    if start > end:
-        raise HTTPException(status_code=422, detail="开始日期不能晚于结束日期")
-
-    start_ts = datetime.datetime.combine(start, datetime.time.min).timestamp() * 1000
-    end_ts = datetime.datetime.combine(end, datetime.time.max).timestamp() * 1000
-    records = []
-    for record in feishu.list_records():
-        if not _within_scope(record):
-            continue
-        if str(record.get(PENDING_FIELD)) == "已开":
-            continue
-        export_ts = _export_ts(record)
-        if export_ts is None or not (start_ts <= export_ts <= end_ts):
-            continue
-        records.append(record)
-    if not records:
-        raise HTTPException(status_code=422, detail="该日期范围内没有待开具凭证的记录")
-
-    posting_date = (datetime.date.fromisoformat(request.posting_date)
-                    if request.posting_date else datetime.date.today())
-    stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    output = BATCH_OUTPUT / ("批量凭证_%s_%s_%s.xls"
-                             % (request.start_date, request.end_date, stamp))
-    result = svc.generate_batch(records, output, posting_date)
-
-    written = 0
-    if request.mark:
-        month = posting_date.strftime("%Y-%m")
-        updates = []
-        for success in result["successes"]:
-            for record in success["记录"]:
-                updates.append({"record_id": record.get("record_id"),
-                                "fields": {PENDING_FIELD: "已开",
-                                           VOUCHER_DATE_FIELD: month,
-                                           VOUCHER_RESULT_FIELD: "保存成功"}})
-        for failure in result["failures"]:
-            for record in failure["记录"]:
-                updates.append({"record_id": record.get("record_id"),
-                                "fields": {VOUCHER_RESULT_FIELD: failure["原因"]}})
-        feishu.batch_update(updates)
-        written = len(updates)
-
-    return {
-        "file": result["file"],
-        "vouchers": result["vouchers"],
-        "records": len(records),
-        "written": written,
-        "failures": [{"合同号_1": f["合同号_1"], "报关单号": f["报关单号"],
-                      "原因": f["原因"]} for f in result["failures"]],
-    }
+def generate_bulk_retired():
+    raise HTTPException(status_code=410, detail="按日期批量生成已停用，请使用工作台的飞书待开范围")
 
 
 # Mount only built assets. Business data, credentials and mappings are never served.

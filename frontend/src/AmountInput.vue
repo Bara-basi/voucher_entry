@@ -6,11 +6,12 @@ const emit = defineEmits<{ 'update:modelValue': [value: string]; blur: []; error
 const focused = ref(false), buffer = ref(''), input = ref<HTMLInputElement>(), active = ref(0)
 const position = ref<Record<string, string>>({})
 const formula = computed(() => focused.value && buffer.value.startsWith('='))
+const modelText = computed(() => props.modelValue == null ? '' : String(props.modelValue))
 const display = computed(() => {
   if (focused.value) return buffer.value
-  if (props.modelValue === '' || (props.blankZero !== false && Number(props.modelValue) === 0)) return ''
-  if (!Number.isFinite(Number(props.modelValue))) return props.modelValue
-  return Number(props.modelValue).toLocaleString('en-US', { minimumFractionDigits: props.places ?? 2, maximumFractionDigits: props.places ?? 2, useGrouping: props.places !== 6 })
+  if (modelText.value === '' || (props.blankZero !== false && Number(modelText.value) === 0)) return ''
+  if (!Number.isFinite(Number(modelText.value))) return modelText.value
+  return Number(modelText.value).toLocaleString('en-US', { minimumFractionDigits: props.places ?? 2, maximumFractionDigits: props.places ?? 2, useGrouping: props.places !== 6 })
 })
 function edit() {
   active.value = 0
@@ -21,9 +22,10 @@ function edit() {
     emit('update:modelValue', buffer.value)
 }
 function commit(blur = false) {
+  if (buffer.value.trim() === modelText.value.trim()) return
   try {
     const value = buffer.value === '' ? '' : calculate(buffer.value, props.places ?? 2)
-    if (value !== props.modelValue && (value === '' || props.modelValue === '' || Number(value) !== Number(props.modelValue)))
+    if (value !== modelText.value && (value === '' || modelText.value === '' || Number(value) !== Number(modelText.value)))
       emit('update:modelValue', value)
     buffer.value = value
   } catch {
@@ -43,7 +45,7 @@ function insert(value: string) {
   nextTick(() => input.value?.setSelectionRange(buffer.value.length, buffer.value.length))
 }
 function key(e: KeyboardEvent) {
-  if (e.key === 'Escape') { e.stopPropagation(); buffer.value = props.modelValue; return }
+  if (e.key === 'Escape') { e.stopPropagation(); buffer.value = modelText.value; return }
   if (e.key === 'Enter') {
     e.preventDefault()
     if (formula.value && /[=+-]$/.test(buffer.value) && props.candidates[active.value]) insert(props.candidates[active.value]!.value)
@@ -56,7 +58,7 @@ function key(e: KeyboardEvent) {
 </script>
 <template>
   <input ref="input" :aria-label="label" :data-target="target" :value="display" inputmode="text"
-    @focus="focused = true; buffer = modelValue" @input="buffer = ($event.target as HTMLInputElement).value; edit()"
+    @focus="focused = true; buffer = modelText" @input="buffer = ($event.target as HTMLInputElement).value; edit()"
     @keydown="key" @blur="commit(true); focused = false; emit('blur')">
   <Teleport to="body">
     <div v-if="formula && candidates.length" class="amount-options catalog-options" :style="position" @pointerdown.prevent>

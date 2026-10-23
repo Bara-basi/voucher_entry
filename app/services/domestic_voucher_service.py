@@ -63,13 +63,19 @@ def number(value: Any, default: Decimal | None = Decimal("0")) -> Decimal | None
     if value in (None, ""):
         return default
     try:
-        return Decimal(str(value))
+        parsed = Decimal(str(value))
+        return parsed if parsed.is_finite() else default
     except (InvalidOperation, ValueError, TypeError):
         return default
 
 
 def money(value: Any) -> Decimal:
     return (number(value) or Decimal("0")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+
+def optional_money(value: Any) -> Decimal | None:
+    parsed = number(value, None)
+    return None if parsed is None else parsed.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
 def mode(values) -> str:
@@ -586,13 +592,16 @@ def fit_rules(sample_payload: dict, domestic_payload: dict | None = None,
 
 
 def _customer_code(rules: dict, record: dict, masters: legacy.MasterData) -> str:
+    candidates = [record.get("客户名称_脚本用"), record.get("买方英文名")]
+    for candidate in candidates:
+        value = text(candidate)
+        if any("\u3400" <= char <= "\u9fff" for char in value):
+            exact = masters.customer_by_name.get(normalize_name(value), set())
+            if len(exact) == 1:
+                return str(next(iter(exact)))
     return resolve_name(
         rules["mappings"]["customers"],
-        [record.get("客户名称_脚本用"), record.get("买方英文名")],
-        lambda value: masters.customer_code([value]),
-    ) or resolve_name(
-        rules["mappings"]["customers"],
-        [record.get("买方英文名"), record.get("客户名称_脚本用")],
+        candidates,
         lambda value: masters.customer_code([value]),
     )
 
@@ -696,26 +705,29 @@ def predict_merge_mode(rules: dict, records: list[dict]) -> tuple[str, float]:
     return nearest["mode"], float(nearest.get("confidence") or 0)
 
 
-def _row(subject: str, summary: str, *, debit=Decimal("0"), credit=Decimal("0"),
+def _row(subject: str, summary: str, *, row_id: str, debit=Decimal("0"), credit=Decimal("0"),
          customer="", supplier="", inventory="", quantity=None, unit_price=None,
          currency="CNY", rate=Decimal("1")) -> dict:
-    debit = money(debit)
-    credit = money(credit)
+    debit = optional_money(debit)
+    credit = optional_money(credit)
+    quantity_text = str(quantity) if quantity is not None else ""
+    unit_price_text = str(optional_money(unit_price)) if unit_price is not None else ""
     return {
+        "id": row_id,
         "科目编码": subject,
         "摘要": summary,
         "币种名称": currency,
-        "汇率": float(rate),
-        "原币借方": float(debit),
-        "原币贷方": float(credit),
-        "借方金额": float(debit),
-        "贷方金额": float(credit),
+        "汇率": str(rate),
+        "原币借方": str(debit) if debit is not None else "",
+        "原币贷方": str(credit) if credit is not None else "",
+        "借方金额": str(debit) if debit is not None else "",
+        "贷方金额": str(credit) if credit is not None else "",
         "客户编码": customer or "",
         "供应商编码": supplier or "",
         "存货档案": inventory or "",
-        "单价": float(unit_price) if unit_price is not None else None,
-        "借方数量": float(quantity) if quantity is not None and debit else None,
-        "贷方数量": float(quantity) if quantity is not None and credit else None,
+        "单价": unit_price_text,
+        "借方数量": quantity_text if quantity is not None and debit else "",
+        "贷方数量": quantity_text if quantity is not None and credit else "",
     }
 
 
@@ -728,55 +740,103 @@ def build_domestic_voucher(records: list[dict], rules: dict,
     contract = text(records[0].get(CONTRACT_FIELD))
     if not contract:
         raise DomesticVoucherError("合同号_1 为空")
+    issues = []
+
+    def issue(message: str, row_id="", field="", record=None, source_field=""):
+        issues.append({
+            "id": f"domestic:{row_id}:{field}:{len(issues)}",
+            "message": message,
+            "row_id": row_id,
+            "field": field,
+            "record_id": text((record or {}).get("record_id")),
+            "source_field": source_field,
+            "severity": "error",
+        })
+
+    def monetary(record, field, required=True):
+        raw = record.get(field)
+        if raw is None or text(raw) == "":
+            if required:
+                issue(f"缺少{field}", record=record, source_field=field)
+            return None
+        value = number(raw, None)
+        if value is None:
+            issue(f"{field}数值格式无效", record=record, source_field=field)
+            return None
+        return money(value)
+
+    def monetary_total(field):
+        values = [monetary(record, field) for record in records]
+        return None if any(value is None for value in values) else money(sum(values, Decimal("0")))
+
     customer = ""
     for record in records:
         customer = _customer_code(rules, record, masters)
         if customer:
             break
-    if not customer:
-        raise DomesticVoucherError("无法匹配客户档案: " + contract)
-
-    numeric_required = ("报关金额", "不含税人民币收入", "销项税额")
-    missing = [
-        field for field in numeric_required
-        if any(number(record.get(field), None) is None for record in records)
-    ]
-    if any(not text(record.get("币种")) for record in records):
-        missing.append("币种")
-    if missing:
-        raise DomesticVoucherError("缺少收入字段: " + "、".join(missing))
-
     currencies = {text(record.get("币种")).upper() for record in records}
-    currency = currencies.pop() if len(currencies) == 1 else "CNY"
+    missing_currency = "" in currencies
+    currencies.discard("")
+    currency = next(iter(currencies)) if len(currencies) == 1 else "CNY"
     accounts = rules["accounts"]
     summaries = rules["summary"]
     receivable = accounts["receivable_by_currency"].get(currency)
     if not receivable:
         receivable = accounts["receivable_by_currency"].get("CNY", "112201")
 
-    gross = money(sum(number(record.get("报关金额")) or Decimal("0") for record in records))
-    revenue = money(sum(number(record.get("不含税人民币收入")) or Decimal("0") for record in records))
-    output_tax = money(sum(number(record.get("销项税额")) or Decimal("0") for record in records))
-    if abs(gross - revenue - output_tax) > Decimal("0.02"):
-        raise DomesticVoucherError(
-            f"收入区金额不平: 含税={gross}, 不含税={revenue}, 销项税={output_tax}"
+    gross = monetary_total("报关金额")
+    revenue = monetary_total("不含税人民币收入")
+    output_tax = monetary_total("销项税额")
+    if gross is None:
+        issue("缺少报关金额，请补充后重新计算", "income:ar", "借方金额",
+              records[0], "报关金额")
+    if revenue is None:
+        issue("缺少不含税人民币收入，请补充后重新计算", "income:revenue", "贷方金额",
+              records[0], "不含税人民币收入")
+    if output_tax is None:
+        issue("缺少销项税额，请补充后重新计算", "income:tax", "贷方金额",
+              records[0], "销项税额")
+    if missing_currency:
+        issue("币种缺失，请补充后重新计算", "income:ar", "币种名称",
+              records[0], "币种")
+    if len(currencies) > 1:
+        issue("同一合同包含不同币种，请核实来源币种后重新计算", "income:ar", "币种名称")
+    if gross is not None and revenue is not None and output_tax is not None \
+            and abs(gross - revenue - output_tax) > Decimal("1"):
+        issue(
+            f"收入区金额不平：报关金额={gross}，不含税收入={revenue}，"
+            f"销项税额={output_tax}，差额={money(gross - revenue - output_tax)}",
+            "income:tax", "贷方金额",
         )
 
     income_summary = contract + summaries["revenue"]
     rows = [
-        _row(receivable, income_summary, debit=gross, customer=customer, currency=currency),
-        _row(accounts["revenue"], income_summary, credit=revenue, currency=currency),
-        _row(accounts["output_tax"], income_summary, credit=output_tax),
+        _row(receivable, income_summary, row_id="income:ar", debit=gross,
+             customer=customer, currency=currency),
+        _row(accounts["revenue"], income_summary, row_id="income:revenue",
+             credit=revenue, currency=currency),
+        _row(accounts["output_tax"], income_summary, row_id="income:tax",
+             credit=output_tax),
     ]
+    if not customer:
+        issue("未匹配客户：请补充买方名称，或选择有效客户编码后重新计算",
+              "income:ar", "客户编码", records[0], "买方英文名")
+    for record in records:
+        if text(record.get("销售方式")) != SOURCE_METHOD:
+            issue("销售方式不是内销，请核实来源记录", "", "", record, "销售方式")
 
     purchase_rows = []
     cost_blocks = []
     warnings = []
     for index, record in enumerate(records, start=1):
-        cost = money(record.get("不含税成本"))
-        purchase = money(record.get("采购金额"))
-        input_tax = money(record.get("进项税额"))
+        record_key = text(record.get("record_id")) or f"record-{index}"
+        cost = monetary(record, "不含税成本")
+        purchase = monetary(record, "采购金额")
+        input_tax = monetary(record, "进项税额")
+        supplier_raw = text(record.get("供应商"))
         supplier = _supplier_code(rules, record, masters)
+        if re.search(r"[,，、;；]", supplier_raw):
+            supplier = ""
         inventory_code = _inventory_code(rules, record, masters)
         inventory_subject = ""
         if inventory_code:
@@ -787,35 +847,73 @@ def build_domestic_voucher(records: list[dict], rules: dict,
                 inventory_subject = pattern.format(prefix_last2=prefix[-2:])
             inventory_subject = inventory_subject or accounts["inventory_fallback"]
 
-        if not supplier or not inventory_code or (cost <= 0 and purchase <= 0):
-            warnings.append({
-                "记录": index,
-                "合同号_1": contract,
-                "原因": "采购信息不完整，未生成该笔采购及成本分录",
-                "供应商": text(record.get("供应商")),
-                "报关品名": text(record.get("报关品名")),
-            })
-            continue
-        if purchase <= 0:
-            purchase = cost + input_tax
-
         base_summary = contract + summaries["purchase"]
         tax_account = accounts["input_tax"]
         quantity = _quantity(record, rules)
-        unit_price = money(cost / quantity) if quantity else None
-
+        unit_price = money(cost / quantity) if cost is not None and quantity else None
+        payable = money(cost + input_tax) if cost is not None and input_tax is not None else None
+        stock_id = record_key + ":stock"
+        tax_id = record_key + ":tax"
+        payable_id = record_key + ":ap"
+        cost_id = record_key + ":cost"
+        out_id = record_key + ":out"
         purchase_rows.extend([
-            _row(accounts["payable"], base_summary, credit=purchase, supplier=supplier),
-            _row(inventory_subject, base_summary, debit=cost, inventory=inventory_code,
+            _row(accounts["payable"], base_summary, row_id=payable_id,
+                 credit=payable, supplier=supplier),
+            _row(inventory_subject, base_summary, row_id=stock_id,
+                 debit=cost, inventory=inventory_code,
                  quantity=quantity, unit_price=unit_price),
             _row(tax_account, base_summary + summaries["input_tax_suffix"],
-                 debit=input_tax),
+                 row_id=tax_id, debit=input_tax),
         ])
         cost_blocks.extend([
-            _row(accounts["cost"], contract + summaries["cost"], debit=cost),
-            _row(inventory_subject, contract + summaries["cost"], credit=cost,
+            _row(accounts["cost"], contract + summaries["cost"], row_id=cost_id,
+                 debit=cost),
+            _row(inventory_subject, contract + summaries["cost"], row_id=out_id,
+                 credit=cost,
                  inventory=inventory_code, quantity=quantity, unit_price=unit_price),
         ])
+        if not supplier:
+            issue("供应商缺失或无法匹配，请补充来源或选择有效供应商",
+                  payable_id, "供应商编码", record, "供应商")
+        elif re.search(r"[,，、;；]", supplier_raw):
+            issue("供应商字段包含多个名称，请拆分后重新计算",
+                  payable_id, "供应商编码", record, "供应商")
+        if not inventory_code:
+            issue("未匹配存货，请维护产品映射或选择有效存货和科目",
+                  stock_id, "存货档案", record, "报关品名")
+        if cost is None:
+            issue("缺少有效采购成本，请补充不含税成本或修改本行金额",
+                  stock_id, "借方金额", record, "不含税成本")
+        elif cost <= 0:
+            issue("采购成本必须大于零，请核实来源或修改本行金额",
+                  stock_id, "借方金额", record, "不含税成本")
+        if purchase is None:
+            issue("缺少采购金额，请补充采购金额或核实应付行",
+                  payable_id, "贷方金额", record, "采购金额")
+        elif purchase <= 0:
+            issue("采购金额必须大于零，请核实来源或修改本行金额",
+                  payable_id, "贷方金额", record, "采购金额")
+        if cost is not None and input_tax is not None and purchase is not None \
+                and abs(purchase - cost - input_tax) > Decimal("1"):
+            issue(
+                f"采购金额与不含税成本及进项税额不一致：采购金额={purchase}，"
+                f"成本+税额={money(cost + input_tax)}，"
+                f"差额={money(purchase - cost - input_tax)}",
+                payable_id, "贷方金额", record, "采购金额",
+            )
+        if input_tax is None:
+            issue("缺少有效进项税额，请补充来源或修改本行金额",
+                  tax_id, "借方金额", record, "进项税额")
+        if not supplier or not inventory_code or cost is None or purchase is None \
+                or cost <= 0 or purchase <= 0:
+            warnings.append({
+                "记录": index,
+                "合同号_1": contract,
+                "原因": "采购信息不完整，已保留分录并标记异常",
+                "供应商": supplier_raw,
+                "报关品名": text(record.get("报关品名")),
+            })
 
     # Catalog this as a fitted ordering choice while retaining a deterministic fallback.
     role_rows = {
@@ -850,17 +948,24 @@ def build_domestic_voucher(records: list[dict], rules: dict,
             if text(row.get("摘要")).endswith("内销收入")
         ]
 
+    row_ids = {row["id"] for row in rows}
+    for item in issues:
+        if item["row_id"] and item["row_id"] not in row_ids:
+            item["row_id"] = ""
+            item["field"] = ""
     debit_total = money(sum(number(row["借方金额"]) or Decimal("0") for row in rows))
     credit_total = money(sum(number(row["贷方金额"]) or Decimal("0") for row in rows))
     if debit_total != credit_total:
-        raise DomesticVoucherError(
-            f"凭证借贷不平: 借方={debit_total}, 贷方={credit_total}"
+        issue(
+            f"凭证借贷不平衡：借方={debit_total}，贷方={credit_total}，"
+            f"差额={money(debit_total - credit_total)}"
         )
     return {
         "合同号_1": contract,
         "rows": rows,
         "record_ids": [record.get("record_id") for record in records],
         "warnings": warnings,
+        "issues": issues,
         "合并模式": merge_mode,
         "合并模式置信度": merge_confidence,
         "totals": {"debit": str(debit_total), "credit": str(credit_total)},
@@ -1154,6 +1259,7 @@ def evaluate_full_lines(generated: dict, sample_payload: dict,
             quantity = line.get("借方数量") or line.get("贷方数量")
             unit_price = line.get("单价")
             summary = text(line.get("摘要"))
+        quantity_value = number(quantity, None)
         return {
             "科目编码": code,
             "借方": str(money(debit)),
@@ -1161,7 +1267,7 @@ def evaluate_full_lines(generated: dict, sample_payload: dict,
             "客户编码": customer,
             "供应商编码": supplier,
             "存货档案": inventory,
-            "数量": str(number(quantity, None)) if quantity not in (None, "") else "",
+            "数量": str(quantity_value.normalize()) if quantity_value is not None else "",
             "单价": str(money(unit_price)) if unit_price not in (None, "") else "",
             "摘要": summary,
         }

@@ -29,11 +29,27 @@ export function newId(): string {
 const session = localStorage.getItem('voucher-session') || newId()
 localStorage.setItem('voucher-session', session)
 export async function api<T = any>(path: string, method = 'GET', body?: unknown): Promise<T> {
-  const response = await fetch('/api' + path, {
-    method, headers: { 'Content-Type': 'application/json', 'X-Session-ID': session },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  })
-  const data = await response.json()
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 30_000)
+  let response: Response
+  try {
+    response = await fetch('/api' + path, {
+      method, headers: { 'Content-Type': 'application/json', 'X-Session-ID': session },
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal: controller.signal,
+    })
+  } catch (error) {
+    if (controller.signal.aborted) throw new Error('请求超时，请检查网络后重试')
+    throw error
+  } finally {
+    clearTimeout(timeout)
+  }
+  let data: any
+  try {
+    data = await response.json()
+  } catch {
+    throw Object.assign(new Error('服务返回了无法识别的响应，请稍后重试'), { status: response.status })
+  }
   if (!response.ok) throw Object.assign(new Error(typeof data.detail === 'string' ? data.detail : '请求参数无效'), { status: response.status })
   return data
 }

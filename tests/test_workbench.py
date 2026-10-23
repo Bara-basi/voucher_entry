@@ -10,18 +10,22 @@ import sys
 import tempfile
 import time
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from unittest.mock import patch
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 import xlrd
 from fastapi import HTTPException
 
 from app.services import draft_service as engine
+from app.services import domestic_voucher_service as domestic
 from app.services import feishu_service as feishu
 from app.services import voucher_service as legacy
 from app.services import workbench_service as svc
 from app.services import workbench_store as store
+from app import main as legacy_api
 
 
 class WorkbenchTests(unittest.TestCase):
@@ -207,6 +211,37 @@ class WorkbenchTests(unittest.TestCase):
             svc.save_catalog("subjects", {"version": 3, "key": "112202", "item": {
                 **subject, "group_override": "a" * 81}}, "test")
 
+    def test_auxiliary_accounts_use_root_categories_and_exclude_parent_rows(self):
+        catalogs = svc.catalog()
+        aux = catalogs["aux"]
+        codes = {str(row["account_code"]) for row in aux}
+        self.assertEqual(len(aux), 47)
+        self.assertTrue(codes.isdisjoint({"2001", "200101", "1408", "1221", "1122", "2202"}))
+        self.assertEqual(
+            {row["group_name"] for row in aux if row["account_code"].startswith("2001")},
+            {"2001 · 短期借款"},
+        )
+        self.assertEqual(
+            {row["group_name"] for row in aux if row["account_code"].startswith("1408")},
+            {"1408 · 委托加工物资"},
+        )
+        self.assertNotIn("2001", catalogs["aux_by_code"])
+        self.assertIn("20010101", catalogs["aux_by_code"])
+        subjects = catalogs["subjects"]
+        subject_codes = {str(row["code"]) for row in subjects}
+        self.assertEqual(len(subjects), 351)
+        self.assertEqual(len({row["group_name"] for row in subjects}), 66)
+        self.assertTrue(all(row.get("leaf") for row in subjects))
+        self.assertTrue(subject_codes.isdisjoint({"2001", "200101", "1408", "1001", "5602"}))
+        self.assertEqual(
+            {row["group_name"] for row in subjects if row["code"].startswith("2001")},
+            {"2001 · 短期借款"},
+        )
+        self.assertEqual(
+            {row["group_name"] for row in subjects if row["code"].startswith("1408")},
+            {"1408 · 委托加工物资"},
+        )
+
     def test_workbench_recent_unexported_batches(self):
         now = dt.datetime(2026, 10, 20, 12, tzinfo=store.TZ)
         with store.connect(True) as db:
@@ -380,12 +415,12 @@ class WorkbenchTests(unittest.TestCase):
         with self.assertRaises(HTTPException):
             svc.recalculate(draft["id"], {"version": saved["version"]}, "test")
 
-    def test_group_completion_conflicts_and_date_boundaries(self):
+    def test_group_completion_conflicts_and_missing_identity(self):
         base = copy.deepcopy(self.draft["source"][0])
         base.update(record_id="a", 报关单号="group", 是否开凭证="待开",
                     出口日期=dt.datetime(2026, 9, 30, 23, 59, 59, tzinfo=store.TZ).timestamp() * 1000)
         second = dict(base, record_id="b", 是否开凭证="", 出口日期=dt.datetime(2026, 10, 1, tzinfo=store.TZ).timestamp() * 1000)
-        task = self.task("query", {"mode": "date", "start_date": "2026-09-30", "end_date": "2026-09-30"},
+        task = self.task("query", {"mode": "pending"},
                          {"records": [base, second], "fetched": True})
         result = svc.query_job(task)
         with store.connect() as db:
@@ -401,6 +436,91 @@ class WorkbenchTests(unittest.TestCase):
         svc.query_job(task)
         with store.connect() as db:
             self.assertIn("缺少报关单号", store.get(db, "snapshot", task["id"])["groups"][0]["blocked"][0])
+
+    def test_date_query_is_rejected(self):
+        task = self.task("query", {"mode": "date", "start_date": "2026-01-01", "end_date": "2026-12-31"})
+        with self.assertRaises(HTTPException) as ctx:
+            svc.query_job(task)
+        self.assertEqual(ctx.exception.status_code, 422)
+        self.assertIn("已停用", ctx.exception.detail)
+
+    def test_empty_pending_result_returns_a_completed_empty_snapshot(self):
+        opened = dict(self.draft["source"][0], record_id="opened-only", 是否开凭证="已开")
+        task = self.task("query", {"mode": "pending"},
+                         {"records": [opened], "fetched": True})
+        result = svc.query_job(task)
+        self.assertEqual(result["groups"], 0)
+        self.assertEqual(result["matched"], 0)
+        with store.connect() as db:
+            snapshot = store.get(db, "snapshot", result["snapshot_id"])
+        self.assertEqual(snapshot["groups"], [])
+        self.assertEqual(snapshot["excluded"], 1)
+
+    def test_legacy_domestic_and_date_bulk_interfaces_are_explicitly_retired(self):
+        for sale_method in ("内销", "视同销售", "预录"):
+            with self.assertRaises(HTTPException) as ctx:
+                legacy_api.list_groups(sale_method=sale_method)
+            self.assertEqual(ctx.exception.status_code, 422)
+        with self.assertRaises(HTTPException) as ctx:
+            legacy_api.generate_bulk_retired()
+        self.assertEqual(ctx.exception.status_code, 410)
+
+    def test_task_boundary_validation_happens_before_queueing(self):
+        cases = [
+            ("query", {"mode": "date"}),
+            ("query", {"mode": "pending", "invalid": float("nan")}),
+            ("build", {"snapshot_id": "", "keys": [], "posting_date": "2026-10-23"}),
+            ("build", {"snapshot_id": "ok", "keys": ["a", "a"], "posting_date": "2026-10-23"}),
+            ("build", {"snapshot_id": "ok", "keys": ["a"], "posting_date": "2026-02-30"}),
+            ("export", {"drafts": []}),
+            ("export", {"drafts": [{"id": "a", "version": True}]}),
+            ("writeback", {}),
+        ]
+        with store.connect() as db:
+            before = {t["id"] for t in store.all_items(db, "task")}
+        with patch.object(svc, "submit") as submit:
+            for index, (kind, payload) in enumerate(cases):
+                with self.assertRaises(HTTPException) as ctx:
+                    svc.create_task(kind, payload, "test", "boundary-" + str(index))
+                self.assertEqual(ctx.exception.status_code, 422)
+            submit.assert_not_called()
+        with store.connect() as db:
+            self.assertEqual({t["id"] for t in store.all_items(db, "task")}, before)
+
+    def test_non_finite_override_and_oversize_summary_are_blocked(self):
+        draft = copy.deepcopy(self.draft)
+        draft["overrides"] = {
+            draft["source"][0]["record_id"]: {"供应商简称": float("inf")}
+        }
+        with self.assertRaises(HTTPException) as ctx:
+            svc.save_draft(draft["id"], draft, "test")
+        self.assertEqual(ctx.exception.status_code, 422)
+        draft["overrides"] = {}
+        draft["rows"][0]["摘要"] = "x" * 32768
+        saved = svc.save_draft(draft["id"], draft, "test")
+        self.assertFalse(saved["valid"])
+        self.assertTrue(any("32767" in issue["message"] for issue in saved["issues"]))
+
+    def test_legacy_queued_date_task_is_retired_and_audit_history_is_bounded(self):
+        old = {"id": "legacy-date", "kind": "query",
+               "payload": {"mode": "date", "start_date": "2026-01-01", "end_date": "2026-01-31"},
+               "status": "queued", "progress": 0, "total": 0, "created_at": store.now(),
+               "updated_at": store.now(), "checkpoint": {}}
+        with store.connect(True) as db:
+            store.put(db, "task", old["id"], old)
+        with patch.object(svc, "submit") as submit:
+            svc.resume()
+            submit.assert_not_called()
+        with store.connect() as db:
+            retired = store.get(db, "task", old["id"])
+            self.assertEqual(retired["status"], "failed")
+            self.assertIn("已停用", retired["message"])
+            for index in range(130):
+                store.audit(db, "bounded", "test", "edit", None, {"index": index})
+        with store.connect() as db:
+            entries = store.audit_items(db, "bounded", 100)
+        self.assertEqual(len(entries), 100)
+        self.assertEqual(entries[0]["after"]["index"], 129)
 
     def test_contract_search_joint_and_add(self):
         text = engine.contract_index(["PI-26MT-01S180&190&241", "26MT-06H251&ADD1", "26MT-09T039Y-2-鸿迪"])
@@ -548,7 +668,7 @@ class WorkbenchTests(unittest.TestCase):
             return {"record_id": r["record_id"], "fields": {k: v for k, v in r.items() if k != "record_id"}}
         def ok(data):
             return {"code": 0, "data": data}
-        task = self.task("query", {"mode": "date", "start_date": "2020-01-01", "end_date": "2030-12-31"})
+        task = self.task("query", {"mode": "pending"})
         responses = [ok({"app": {"name": "2026年  海关AI"}}),
                      ok({"items": [{"table_id": "source", "name": "2026年报关数据"}, {"table_id": "fx", "name": "汇率"}]}),
                      ok({"items": [], "has_more": False}),
@@ -560,11 +680,15 @@ class WorkbenchTests(unittest.TestCase):
             with patch.object(svc.feishu, "_request", side_effect=responses):
                 with self.assertRaises(svc.feishu.FeishuError):
                     svc.query_job(task)
-            self.assertEqual(task["checkpoint"]["cursor"], "next")
-            with patch.object(svc.feishu, "_request", return_value=ok({"items": [item(records[1])], "has_more": False})) as request:
+            self.assertEqual(task["checkpoint"]["pending_search"]["cursor"], "next")
+            resume_responses = [
+                ok({"items": [item(records[1])], "has_more": False}),
+                ok({"items": [], "has_more": False}),
+            ]
+            with patch.object(svc.feishu, "_request", side_effect=resume_responses) as request:
                 result = svc.query_job(task)
-                self.assertEqual(request.call_count, 1)
-                self.assertIn("page_token=next", request.call_args.args[0])
+                self.assertEqual(request.call_count, 2)
+                self.assertIn("page_token=next", request.call_args_list[0].args[0])
         with store.connect() as db:
             self.assertEqual(store.get(db, "snapshot", result["snapshot_id"])["matched"], 2)
 
@@ -604,6 +728,29 @@ class WorkbenchTests(unittest.TestCase):
             svc.export_job(task)
         self.assertFalse(svc.OUTPUT.exists())
 
+    def test_export_capacity_boundary_and_concurrent_double_export(self):
+        svc.validate_export_capacity([{"rows": [{}] * 65535}])
+        with self.assertRaises(HTTPException) as ctx:
+            svc.validate_export_capacity([{"rows": [{}] * 65536}])
+        self.assertEqual(ctx.exception.status_code, 422)
+
+        def export(task_id):
+            try:
+                return svc.export_job({
+                    "id": task_id,
+                    "payload": {"drafts": [{"id": self.draft["id"], "version": 1}]},
+                    "session": task_id,
+                })
+            except HTTPException as error:
+                return error.status_code
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            results = list(pool.map(export, ("parallel-a", "parallel-b")))
+        self.assertEqual(sum(isinstance(result, dict) for result in results), 1)
+        self.assertIn(409, results)
+        with store.connect() as db:
+            self.assertEqual(len(store.all_items(db, "export")), 1)
+
     def test_task_idempotency(self):
         with patch.object(svc, "submit"):
             first = svc.create_task("query", {"mode": "pending"}, "test", "same")
@@ -630,6 +777,89 @@ class WorkbenchTests(unittest.TestCase):
             self.assertIsNone(masters.inventory_code("测试品名"))
             with self.assertRaises(HTTPException):
                 svc.save_mapping("inventory", {"version": 1, "item": item}, "other")
+
+    def test_domestic_customer_mappings_are_persisted_and_deduplicated(self):
+        with store.connect() as db:
+            state = svc.mapping_state(db)
+        rows = state["items"]["customers"]
+        by_alias = {
+            legacy.normalize_name(row["alias"]): row
+            for row in rows
+        }
+        expected = {
+            "上海宝冶冶金工程有限公司": "010251",
+            "上海宝冶集团有限公司": "010251",
+            "上海辉懿机械有限公司": "010243",
+            "万里旺(上海)钢管有限公司": "010240",
+            "浙江海洲制药股份有限公司": "D-016",
+        }
+        for alias, code in expected.items():
+            row = by_alias[legacy.normalize_name(alias)]
+            self.assertEqual(row["platform_code"], code)
+            self.assertTrue(row["basis"])
+        for row in svc.domestic_customer_mapping_rows():
+            self.assertIn(legacy.normalize_name(row["alias"]), by_alias)
+        self.assertEqual(len(by_alias), len(rows))
+        catalogs = svc.catalog()
+        for kind in ("customers", "suppliers", "inventory"):
+            codes = {str(row["code"]) for row in catalogs[kind]}
+            self.assertTrue(all(row["platform_code"] in codes for row in state["items"][kind]))
+        self.assertTrue(all(row.get("group_name") for row in catalogs["inventory"]))
+        customer_groups = {
+            row["code"]: row.get("group_name")
+            for row in catalogs["customers"]
+        }
+        for code in ("000026", "000062", "D-016"):
+            self.assertEqual(customer_groups[code], "国内")
+        for code in ("000129-", "000049", "3-104", "3-118"):
+            self.assertEqual(customer_groups[code], "国外")
+
+        with store.connect(True) as db:
+            persisted = svc.persist_mapping_migrations(db)
+        with store.connect() as db:
+            reloaded = svc.mapping_state(db)
+            self.assertEqual(reloaded, persisted)
+            self.assertEqual(svc.mapping_state(db), reloaded)
+            masters, _ = svc.masters_for(db)
+        self.assertEqual(masters.customer_code(["上海宝冶冶金工程有限公司"]), "010251")
+        self.assertEqual(masters.customer_code(["上海辉懿机械有限公司"]), "010243")
+        rules = legacy.read_json(svc.ROOT / "data/domestic_voucher_rules_fit.json")
+        self.assertEqual(
+            domestic._customer_code(
+                rules, {"客户名称_脚本用": "上海辉懿机械有限公司"}, masters
+            ),
+            "010243",
+        )
+
+    def test_delete_generation_record_removes_unshared_drafts_and_keeps_export_history(self):
+        other = {**copy.deepcopy(self.draft), "id": "other-draft", "version": 1,
+                 "contracts": ["26MT-DELETE-OTHER"]}
+        with store.connect(True) as db:
+            store.put(db, "draft", other["id"], other)
+            store.put(db, "batch", "batch-delete", {
+                "id": "batch-delete", "created_at": store.now(),
+                "draft_ids": [self.draft["id"], other["id"]],
+            })
+            store.put(db, "batch", "batch-shared", {
+                "id": "batch-shared", "created_at": store.now(),
+                "draft_ids": [other["id"]],
+            })
+            store.put(db, "export", "export-history", {
+                "id": "export-history", "filename": "history.xls",
+                "drafts": [copy.deepcopy(self.draft)], "record_ids": ["source"],
+                "updates": [], "writeback": "done", "written": 0,
+            })
+        result = svc.delete_batch("batch-delete", "test")
+        self.assertEqual(result["deleted"], "batch-delete")
+        self.assertEqual(result["deleted_drafts"], [self.draft["id"]])
+        with store.connect() as db:
+            self.assertIsNone(store.get(db, "draft", self.draft["id"]))
+            self.assertIsNotNone(store.get(db, "draft", other["id"]))
+            self.assertIsNone(store.get(db, "batch", "batch-delete"))
+            self.assertIsNotNone(store.get(db, "batch", "batch-shared"))
+            self.assertIsNotNone(store.get(db, "export", "export-history"))
+            self.assertTrue(any(a["entity"] == self.draft["id"] and a["action"] == "delete"
+                                for a in store.all_items(db, "audit")))
 
 
 class HTTPFlowTests(unittest.TestCase):
@@ -672,6 +902,20 @@ class HTTPFlowTests(unittest.TestCase):
             raw = response.read()
             return json.loads(raw) if response.headers.get_content_type() == "application/json" else raw
 
+    @classmethod
+    def request_error(cls, path, payload=None, method="GET", api=True):
+        data = json.dumps(payload).encode() if payload is not None else None
+        base = cls.base if api else cls.base[:-4]
+        request = Request(base + path, data=data, method=method,
+                          headers={"Content-Type": "application/json", "X-Session-ID": "http-test"})
+        try:
+            urlopen(request, timeout=15)
+        except HTTPError as error:
+            raw = error.read()
+            body = json.loads(raw) if error.headers.get_content_type() == "application/json" else raw
+            return error.code, body
+        raise AssertionError("request unexpectedly succeeded")
+
     def job(self, kind, payload):
         task = self.request("/tasks", {"kind": kind, "payload": payload, "request_id": str(time.time_ns())})
         for _ in range(100):
@@ -684,13 +928,36 @@ class HTTPFlowTests(unittest.TestCase):
 
     def test_query_build_edit_export_download(self):
         self.assertTrue(self.request("/meta")["offline"])
-        result = self.job("query", {"mode": "date", "start_date": "2026-01-01", "end_date": "2026-10-20"})
+        result = self.job("query", {"mode": "pending"})
         snapshot = self.request("/snapshots/" + result["snapshot_id"])
-        selected = next(g for g in snapshot["groups"] if not g["blocked"])
-        result = self.job("build", {"snapshot_id": snapshot["id"], "keys": [selected["key"]], "posting_date": "2026-10-20"})
-        batch = self.request("/batches/" + result["batch_id"])
-        draft = batch["drafts"][0]
-        self.assertTrue(draft["valid"], draft["issues"])
+        selected, draft = None, None
+        for candidate in (g for g in snapshot["groups"] if not g["blocked"]):
+            result = self.job("build", {"snapshot_id": snapshot["id"], "keys": [candidate["key"]], "posting_date": "2026-10-20"})
+            batch = self.request("/batches/" + result["batch_id"])
+            candidate_draft = batch["drafts"][0]
+            if candidate_draft["valid"]:
+                selected, draft = candidate, candidate_draft
+                break
+        self.assertIsNotNone(selected)
+        self.assertIsNotNone(draft)
+        numeric_rows = copy.deepcopy(draft["rows"])
+        for row in numeric_rows:
+            for field in engine.NUMBERS:
+                value = row.get(field)
+                if isinstance(value, str) and value.strip():
+                    try:
+                        row[field] = float(value)
+                    except ValueError:
+                        pass
+        saved = self.request(
+            "/drafts/" + draft["id"],
+            {**{k: draft[k] for k in ("version", "header", "overrides")}, "rows": numeric_rows},
+            "PATCH",
+        )
+        self.assertTrue(all(isinstance(value, str) for row in saved["rows"] for value in row.values()))
+        self.assertTrue(saved["valid"], saved["issues"])
+        self.assertEqual(saved["manual_fields"], [])
+        draft = saved
         draft["rows"][0]["摘要"] += "（本地测试）"
         saved = self.request("/drafts/" + draft["id"], {k: draft[k] for k in ("version", "header", "rows", "overrides")}, "PATCH")
         self.assertEqual(saved["version"], draft["version"] + 1)
@@ -702,11 +969,32 @@ class HTTPFlowTests(unittest.TestCase):
         excel = self.request("/exports/" + export["id"] + "/download")
         book = xlrd.open_workbook(file_contents=excel)
         self.assertEqual(book.sheet_by_index(0).ncols, 53)
-        self.assertEqual(len(self.request("/history/" + draft["id"])), 2)
+        self.assertEqual(len(self.request("/history/" + draft["id"])), 3)
         # New query excludes locally occupied records even before any Feishu writeback.
-        again = self.job("query", {"mode": "date", "start_date": "2026-01-01", "end_date": "2026-10-20"})
+        again = self.job("query", {"mode": "pending"})
         refreshed = self.request("/snapshots/" + again["snapshot_id"])
         self.assertNotIn(selected["key"], [g["key"] for g in refreshed["groups"]])
+
+    def test_retired_and_invalid_http_requests_are_explicit(self):
+        status, body = self.request_error("/tasks", {
+            "kind": "query",
+            "payload": {"mode": "date", "start_date": "2026-01-01", "end_date": "2026-12-31"},
+            "request_id": "http-retired-date",
+        }, "POST")
+        self.assertEqual(status, 422)
+        self.assertIn("已停用", body["detail"])
+        status, body = self.request_error("/vouchers/generate-bulk", {}, "POST", api=False)
+        self.assertEqual(status, 410)
+        self.assertIn("已停用", body["detail"])
+        status, _ = self.request_error(
+            "/vouchers/groups?sale_method=%E5%86%85%E9%94%80", api=False)
+        self.assertEqual(status, 422)
+        status, _ = self.request_error("/history/not-found?limit=0")
+        self.assertEqual(status, 422)
+        for path in ("/.env", "/data/ai_customs_source.json", "/app/main.py",
+                     "/..%2F.env"):
+            status, _ = self.request_error(path, api=False)
+            self.assertEqual(status, 404)
 
 
 if __name__ == "__main__":

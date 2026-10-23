@@ -182,12 +182,15 @@ def validate(draft, catalogs):
     issues = copy.deepcopy(draft.get("blocking_issues", []))
     manual = set(draft.get("manual_fields", []))
     row_ids = {r["id"] for r in draft["rows"]}
+    source_error_targets = set()
     for issue in draft.get("build_issues", []):
         if issue.get("row_id") and issue["row_id"] not in row_ids:
             continue
         target = issue["row_id"] + "/" + issue["field"]
         if not issue["row_id"] or target not in manual:
             issues.append(issue)
+            if issue.get("row_id") and issue.get("field") and issue.get("severity") == "error":
+                source_error_targets.add((issue["row_id"], issue["field"]))
 
     def err(message, row="", field=""):
         issues.append({"id": f"validate:{row}:{field}:{len(issues)}", "message": message,
@@ -220,12 +223,16 @@ def validate(draft, catalogs):
             err("请选择有效的末级会计科目", rid, "科目编码")
         if not str(row.get("摘要", "")).strip():
             err("请填写摘要", rid, "摘要")
+        elif len(str(row.get("摘要"))) > 32767:
+            err("摘要超过Excel单元格32767字符上限", rid, "摘要")
         currency = row.get("币种名称")
         if currency not in legacy.ACCOUNT_BY_METHOD["出口"]:
             err("币种无效或尚未支持", rid, "币种名称")
         nums = {f: number(row.get(f)) for f in NUMBERS}
         for field in NUMBERS:
             if nums[field] is None and (field in NUMBERS[:5] or row.get(field) not in ("", None)):
+                if (rid, field) in source_error_targets:
+                    continue
                 err("请输入有效数值", rid, field)
         if nums["汇率"] is not None and nums["汇率"] <= 0:
             err("汇率必须大于零", rid, "汇率")

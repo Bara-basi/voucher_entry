@@ -79,8 +79,8 @@ const quantityEditing = ref('')
       <tbody>
         <tr v-for="(row, index) in draft.rows" :key="row.id">
           <td class="sequence"><span>{{ index + 1 }}</span><div class="row-tools">
-            <button title="上移" @click="move(index, -1)"><ArrowUp :size="12" /></button><button title="下移" @click="move(index, 1)"><ArrowDown :size="12" /></button>
-            <button title="删除分录" @click="draft.rows.splice(index, 1); emit('change')"><Trash2 :size="12" /></button></div></td>
+            <button title="上移" aria-label="上移分录" @click="move(index, -1)"><ArrowUp :size="12" /></button><button title="下移" aria-label="下移分录" @click="move(index, 1)"><ArrowDown :size="12" /></button>
+            <button title="删除分录" aria-label="删除分录" @click="draft.rows.splice(index, 1); emit('change')"><Trash2 :size="12" /></button></div></td>
           <td :class="{ invalid: bad(row, '摘要'), modified: edited(row, '摘要') }" :title="reason(row, '摘要')"><button v-if="bad(row, '摘要')" type="button" class="cell-issue" :aria-label="reason(row, '摘要')" :title="reason(row, '摘要')" @click.stop.prevent="focusIssue"><CircleAlert :size="15" /></button><textarea :data-target="row.id + '/摘要'" aria-label="摘要" :value="row['摘要']" @input="update(row, '摘要', $event)" @blur="emit('blur')" /></td>
           <td :class="{ invalid: bad(row, '科目编码'), modified: edited(row, '科目编码') }" :title="reason(row, '科目编码')"><button v-if="bad(row, '科目编码')" type="button" class="cell-issue" :aria-label="reason(row, '科目编码')" :title="reason(row, '科目编码')" @click.stop.prevent="focusIssue"><CircleAlert :size="15" /></button>
             <CatalogInput :model-value="row['科目编码']" :items="catalogs.subjects?.filter(s => s.leaf) || []" label="科目编码" :target="row.id + '/科目编码'" @update:model-value="setCode(row, '科目编码', $event)" @blur="emit('blur')" />

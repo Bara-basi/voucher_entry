@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from typing import Any
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Header, Query
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
@@ -23,7 +23,7 @@ class EditRequest(BaseModel):
     version: int
     manual_exception: bool | None = None
     header: dict[str, str]
-    rows: list[dict[str, str]]
+    rows: list[dict[str, Any]]
     overrides: dict[str, dict[str, Any]] = Field(default_factory=dict)
 
 
@@ -46,7 +46,10 @@ def create_task(request: TaskRequest, x_session_id: str = Header(default="anonym
 @router.get("/tasks")
 def tasks():
     with store.connect() as db:
-        return [svc.task_view(t) for t in store.all_items(db, "task")][:100]
+        visible = [t for t in store.recent_items(db, "task", 100)
+                   if not (t["kind"] == "query"
+                           and t["payload"].get("mode", "pending") != "pending")]
+        return [svc.task_view(t) for t in visible]
 
 
 @router.get("/tasks/{key}")
@@ -59,6 +62,9 @@ def task(key: str):
 def retry(key: str):
     with store.connect(True) as db:
         value = svc.required(db, "task", key)
+        if value["kind"] not in ("query", "build", "export", "writeback"):
+            svc.fail(422, "未知任务")
+        svc.validate_task_payload(value["kind"], value["payload"])
         if value["status"] == "done":
             return svc.task_view(value)
         value["status"] = "queued"
@@ -153,9 +159,14 @@ def save_mapping(kind: str, request: dict, x_session_id: str = Header(default="a
 
 
 @router.get("/history/{entity}")
-def history(entity: str):
+def history(entity: str, limit: int = Query(default=100, ge=1, le=500)):
     with store.connect() as db:
-        return [a for a in store.all_items(db, "audit") if a["entity"] == entity]
+        return store.audit_items(db, entity, limit)
+
+
+@router.delete("/batches/{key}")
+def delete_batch(key: str, x_session_id: str = Header(default="anonymous")):
+    return svc.delete_batch(key, x_session_id)
 
 
 @router.post("/exports/preview")

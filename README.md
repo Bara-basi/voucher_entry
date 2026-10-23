@@ -1,7 +1,8 @@
 # 凭证构建工作台
 
 现已提供 Vue 3 + TypeScript 共享网页：凭证编辑、异常补充、自动保存、映射维护、批量导出与飞书回写。
-新版界面使用 `/api` 接口；下文原有 `/vouchers` 接口继续兼容。
+新版界面使用 `/api` 接口。原有 `/vouchers` 仅保留外销兼容入口；内销、
+“视同销售”和“预录”会返回明确的 422，按日期批量接口返回 410。
 完整启动方式、接口、验证结果和新增文件清单见 [工作台实现与验证](docs/工作台实现与验证.md)。
 
 ```powershell
@@ -13,6 +14,9 @@ D:\python\python.exe scripts\serve_workbench.py --demo --port 8010
 # 正式运行：读取配置的飞书源，导出后回写状态
 D:\python\python.exe scripts\serve_workbench.py --host 0.0.0.0 --port 8000
 ```
+
+`0.0.0.0` 仅应部署在可信内网。当前工作台没有内置账号体系；若要跨网段访问，
+必须通过反向代理或网络 ACL 增加登录和访问控制。
 
 从飞书多维表记录构建用友凭证导入模板，替代财务人员机械重复的录入工作。
 
@@ -58,10 +62,10 @@ D:\python\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 | POST | `/vouchers/generate` | 全量生成，参数 `posting_date` / `contract_prefix` / `sale_method` / `output_dir` |
 | GET | `/vouchers/pending` | 列出飞书中凭证状态为「待开」的记录 |
 | POST | `/vouchers/generate-pending` | 读取「待开」记录，合并生成一个导入模板；`mark=true` 时回写状态 |
-| POST | `/vouchers/generate-bulk` | 按出口日期范围批量生成一个导入模板，参数 `start_date` / `end_date` / `mark` |
 
 生成结果默认写入 `outputs/single_voucher/`：一个报关单号一张凭证一个 `.xls`。
-待开/批量接口输出到 `outputs/batch/`：一个文件内含多张凭证（凭证ID 递增）。
+旧版待开接口输出到 `outputs/batch/`：一个文件内含多张凭证（凭证ID 递增）。
+业务已取消按日期检索和按日期批量生成，工作台统一使用“飞书待开范围”。
 
 ### 待开凭证流程
 

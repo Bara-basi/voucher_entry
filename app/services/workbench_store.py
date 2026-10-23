@@ -52,9 +52,24 @@ def put(db, kind, key, body):
                (kind, key, dumps(body)))
 
 
+def delete(db, kind, key):
+    db.execute("DELETE FROM objects WHERE kind=? AND id=?", (kind, key))
+
+
 def all_items(db, kind):
     return [json.loads(r["body"]) for r in db.execute(
         "SELECT body FROM objects WHERE kind=? ORDER BY rowid DESC", (kind,))]
+
+
+def recent_items(db, kind, limit=100):
+    return [json.loads(r["body"]) for r in db.execute(
+        "SELECT body FROM objects WHERE kind=? ORDER BY rowid DESC LIMIT ?", (kind, limit))]
+
+
+def audit_items(db, entity, limit=100):
+    return [json.loads(r["body"]) for r in db.execute(
+        "SELECT body FROM objects WHERE kind='audit' AND json_extract(body, '$.entity')=? "
+        "ORDER BY rowid DESC LIMIT ?", (entity, limit))]
 
 
 def audit(db, entity, session, action, before, after):
