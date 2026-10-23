@@ -32,8 +32,9 @@ def meta():
     with store.connect() as db:
         version = svc.mapping_state(db)["version"]
         source = store.get(db, "settings", "source") or {"label": svc.initial_source_label()}
-    return {"source": source["label"], "scope": "26MT · 出口",
-            "offline": svc.OFFLINE, "mapping_version": version, "timezone": "Asia/Shanghai",
+    return {"source": source["label"], "scope": "外销 · 内销",
+            "offline": svc.OFFLINE, "writeback_enabled": not svc.OFFLINE,
+            "mapping_version": version, "timezone": "Asia/Shanghai",
             "today": store.now()[:10], "source_fields": draft_service.SOURCE_FIELDS}
 
 

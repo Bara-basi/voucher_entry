@@ -82,8 +82,16 @@ def to_text(value) -> str:
     if isinstance(value, list):
         parts = []
         for item in value:
-            parts.append(item.get("text") if isinstance(item, dict) else item)
+            parts.append(to_text(item))
         return " ".join(str(p) for p in parts if p).strip()
+    if isinstance(value, dict):
+        if value.get("text") is not None:
+            return str(value["text"]).strip()
+        if value.get("name") is not None:
+            return str(value["name"]).strip()
+        if value.get("value") is not None:
+            return to_text(value["value"])
+        return ""
     return str(value or "").strip()
 
 

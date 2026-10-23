@@ -18,6 +18,7 @@ import xlrd
 from fastapi import HTTPException
 
 from app.services import draft_service as engine
+from app.services import feishu_service as feishu
 from app.services import voucher_service as legacy
 from app.services import workbench_service as svc
 from app.services import workbench_store as store
@@ -267,7 +268,19 @@ class WorkbenchTests(unittest.TestCase):
         cls.catalogs = svc.catalog()
         cls.masters = legacy.MasterData()
         raw = legacy.read_json(svc.ROOT / "data/ai_customs_source.json")["records"]
-        cls.source = [dict(r["fields"], record_id=r["record_id"]) for r in raw if svc.in_scope(r["fields"])]
+        cls.source = [
+            dict(r["fields"], record_id=r["record_id"])
+            for r in raw
+            if svc.business_type(r["fields"]) == "外销"
+        ]
+        domestic_raw = legacy.read_json(
+            svc.ROOT / "data/domestic_source_current.json"
+        )["records"]
+        cls.domestic_source = [
+            dict(r.get("fields", r), record_id=r.get("record_id") or r.get("id"))
+            for r in domestic_raw
+            if svc.business_type(r.get("fields", r)) == "内销"
+        ]
         for group in legacy.group_records(cls.source).values():
             if len(group) != 1:
                 continue
@@ -394,6 +407,47 @@ class WorkbenchTests(unittest.TestCase):
         for expected in ("26MT-01S190", "26MT-01S241", "26MT-06H251-ADD1", "26MT09T039Y2鸿迪"):
             self.assertIn(expected, text)
 
+    def test_domestic_query_build_and_business_label(self):
+        records = [
+            {**record, "是否开凭证": "待开"}
+            for record in self.domestic_source
+            if record.get("合同号_1") == "26MT-DP012"
+        ]
+        self.assertEqual(len(records), 1)
+        records[0]["客户名称_脚本用"] = {
+            "type": 1,
+            "value": [{"text": "上海宝冶集团有限公司", "type": "text"}],
+        }
+        task = self.task(
+            "query",
+            {"mode": "pending"},
+            {"records": records, "fetched": True},
+        )
+        result = svc.query_job(task)
+        with store.connect() as db:
+            snapshot = store.get(db, "snapshot", result["snapshot_id"])
+        self.assertEqual(len(snapshot["groups"]), 1)
+        group = snapshot["groups"][0]
+        self.assertEqual(group["business_type"], "内销")
+        self.assertEqual(group["business_no"], "26MT-DP012")
+        self.assertEqual(group["customs_no"], "")
+
+        built = svc.build_job(self.task(
+            "build",
+            {
+                "snapshot_id": snapshot["id"],
+                "keys": [group["key"]],
+                "posting_date": "2026-10-23",
+            },
+        ))
+        with store.connect() as db:
+            batch = store.get(db, "batch", built["batch_id"])
+            draft = store.get(db, "draft", batch["draft_ids"][0])
+        self.assertEqual(draft["business_type"], "内销")
+        self.assertEqual(draft["business_no"], "26MT-DP012")
+        self.assertTrue(draft["rows"])
+        self.assertTrue(draft["valid"], draft["issues"])
+
     def test_export_saved_revision_and_excel_roundtrip(self):
         task = self.task("export", {"drafts": [{"id": self.draft["id"], "version": 1}]})
         with patch.object(feishu := svc.feishu, "batch_update") as update:
@@ -415,6 +469,50 @@ class WorkbenchTests(unittest.TestCase):
         self.assertEqual(exported["writeback"], "offline")
         self.assertEqual(exported["drafts"][0]["version"], 1)
         self.assertEqual(len(exported["record_ids"]), len(self.draft["source"]))
+
+    def test_export_automatically_writes_exact_feishu_status_fields(self):
+        task = self.task("export", {
+            "drafts": [{"id": self.draft["id"], "version": 1}],
+        })
+        with patch.object(svc, "OFFLINE", False), \
+             patch.object(svc.feishu, "batch_update") as update:
+            svc.export_job(task)
+        update.assert_called()
+        fields = update.call_args.args[0][0]["fields"]
+        self.assertEqual(fields, {
+            "是否开凭证": "已开",
+            "凭证开具日期": self.draft["header"]["posting_date"][:7],
+            "凭证开具结果": "保存成功",
+        })
+        with store.connect() as db:
+            exported = store.get(db, "export", task["id"])
+        self.assertEqual(exported["writeback"], "done")
+
+    def test_batch_update_rejects_unpersisted_field_values(self):
+        response = {
+            "code": 0,
+            "data": {
+                "records": [{
+                    "record_id": "record-1",
+                    "fields": {
+                        "是否开凭证": "待开",
+                        "凭证开具日期": "",
+                        "凭证开具结果": "",
+                    },
+                }],
+            },
+        }
+        with patch.object(feishu, "tenant_token", return_value="test-token"), \
+             patch.object(feishu, "_request", return_value=response):
+            with self.assertRaises(feishu.FeishuError):
+                feishu.batch_update([{
+                    "record_id": "record-1",
+                    "fields": {
+                        "是否开凭证": "已开",
+                        "凭证开具日期": "2026-10",
+                        "凭证开具结果": "保存成功",
+                    },
+                }])
 
     def test_writeback_checkpoint_resume(self):
         export = {"id": "resume", "writeback": "pending", "offline": False, "written": 0,

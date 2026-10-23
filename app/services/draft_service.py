@@ -13,6 +13,7 @@ NUMBERS = ["汇率", "原币借方", "原币贷方", "借方金额", "贷方金�
 AUX = {"客户编码": "customers", "供应商编码": "suppliers", "存货档案": "inventory"}
 SOURCE_FIELDS = list(dict.fromkeys(legacy.REQUIRED_FIELDS + [
     "买方英文名", "客户名称_脚本用", "供应商简称", "报关重量", "出口日期", "汇率",
+    "出运日期", "开票情况", "实际年份", "实际月份",
     "进项税额", "退税额", "销项税额", "运费", "保费"]))
 
 

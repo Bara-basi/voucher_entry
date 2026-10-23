@@ -144,7 +144,7 @@ def main() -> None:
     parser.add_argument(
         "--single-dir",
         type=Path,
-        default=ROOT / "outputs/domestic_vouchers/单张导入模板_王益",
+        default=ROOT / "outputs/domestic_vouchers/单张导入模板_王益_无暂估",
     )
     parser.add_argument("--output", type=Path, default=DEFAULT_JSON_OUTPUT)
     parser.add_argument(

@@ -79,13 +79,18 @@ def text(value: Any) -> str:
     if isinstance(value, list):
         parts = []
         for item in value:
-            if isinstance(item, dict):
-                parts.append(str(item.get("text") or item.get("name") or item.get("id") or ""))
-            else:
-                parts.append(str(item))
+            parts.append(text(item))
         return "；".join(part for part in parts if part).strip()
     if isinstance(value, dict):
-        return str(value.get("text") or value.get("name") or value.get("id") or "").strip()
+        if value.get("text") is not None:
+            return str(value["text"]).strip()
+        if value.get("name") is not None:
+            return str(value["name"]).strip()
+        if value.get("value") is not None:
+            return text(value["value"])
+        if value.get("id") is not None:
+            return str(value["id"]).strip()
+        return ""
     return str(value or "").strip()
 
 

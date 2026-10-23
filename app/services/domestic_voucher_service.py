@@ -22,6 +22,7 @@ from . import voucher_service as legacy
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_RULES = ROOT / "data/domestic_voucher_rules_fit.json"
+RUI_BEI_BUYER_MAPPING = ROOT / "data/ruibei_buyer_mapping_2026.json"
 CONTRACT_FIELD = "合同号_1"
 SOURCE_METHOD = "内销"
 HISTORY_SUFFIXES = sorted({
@@ -44,9 +45,17 @@ class DomesticVoucherError(Exception):
 def text(value: Any) -> str:
     if isinstance(value, list):
         return "；".join(
-            str(item.get("text") or "") if isinstance(item, dict) else str(item)
+            text(item)
             for item in value
-        ).strip()
+        ).strip("； ")
+    if isinstance(value, dict):
+        if value.get("text") is not None:
+            return str(value["text"]).strip()
+        if value.get("name") is not None:
+            return str(value["name"]).strip()
+        if value.get("value") is not None:
+            return text(value["value"])
+        return ""
     return str(value or "").strip()
 
 
@@ -461,7 +470,7 @@ def fit_rules(sample_payload: dict, domestic_payload: dict | None = None,
                 order_counter[role] += 1
 
     normal_input_code = mode(normal_input) or "22210101"
-    pending_input_code = mode(pending_input) or "22210107"
+    pending_input_code = normal_input_code
     inventory_prefix_map = {
         prefix: counts.most_common(1)[0][0]
         for prefix, counts in inventory_subjects.items()
@@ -526,7 +535,6 @@ def fit_rules(sample_payload: dict, domestic_payload: dict | None = None,
             "purchase": purchase_summary,
             "cost": cost_summary,
             "input_tax_suffix": "-专票",
-            "pending_prefix": "暂估-",
         },
         "purchase_order": list(
             (
@@ -587,6 +595,31 @@ def _customer_code(rules: dict, record: dict, masters: legacy.MasterData) -> str
         [record.get("买方英文名"), record.get("客户名称_脚本用")],
         lambda value: masters.customer_code([value]),
     )
+
+
+def enrich_buyer_names(records: list[dict]) -> list[dict]:
+    """Apply the confirmed Ruibei invoice-company mapping without mutating source."""
+    result = [dict(record) for record in records]
+    if not RUI_BEI_BUYER_MAPPING.exists():
+        return result
+    mapping = json.loads(RUI_BEI_BUYER_MAPPING.read_text(encoding="utf-8"))
+    by_contract = {
+        text(item.get(CONTRACT_FIELD)): item
+        for item in mapping.get("results") or []
+        if item.get("状态") == "已获取" and text(item.get("公司名称"))
+    }
+    for record in result:
+        if text(record.get("买方英文名")) or text(record.get("客户名称_脚本用")):
+            continue
+        item = by_contract.get(text(record.get(CONTRACT_FIELD)))
+        if not item:
+            continue
+        record["客户名称_脚本用"] = text(item.get("公司名称"))
+        record["客户名称_来源"] = text(item.get("来源类型")) or "睿贝ERP开票申请"
+        if item.get("继承自"):
+            record["睿贝原始合同号"] = text(item["继承自"])
+        record["纳税识别号（睿贝）"] = text(item.get("纳税识别号"))
+    return result
 
 
 def _supplier_code(rules: dict, record: dict, masters: legacy.MasterData) -> str:
@@ -691,6 +724,7 @@ def build_domestic_voucher(records: list[dict], rules: dict,
     if not records:
         raise DomesticVoucherError("空合同分组")
     masters = masters or legacy.MasterData()
+    records = enrich_buyer_names(records)
     contract = text(records[0].get(CONTRACT_FIELD))
     if not contract:
         raise DomesticVoucherError("合同号_1 为空")
@@ -765,11 +799,8 @@ def build_domestic_voucher(records: list[dict], rules: dict,
         if purchase <= 0:
             purchase = cost + input_tax
 
-        pending = text(record.get("开票情况")) not in ("已开票", "已开", "开票完成")
-        base_summary = (
-            summaries["pending_prefix"] if pending else ""
-        ) + contract + summaries["purchase"]
-        tax_account = accounts["pending_input_tax"] if pending else accounts["input_tax"]
+        base_summary = contract + summaries["purchase"]
+        tax_account = accounts["input_tax"]
         quantity = _quantity(record, rules)
         unit_price = money(cost / quantity) if quantity else None
 

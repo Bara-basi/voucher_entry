@@ -8,7 +8,9 @@ import hashlib
 import json
 import logging
 import os
+import re
 import threading
+import time
 import uuid
 from functools import lru_cache
 from concurrent.futures import ThreadPoolExecutor
@@ -18,6 +20,7 @@ from urllib.parse import urlencode
 from fastapi import HTTPException
 
 from . import draft_service as engine
+from . import domestic_voucher_service as domestic
 from . import feishu_service as feishu
 from . import voucher_service as legacy
 from . import workbench_store as store
@@ -28,6 +31,9 @@ OFFLINE = os.environ.get("WORKBENCH_OFFLINE") == "1"
 POOL = ThreadPoolExecutor(max_workers=1, thread_name_prefix="workbench")
 LOCK = threading.RLock()
 ACTIVE = set()
+SOURCE_CONTEXT_CACHE: dict[tuple[str, str], tuple[float, str, str]] = {}
+SOURCE_CONTEXT_TTL = 600
+RATE_CACHE_TTL = 6 * 60 * 60
 MAP_FILES = {"customers": ("customer_alias_mappings.json", "aliases"),
              "suppliers": ("finance_supplier_alias_mappings.json", "mappings"),
              "inventory": ("product_alias_mappings.json", "mappings")}
@@ -41,6 +47,50 @@ def initial_source_label():
         data = legacy.read_json(path)
         return str(data.get("app_name") or "2025海关 AI") + " / 2026年报关数据"
     return "2025海关 AI / 2026年报关数据"
+
+
+def verified_source_context(token, app_token, table_id):
+    key = (app_token, table_id)
+    cached = SOURCE_CONTEXT_CACHE.get(key)
+    if cached and cached[0] > time.time():
+        return cached[1], cached[2]
+    base = f"{feishu.BASE}/bitable/v1/apps/{app_token}"
+    app = feishu._request(base, token=token)
+    if app.get("code") != 0:
+        raise feishu.FeishuError("无法核验飞书数据源")
+    actual_name = (app.get("data", {}).get("app") or {}).get("name", "")
+    expected_name = os.environ.get("WORKBENCH_EXPECTED_APP_NAME")
+    accepted_names = (
+        {expected_name.replace(" ", "")}
+        if expected_name else {"2025海关AI", "2026年海关AI"}
+    )
+    if actual_name.replace(" ", "") not in accepted_names:
+        raise feishu.FeishuError("配置的数据源名称不符合预期，请核对后台配置")
+    tables, page = [], None
+    while True:
+        params = {"page_size": 100}
+        if page:
+            params["page_token"] = page
+        response = feishu._request(base + "/tables?" + urlencode(params), token=token)
+        if response.get("code") != 0:
+            raise feishu.FeishuError("无法核验飞书数据表")
+        data = response.get("data", {})
+        tables += data.get("items", [])
+        if not data.get("has_more"):
+            break
+        page = data.get("page_token")
+        if not page:
+            raise feishu.FeishuError("飞书表目录分页信息不完整")
+    table = next((item for item in tables if item["table_id"] == table_id), None)
+    if not table or table["name"] != "2026年报关数据":
+        raise feishu.FeishuError("配置的表不是2026年报关数据，请核对后台配置")
+    rate_table = next((item["table_id"] for item in tables if item["name"] == "汇率"), None)
+    if not rate_table:
+        raise feishu.FeishuError("数据源中未找到汇率表")
+    SOURCE_CONTEXT_CACHE[key] = (
+        time.time() + SOURCE_CONTEXT_TTL, actual_name, rate_table
+    )
+    return actual_name, rate_table
 
 
 def fail(status, message):
@@ -387,8 +437,48 @@ def resume():
             submit(task["id"])
 
 
+def business_type(r):
+    contract = legacy.to_text(r.get("合同号_1")).upper().removeprefix("PI-")
+    method = legacy.to_text(r.get("销售方式"))
+    if method == "内销" and contract:
+        return "内销"
+    if method == "出口" and contract.startswith("26MT"):
+        return "外销"
+    return ""
+
+
 def in_scope(r):
-    return legacy.to_text(r.get("合同号_1")).upper().removeprefix("PI-").startswith("26MT") and r.get("销售方式") == "出口"
+    return bool(business_type(r))
+
+
+def group_identity(r):
+    kind = business_type(r)
+    contract = legacy.to_text(r.get("合同号_1"))
+    customs = legacy.to_text(r.get("报关单号"))
+    if kind == "内销":
+        return "内销:" + (contract or "missing:" + r["record_id"])
+    if kind == "外销":
+        return "外销:" + (customs or "missing:" + r["record_id"])
+    # Keep out-of-scope siblings visible as a blocking condition on their
+    # business group instead of silently dropping them.
+    if legacy.to_text(r.get("销售方式")) == "内销":
+        return "内销:" + (contract or "missing:" + r["record_id"])
+    return "外销:" + (customs or "missing:" + r["record_id"])
+
+
+def record_day(r, kind):
+    field = "出运日期" if kind == "内销" else "出口日期"
+    value = r.get(field)
+    if isinstance(value, (int, float)):
+        return dt.datetime.fromtimestamp(float(value) / 1000, store.TZ).date()
+    raw = legacy.to_text(value)
+    match = re.search(r"(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})", raw)
+    if not match:
+        return None
+    try:
+        return dt.date(int(match.group(1)), int(match.group(2)), int(match.group(3)))
+    except ValueError:
+        return None
 
 
 def filtered_pending_records(task, url, token):
@@ -424,6 +514,14 @@ def filtered_pending_records(task, url, token):
     for offset in range(0, len(declarations), 20):
         records += search("group_search_" + str(offset),
                           [condition("报关单号", v) for v in declarations[offset:offset + 20]])
+    contracts = sorted({
+        legacy.to_text(r.get("合同号_1"))
+        for r in records
+        if business_type(r) == "内销"
+    } - {""})
+    for offset in range(0, len(contracts), 20):
+        records += search("domestic_group_search_" + str(offset),
+                          [condition("合同号_1", v) for v in contracts[offset:offset + 20]])
     records = list({r["record_id"]: r for r in records}.values())
     parents = set()
     for record in records:
@@ -464,38 +562,15 @@ def query_job(task):
             app_token, table_id = feishu.table_target()
             base = f"{feishu.BASE}/bitable/v1/apps/{app_token}"
             if not cp.get("verified"):
-                app = feishu._request(base, token=token)
-                if app.get("code") != 0:
-                    raise feishu.FeishuError("无法核验飞书数据源")
-                actual_name = (app.get("data", {}).get("app") or {}).get("name", "")
-                expected_name = os.environ.get("WORKBENCH_EXPECTED_APP_NAME")
-                accepted_names = {expected_name.replace(" ", "")} if expected_name else {"2025海关AI", "2026年海关AI"}
-                if actual_name.replace(" ", "") not in accepted_names:
-                    raise feishu.FeishuError("配置的数据源名称不符合预期，请核对后台配置")
-                tables, page = [], None
-                while True:
-                    params = {"page_size": 100}
-                    if page:
-                        params["page_token"] = page
-                    response = feishu._request(base + "/tables?" + urlencode(params), token=token)
-                    if response.get("code") != 0:
-                        raise feishu.FeishuError("无法核验飞书数据表")
-                    data = response.get("data", {})
-                    tables += data.get("items", [])
-                    if not data.get("has_more"):
-                        break
-                    page = data.get("page_token")
-                    if not page:
-                        raise feishu.FeishuError("飞书表目录分页信息不完整")
-                table = next((t for t in tables if t["table_id"] == table_id), None)
-                if not table or table["name"] != "2026年报关数据":
-                    raise feishu.FeishuError("配置的表不是2026年报关数据，请核对后台配置")
-                rate_table = next((t["table_id"] for t in tables if t["name"] == "汇率"), None)
-                if not rate_table:
-                    raise feishu.FeishuError("数据源中未找到汇率表")
+                actual_name, rate_table = verified_source_context(token, app_token, table_id)
                 cp.update(verified=True, rate_table=rate_table, actual_name=actual_name)
                 checkpoint(task)
-            if not cp.get("rates_fetched"):
+            rate_path = ROOT / "data/fx_rates_ai_snapshot.json"
+            rates_fresh = (
+                rate_path.exists()
+                and time.time() - rate_path.stat().st_mtime < RATE_CACHE_TTL
+            )
+            if not cp.get("rates_fetched") and not rates_fresh:
                 rates, rate_cursor = cp.get("rates", []), cp.get("rate_cursor")
                 while True:
                     params = {"page_size": 500}
@@ -514,11 +589,13 @@ def query_job(task):
                         break
                     if not rate_cursor:
                         raise feishu.FeishuError("汇率分页信息不完整")
-            rate_path = ROOT / "data/fx_rates_ai_snapshot.json"
-            temporary = rate_path.with_suffix(".json.tmp")
-            temporary.write_text(store.dumps({"records": cp["rates"], "fetched_at": store.now()}), encoding="utf-8")
-            temporary.replace(rate_path)
-            legacy.MASTERS = None
+                temporary = rate_path.with_suffix(".json.tmp")
+                temporary.write_text(
+                    store.dumps({"records": cp["rates"], "fetched_at": store.now()}),
+                    encoding="utf-8",
+                )
+                temporary.replace(rate_path)
+                legacy.MASTERS = None
             url = f"{feishu.BASE}/bitable/v1/apps/{app_token}/tables/{table_id}/records"
             if mode == "pending":
                 records = filtered_pending_records(task, url, token)
@@ -544,13 +621,13 @@ def query_job(task):
         checkpoint(task, progress=len(records))
     # Deduplicate pages on service restart and preserve full declaration groups.
     records = list({r["record_id"]: r for r in records}.values())
-    groups, selected = {}, set()
+    groups: dict[str, list[dict]] = {}
+    selected = set()
     with store.connect() as db:
         occupied = {k for e in store.all_items(db, "export") for k in e["record_ids"]}
     excluded, dateless = 0, 0
     for r in records:
-        customs = legacy.to_text(r.get("报关单号"))
-        key = customs or "missing:" + r["record_id"]
+        key = group_identity(r)
         groups.setdefault(key, []).append(r)
         if not in_scope(r):
             continue
@@ -560,11 +637,10 @@ def query_job(task):
         if mode == "pending":
             hit = legacy.to_text(r.get("是否开凭证")) == "待开"
         else:
-            stamp = engine.number(r.get("出口日期"))
-            if stamp is None:
+            day = record_day(r, business_type(r))
+            if day is None:
                 dateless += 1
                 continue
-            day = dt.datetime.fromtimestamp(float(stamp) / 1000, store.TZ).date()
             hit = start <= day <= end
         if hit:
             selected.add(r["record_id"])
@@ -573,22 +649,39 @@ def query_job(task):
         hits = [r for r in group if r["record_id"] in selected]
         if not hits:
             continue
+        kind = business_type(hits[0])
         reasons = []
-        if key.startswith("missing:"):
+        if kind == "外销" and key.startswith("外销:missing:"):
             reasons.append("缺少报关单号，请在飞书补充后重新检索")
+        if kind == "内销" and "missing:" in key:
+            reasons.append("缺少合同号_1，请在飞书补充后重新检索")
         if any(r["record_id"] in occupied or legacy.to_text(r.get("是否开凭证")) == "已开" for r in group):
-            reasons.append("同一报关单中已有已开或已导出记录")
+            label = "同一合同" if kind == "内销" else "同一报关单"
+            reasons.append(label + "中已有已开或已导出记录")
         if any(not in_scope(r) for r in group):
-            reasons.append("同一报关单包含范围外记录")
+            label = "同一合同" if kind == "内销" else "同一报关单"
+            reasons.append(label + "包含范围外记录")
         statuses = {legacy.to_text(r.get("是否开凭证")) for r in group}
         if any(s not in ("", "待开", "未开", "未开凭证") for s in statuses):
-            reasons.append("同一报关单存在需核实的凭证状态")
+            label = "同一合同" if kind == "内销" else "同一报关单"
+            reasons.append(label + "存在需核实的凭证状态")
         contracts = list(dict.fromkeys(legacy.to_text(r.get("合同号_1")) for r in group))
-        result.append({"key": key, "customs_no": "" if key.startswith("missing:") else key,
+        customs_no = legacy.to_text(group[0].get("报关单号")) if kind == "外销" else ""
+        business_no = contracts[0] if kind == "内销" and contracts else customs_no
+        result.append({"key": key, "business_type": kind, "business_no": business_no,
+                       "customs_no": customs_no,
                        "contracts": contracts, "search_index": engine.contract_index(contracts),
                        "count": len(group), "matched": len(hits), "added": len(group) - len(hits),
-                       "blocked": reasons, "hard_blocked": [r for r in reasons if r in ("缺少报关单号，请在飞书补充后重新检索", "同一报关单包含范围外记录")], "records": group})
-    source_label = cp.get("actual_name", "") + " / 2026年报关数据" if cp.get("actual_name") else initial_source_label()
+                       "blocked": reasons,
+                       "hard_blocked": [r for r in reasons if r in (
+                           "缺少报关单号，请在飞书补充后重新检索",
+                           "缺少合同号_1，请在飞书补充后重新检索",
+                           "同一报关单包含范围外记录",
+                           "同一合同包含范围外记录",
+                       )],
+                       "records": group})
+    source_label = (cp.get("actual_name", "") + " / 2026年报关数据"
+                    if cp.get("actual_name") else initial_source_label())
     snapshot = {"id": task["id"], "created_at": store.now(), "mode": mode, "groups": result,
                 "matched": len(selected), "excluded": excluded, "dateless": dateless,
                 "source": source_label, "offline": OFFLINE,
@@ -597,6 +690,38 @@ def query_job(task):
         store.put(db, "snapshot", snapshot["id"], snapshot)
         store.put(db, "settings", "source", {"label": source_label, "updated_at": store.now()})
     return {"snapshot_id": snapshot["id"], "groups": len(result), "matched": len(selected)}
+
+
+def build_voucher_rows(records, masters, catalogs, kind):
+    if kind != "内销":
+        return engine.build(records, masters, catalogs)
+    rules_path = ROOT / "data/domestic_voucher_rules_fit.json"
+    if not rules_path.exists():
+        raise ValueError("缺少内销凭证拟合规则，请先运行内销规则拟合")
+    rules = legacy.read_json(rules_path)
+    try:
+        result = domestic.build_domestic_voucher(records, rules, masters)
+    except domestic.DomesticVoucherError as error:
+        raise ValueError("内销凭证构建失败：" + str(error)) from error
+    rows = []
+    for index, row in enumerate(result["rows"]):
+        item = dict(row)
+        item["id"] = f"domestic:{index}"
+        rows.append(item)
+    issues = []
+    for index, warning in enumerate(result["warnings"]):
+        warning_index = int(warning.get("记录") or 0) - 1
+        issues.append({
+            "id": f"domestic-warning:{index}",
+            "message": warning.get("原因", "采购信息不完整"),
+            "row_id": "",
+            "field": "",
+            "record_id": result["record_ids"][warning_index]
+            if 0 <= warning_index < len(result["record_ids"]) else "",
+            "source_field": "",
+            "severity": "warning",
+        })
+    return rows, issues
 
 
 def build_job(task):
@@ -610,11 +735,16 @@ def build_job(task):
     if not groups or len(groups) != len(keys):
         fail(422, "请选择有效凭证范围")
     acknowledged = set(p.get("acknowledged_groups", []))
+    hard_messages = {
+        "缺少报关单号，请在飞书补充后重新检索",
+        "缺少合同号_1，请在飞书补充后重新检索",
+        "同一报关单包含范围外记录",
+        "同一合同包含范围外记录",
+    }
     for g in groups:
-        hard = g.get("hard_blocked", [r for r in g["blocked"] if r in
-                   ("缺少报关单号，请在飞书补充后重新检索", "同一报关单包含范围外记录")])
+        hard = g.get("hard_blocked", [r for r in g["blocked"] if r in hard_messages])
         if hard or (g["blocked"] and g["key"] not in acknowledged):
-            fail(422, "请主动勾选已核实的状态异常报关单；缺报关单号或范围外记录仍需修复")
+            fail(422, "请主动勾选已核实的异常分组；缺少业务单号或范围外记录仍需修复")
     catalogs = catalog()
     inherited, notes = legacy.apply_add_inheritance(copy.deepcopy(snap["all_records"]))
     by_id = {r["record_id"]: r for r in inherited}
@@ -624,16 +754,33 @@ def build_job(task):
         key = hashlib.sha256(group["key"].encode()).hexdigest()[:24]
         with store.connect(True) as db:
             draft = store.get(db, "draft", key)
-            if draft is None:
+            stale_empty_domestic = (
+                draft is not None
+                and group.get("business_type") == "内销"
+                and not draft.get("rows")
+                and bool(draft.get("build_issues"))
+            )
+            if draft is None or stale_empty_domestic:
+                previous = draft
                 source = copy.deepcopy(group["records"])
-                rows, issues = engine.build([by_id[r["record_id"]] for r in source], masters, catalogs)
-                draft = {"id": key, "customs_no": group["customs_no"], "contracts": group["contracts"],
+                effective = [by_id[r["record_id"]] for r in source]
+                rows, issues = build_voucher_rows(
+                    effective, masters, catalogs, group.get("business_type", "外销")
+                )
+                draft = {"id": key, "customs_no": group["customs_no"],
+                         "business_no": group.get("business_no", group["customs_no"]),
+                         "business_type": group.get("business_type", "外销"),
+                         "contracts": group["contracts"],
                          "search_index": group["search_index"], "source": source, "overrides": {},
-                         "effective_source": [by_id[r["record_id"]] for r in source],
+                         "effective_source": effective,
                          "header": {"posting_date": p["posting_date"], "category": "记", "maker": "王益"},
                          "rows": rows, "build_issues": issues, "blocking_issues": [],
-                         "manual_fields": [], "version": 1, "mapping_version": version,
-                         "updated_at": store.now(), "created_at": store.now(), "exports": [],
+                         "manual_fields": previous.get("manual_fields", []) if previous else [],
+                         "version": previous["version"] + 1 if previous else 1,
+                         "mapping_version": version,
+                         "updated_at": store.now(),
+                         "created_at": previous.get("created_at", store.now()) if previous else store.now(),
+                         "exports": previous.get("exports", []) if previous else [],
                          "inherited": [n for n in notes if n["报关单号"] == group["customs_no"]]}
                 engine.validate(draft, catalogs)
                 store.put(db, "draft", key, draft)
@@ -719,7 +866,9 @@ def _recalculate(db, key, payload, session):
                           if k in {r["record_id"] for r in source}}
     draft.pop("incoming_source", None)
     draft.pop("incoming_effective_source", None)
-    draft["rows"], draft["build_issues"] = engine.build(records, masters, catalogs)
+    draft["rows"], draft["build_issues"] = build_voucher_rows(
+        records, masters, catalogs, old.get("business_type", "外销")
+    )
     if payload.get("preserve_manual"):
         if "__rows__/structure" in old["manual_fields"]:
             draft["rows"] = copy.deepcopy(old["rows"])
@@ -773,7 +922,10 @@ def export_plan(ids):
         catalogs = catalog()
         for key in dict.fromkeys(ids):
             draft = engine.validate(required(db, "draft", key), catalogs)
-            entry = {"id": key, "contracts": draft["contracts"], "customs_no": draft.get("customs_no", ""), "version": draft["version"],
+            entry = {"id": key, "contracts": draft["contracts"],
+                     "business_type": draft.get("business_type", "外销"),
+                     "business_no": draft.get("business_no", draft.get("customs_no", "")),
+                     "customs_no": draft.get("customs_no", ""), "version": draft["version"],
                      "replaces": draft["exports"]}
             if draft["valid"]:
                 valid.append(entry)

@@ -1,7 +1,8 @@
 export type Row = { id: string; [key: string]: string }
 export type Issue = { id: string; message: string; row_id?: string; field?: string; severity: string; record_id?: string; source_field?: string }
 export type Draft = {
-  id: string; version: number; customs_no: string; contracts: string[]; search_index: string;
+  id: string; version: number; customs_no: string; business_type: '外销' | '内销'; business_no: string;
+  contracts: string[]; search_index: string;
   rows: Row[]; header: Record<string, string>; source: Record<string, any>[];
   overrides: Record<string, Record<string, any>>; issues: Issue[];
   manual_exception?: boolean; manual_fields: string[]; valid: boolean; mapping_stale?: boolean; exports: string[];

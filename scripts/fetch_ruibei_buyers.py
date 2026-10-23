@@ -38,9 +38,17 @@ ADD_SUFFIX = re.compile(
 def text(value) -> str:
     if isinstance(value, list):
         return "；".join(
-            str(item.get("text") or "") if isinstance(item, dict) else str(item)
+            text(item)
             for item in value
-        ).strip()
+        ).strip("； ")
+    if isinstance(value, dict):
+        if value.get("text") is not None:
+            return str(value["text"]).strip()
+        if value.get("name") is not None:
+            return str(value["name"]).strip()
+        if value.get("value") is not None:
+            return text(value["value"])
+        return ""
     return str(value or "").strip()
 
 

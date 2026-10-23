@@ -34,7 +34,7 @@ class DomesticVoucherTests(unittest.TestCase):
         self.assertEqual(accounts["revenue"], "50010201")
         self.assertEqual(accounts["output_tax"], "22210102")
         self.assertEqual(accounts["input_tax"], "22210101")
-        self.assertEqual(accounts["pending_input_tax"], "22210107")
+        self.assertEqual(accounts["pending_input_tax"], "22210101")
         self.assertEqual(accounts["cost"], "540102")
         self.assertEqual(self.rules["summary"]["purchase"], "采购商品成本")
         self.assertEqual(self.rules["summary"]["cost"], "结转采购成本")
@@ -61,7 +61,7 @@ class DomesticVoucherTests(unittest.TestCase):
             {"full": 55, "sales_cost": 39, "sales": 7},
         )
 
-    def test_uninvoiced_purchase_uses_pending_tax_account(self):
+    def test_all_purchases_use_normal_input_tax_account(self):
         records = [
             item for item in self.source["records"]
             if item.get("合同号_1") == "26MT-DP018"
@@ -71,13 +71,13 @@ class DomesticVoucherTests(unittest.TestCase):
         voucher = domestic.build_domestic_voucher(
             records, rules, legacy.MasterData()
         )
-        pending = [
+        input_taxes = [
             row for row in voucher["rows"]
-            if row["科目编码"] == "22210107"
+            if row["科目编码"] == "22210101"
         ]
-        self.assertEqual(len(pending), 1)
-        self.assertTrue(pending[0]["摘要"].startswith("暂估-26MT-DP018"))
-        self.assertEqual(pending[0]["摘要"], "暂估-26MT-DP018采购商品成本-专票")
+        self.assertEqual(len(input_taxes), 1)
+        self.assertEqual(input_taxes[0]["摘要"], "26MT-DP018采购商品成本-专票")
+        self.assertFalse(any("暂估" in row["摘要"] for row in voucher["rows"]))
 
     def test_post_generation_evaluation_does_not_feed_generation(self):
         report = domestic.evaluate(self.generated, self.samples)

@@ -499,3 +499,14 @@ kbd { display:inline-flex; align-items:center; justify-content:center; min-width
 .review-shortcut-toast>span{display:flex;align-items:center;gap:6px}.review-shortcut-toast svg{stroke-width:3}
 .review-tip-enter-active,.review-tip-leave-active{transition:opacity .25s,top .25s}.review-tip-enter-from,.review-tip-leave-to{opacity:0;top:52px}
 @media(prefers-reduced-motion:reduce){.review-tip-enter-active,.review-tip-leave-active{transition:none}}
+
+/* Business-type tags keep export and domestic vouchers visually distinct. */
+.item-labels{display:flex;align-items:center;gap:7px}
+.business-tag{display:inline-flex;align-items:center;justify-content:center;width:max-content;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:600;line-height:1.35;white-space:nowrap}
+.business-tag.export{color:#315b91;background:#e7effa;border:1px solid #cddbef}
+.business-tag.domestic{color:#8a5521;background:#fbefdf;border:1px solid #efd6b6}
+.voucher-meta .business-tag{margin-left:0}
+.preview-item>.business-tag{margin-left:0;flex:none}
+.theme-glass .business-tag.export{color:#334f7e;background:#e8effb;border-color:#c9d7ed}
+.theme-glass .business-tag.domestic{color:#815028;background:#fbf0e2;border-color:#ecd4b8}
+.auto-writeback-badge{padding:4px 8px;border:1px solid #b7cde6;border-radius:7px;color:#3e5e8a;background:#eff5fc;font-size:11px;line-height:1.6}
