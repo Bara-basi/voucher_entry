@@ -539,3 +539,5 @@ kbd { display:inline-flex; align-items:center; justify-content:center; min-width
 .theme-glass .business-tag.export{color:#334f7e;background:#e8effb;border-color:#c9d7ed}
 .theme-glass .business-tag.domestic{color:#815028;background:#fbf0e2;border-color:#ecd4b8}
 .auto-writeback-badge{padding:4px 8px;border:1px solid #b7cde6;border-radius:7px;color:#3e5e8a;background:#eff5fc;font-size:11px;line-height:1.6}
+
+.customer-group-picker{display:grid;gap:8px}.customer-group-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}.customer-group-options button{min-height:40px;border:1px solid var(--line);background:#fff}.customer-group-options button.selected{color:var(--navy);border-color:var(--navy);background:#edf2fa;font-weight:600}

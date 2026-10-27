@@ -6,6 +6,9 @@ export type Draft = {
   rows: Row[]; header: Record<string, string>; source: Record<string, any>[];
   overrides: Record<string, Record<string, any>>; issues: Issue[];
   manual_exception?: boolean; manual_fields: string[]; valid: boolean; mapping_stale?: boolean; exports: string[];
+  engine_stale?: boolean;
+  effective_source?: Record<string, any>[];
+  customer_labels?: Record<string, string>;
   incoming_source?: Record<string, any>[];
   totals: { debit: string; credit: string; difference: string }; updated_at: string;
 }

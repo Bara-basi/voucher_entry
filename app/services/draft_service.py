@@ -14,7 +14,7 @@ AUX = {"客户编码": "customers", "供应商编码": "suppliers", "存货档�
 SOURCE_FIELDS = list(dict.fromkeys(legacy.REQUIRED_FIELDS + [
     "买方英文名", "客户名称_脚本用", "供应商简称", "报关重量", "出口日期", "汇率",
     "出运日期", "开票情况", "实际年份", "实际月份",
-    "进项税额", "退税额", "销项税额", "运费", "保费"]))
+    "进项税额", "退税额", "销项税额", "运费", "保费", "港杂费", "港杂费用", "内陆运费含税"]))
 
 
 def number(value):
@@ -109,7 +109,7 @@ def build(records, masters, catalogs):
         return a * b if a is not None and b is not None else None
 
     account = legacy.ACCOUNT_BY_METHOD["出口"].get(currency, ("", ""))
-    customer = masters.customer_code([first.get("买方英文名"), first.get("客户名称_脚本用")]) or ""
+    customer = masters.customer_for_records(records) or ""
     revenue, tax = money(total("不含税人民币收入", True)), money(total("销项税额"))
     freight, insurance = money(mul(-total("运费"), rate)), money(mul(-total("保费"), rate))
     receivable = None if None in (revenue, tax, freight, insurance) else revenue + tax - freight - insurance
@@ -133,7 +133,7 @@ def build(records, masters, catalogs):
         issue("收入与报关金额×汇率相差超过1元，请核对来源或修改并确认本行金额",
               "income:ar", "借方金额")
     if not customer:
-        issue("未匹配客户：选择客户编码，或补充来源后重新计算", "income:ar", "客户编码",
+        issue("未匹配客户：客户无法唯一匹配或组内客户不一致，请核实买方并选择客户编码，或补充来源后重新计算", "income:ar", "客户编码",
               first["record_id"], "买方英文名")
     for record in records:
         rid = record["record_id"]
@@ -195,6 +195,12 @@ def validate(draft, catalogs):
     def err(message, row="", field=""):
         issues.append({"id": f"validate:{row}:{field}:{len(issues)}", "message": message,
                        "row_id": row, "field": field, "severity": "error"})
+
+    from .domestic_voucher_service import TEMPLATE_VERSION
+    draft["engine_stale"] = (draft.get("business_type") == "内销"
+                             and draft.get("domestic_template_version") != TEMPLATE_VERSION)
+    if draft["engine_stale"]:
+        err("内销生成规则已更新，请重新计算后核对并导出")
 
     if draft.get("manual_exception"):
         err("财务已标记为异常，请核实后取消标记再导出")

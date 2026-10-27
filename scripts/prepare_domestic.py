@@ -25,7 +25,7 @@ DEFAULT_SOURCE = ROOT / "data/domestic_source_current.json"
 DEFAULT_DOMESTIC_OUTPUT = ROOT / "data/domestic_sales_2026.json"
 DEFAULT_SAMPLE_OUTPUT = ROOT / "data/domestic_voucher_samples_2026.json"
 DEFAULT_WORKBOOK_OUTPUT = ROOT / "vouchers/内销凭证及数据样例_2026.xlsx"
-DEFAULT_BUYER_MAPPING = ROOT / "data/ruibei_buyer_mapping_2026.json"
+DEFAULT_BUYER_MAPPING = ROOT / ".chche/domestic_orders.json"
 
 DOMESTIC = "内销"
 EXPORT = "出口"
@@ -59,7 +59,7 @@ RECORD_COLUMNS = [
     ("买方英文名", "客户"),
     ("客户名称_脚本用", "内销买方名称"),
     ("客户名称_来源", "买方名称来源"),
-    ("睿贝开票申请ID", "开票申请ID"),
+    ("睿贝内销订单ID", "睿贝订单ID"),
     ("纳税识别号（睿贝）", "纳税识别号"),
     ("供应商", "供应商"),
     ("报关品名", "报关品名"),
@@ -156,42 +156,24 @@ def normalize_source(source: dict) -> tuple[list[dict], list[dict], collections.
 
 
 def apply_buyer_mapping(records: list[dict], path: Path) -> dict:
-    if not path.exists():
-        return {"mapping_file": str(path), "updated_records": 0, "updated_contracts": 0}
-    mapping = read_json(path)
-    by_contract = {
-        text(row.get(LINK_FIELD)): row
-        for row in mapping.get("results") or []
-        if row.get("状态") == "已获取" and text(row.get("公司名称"))
-    }
-    updated_records = 0
-    updated_contracts = set()
+    sys.path.insert(0, str(ROOT))
+    from app.services import ruibei_order_cache as order_cache
+    cache = order_cache.load_cache(path)
+    updated = []
     for record in records:
-        contract = text(record.get(LINK_FIELD))
-        buyer = by_contract.get(contract)
-        if not buyer or text(record.get("买方英文名")) or text(record.get("客户名称_脚本用")):
+        if text(record.get(SALES_METHOD_FIELD)) != DOMESTIC:
             continue
-        record["客户名称_脚本用"] = text(buyer.get("公司名称"))
-        source_type = text(buyer.get("来源类型")) or "开票申请"
-        if buyer.get("继承自"):
-            original_source = text(buyer.get("继承的原单来源类型")) or "开票申请"
-            record["客户名称_来源"] = (
-                f"睿贝ERP {source_type}（原单 {buyer['继承自']}，{original_source}）"
-            )
-            record["睿贝原始合同号"] = text(buyer.get("继承自"))
-        else:
-            record["客户名称_来源"] = "睿贝ERP " + source_type
-        applications = buyer.get("开票申请") or buyer.get("继承的开票申请") or []
-        record["睿贝开票申请ID"] = applications[0].get("audit_id") if applications else ""
-        record["纳税识别号（睿贝）"] = text(buyer.get("纳税识别号"))
-        updated_records += 1
-        updated_contracts.add(contract)
-    return {
-        "mapping_file": str(path),
-        "mapping_fetched_at": mapping.get("fetched_at"),
-        "updated_records": updated_records,
-        "updated_contracts": len(updated_contracts),
-    }
+        item = order_cache.resolve(cache, text(record.get(LINK_FIELD)))
+        if item["状态"] != "已获取":
+            continue
+        record["客户名称_脚本用"] = item["公司名称"]
+        record["客户名称_来源"] = "睿贝ERP" + item["来源类型"].removesuffix("客户名称") + (" / ADD继承" if item["继承自"] else "")
+        record["睿贝内销订单ID"] = ",".join(row["order_id"] for row in item["订单"])
+        if item["继承自"]:
+            record["睿贝原始合同号"] = item["继承自"]
+        updated.append(item["合同号_1"])
+    return {"mapping_file": str(path), "mapping_fetched_at": cache.get("fetched_at"),
+            "updated_records": len(updated), "updated_contracts": len(set(updated))}
 
 
 def group_contracts(records: list[dict]) -> tuple[list[dict], list[dict]]:
@@ -414,28 +396,10 @@ def build_workbook(path: Path, records: list[dict], groups: list[dict], samples:
     add_excel_sheet(workbook, "凭证索引", index_headers, index_rows)
 
     if buyer_mapping:
-        buyer_headers = [
-            "合同号_1", "状态", "公司名称", "纳税识别号", "开票申请数",
-            "搜索值", "开票申请ID", "相关单据", "来源类型", "继承自",
-            "来源字段",
-        ]
-        buyer_rows = []
-        for result in buyer_mapping.get("results") or []:
-            applications = result.get("开票申请") or []
-            buyer_rows.append([
-                result.get("合同号_1"),
-                result.get("状态"),
-                result.get("公司名称"),
-                result.get("纳税识别号"),
-                result.get("开票申请数"),
-                "；".join(result.get("搜索值") or []),
-                "；".join(str(item.get("audit_id") or "") for item in applications),
-                "；".join(str(item.get("related_bill") or "") for item in applications),
-                result.get("来源类型") or "开票申请",
-                result.get("继承自") or "",
-                (result.get("来源单据") or {}).get("来源字段") or "",
-            ])
-        add_excel_sheet(workbook, "睿贝买方补全", buyer_headers, buyer_rows)
+        add_excel_sheet(workbook, "睿贝订单客户", ["订单ID", "订单编号", "客户名称", "客户ID", "公司主体"], [
+            [row.get("order_id"), row.get("order_code"), row.get("customer_name"), row.get("customer_id"), row.get("company_name")]
+            for row in buyer_mapping.get("records", [])
+        ])
 
     path.parent.mkdir(parents=True, exist_ok=True)
     workbook.save(path)

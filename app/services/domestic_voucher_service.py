@@ -1,10 +1,4 @@
-"""Fit domestic-voucher rules and build vouchers without reading target vouchers.
-
-The fitting phase uses historical Yonyou voucher samples to learn accounts,
-summaries, auxiliary-account aliases and line ordering.  The generation phase
-receives only the Feishu domestic records plus the serialized fitted rules.
-"""
-
+"""Domestic vouchers from the confirmed template; never reads historical fitted rules."""
 from __future__ import annotations
 
 import collections
@@ -16,1010 +10,248 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from pathlib import Path
 from typing import Any
 
-import xlwt
-
 from . import voucher_service as legacy
+from . import ruibei_order_cache as orders
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_RULES = ROOT / "data/domestic_voucher_rules_fit.json"
-RUI_BEI_BUYER_MAPPING = ROOT / "data/ruibei_buyer_mapping_2026.json"
+RUI_BEI_BUYER_MAPPING = ROOT / ".chche/domestic_orders.json"
 CONTRACT_FIELD = "合同号_1"
 SOURCE_METHOD = "内销"
-HISTORY_SUFFIXES = sorted({
-    "内销收入",
-    "销收入",
-    "内采购商品收入-专票",
-    "内采购商品收入",
-    "内销采购商品收入-专票",
-    "内销采购商品收入",
-    "采购商品成本-专票",
-    "采购商品成本",
-    "结转内销采购成本",
-    "结转采购成本",
-}, key=len, reverse=True)
+TEMPLATE_VERSION = "domestic-template-20261027-export-customer-policy-v4"
+FEE_FIELDS = ("运费", "保费", "港杂费", "港杂费用")
+text = legacy.to_text
+normalize_name = legacy.normalize_name
+
 
 class DomesticVoucherError(Exception):
     pass
 
 
-def text(value: Any) -> str:
-    if isinstance(value, list):
-        return "；".join(
-            text(item)
-            for item in value
-        ).strip("； ")
+def number(value, default=Decimal("0")):
     if isinstance(value, dict):
-        if value.get("text") is not None:
-            return str(value["text"]).strip()
-        if value.get("name") is not None:
-            return str(value["name"]).strip()
-        if value.get("value") is not None:
-            return text(value["value"])
-        return ""
-    return str(value or "").strip()
-
-
-def number(value: Any, default: Decimal | None = Decimal("0")) -> Decimal | None:
-    if value in (None, ""):
+        return number(value.get("value", value.get("text")), default)
+    if isinstance(value, list):
+        return number(value[0], default) if len(value) == 1 else default
+    if value is None or value == "" or isinstance(value, bool):
         return default
     try:
-        parsed = Decimal(str(value))
-        return parsed if parsed.is_finite() else default
+        result = Decimal(str(value).strip())
+        return result if result.is_finite() and abs(result) < Decimal("1e14") else default
     except (InvalidOperation, ValueError, TypeError):
         return default
 
 
-def money(value: Any) -> Decimal:
-    return (number(value) or Decimal("0")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+def money(value):
+    return value.quantize(Decimal(".01"), rounding=ROUND_HALF_UP) if value is not None else None
 
 
-def optional_money(value: Any) -> Decimal | None:
-    parsed = number(value, None)
-    return None if parsed is None else parsed.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
-
-def mode(values) -> str:
-    if isinstance(values, collections.Counter):
-        return values.most_common(1)[0][0] if values else ""
-    counts = collections.Counter(str(value) for value in values if str(value or "").strip())
-    return counts.most_common(1)[0][0] if counts else ""
-
-
-def aux_value(line: dict, label: str) -> dict:
-    match = re.search(
-        rf"【{re.escape(label)}:([^/】]+)/([^】]+)】",
-        text(line.get("辅助核算")),
-    )
-    return {"code": match.group(1), "name": match.group(2)} if match else {}
-
-
-def line_role(line: dict) -> str:
-    code = text(line.get("科目编码"))
-    summary = text(line.get("摘要"))
-    debit = number(line.get("本币借方"), Decimal("0")) or Decimal("0")
-    credit = number(line.get("本币贷方"), Decimal("0")) or Decimal("0")
-    if aux_value(line, "客户"):
-        return "receivable"
-    if code.startswith("22210102") and credit:
-        return "output_tax"
-    if code.startswith("500102") and credit:
-        return "revenue"
-    if code.startswith("222101") and debit and ("专票" in summary or code in ("22210101", "22210107")):
-        return "input_tax"
-    if aux_value(line, "供应商"):
-        return "payable"
-    if aux_value(line, "存货档案"):
-        return "inventory"
-    if code.startswith("5401") and debit and "成本" in text(line.get("科目名称")) + summary:
-        return "cost"
-    return "other"
-
-
-def normalize_name(value: Any) -> str:
-    return legacy.normalize_name(text(value))
-
-
-def resolve_name(mapping: dict, candidates, fallback=None) -> str:
-    for raw in candidates:
-        value = text(raw)
-        if not value:
-            continue
-        variants = [value, *re.split(r"[,，;；/|]", value)]
-        for variant in variants:
-            code = mapping.get(normalize_name(variant))
-            if code:
-                return str(code)
-        if fallback:
-            code = fallback(value)
-            if code:
-                return str(code)
-    return ""
-
-
-def add_name_mapping(target: dict, name: str, code: str) -> None:
-    key = normalize_name(name)
-    if key and code:
-        target[key] = str(code)
-
-
-def _strip_contract(description: str, contracts: list[str]) -> tuple[bool, str]:
-    value = description.replace("\xa0", " ").strip()
-    pending = value.startswith("暂估-")
-    if pending:
-        value = value[len("暂估-"):]
-    for contract in sorted(contracts, key=len, reverse=True):
-        if value.startswith(contract):
-            value = value[len(contract):].strip()
-            break
-    return pending, value
-
-
-def contract_from_summary(description: Any) -> str:
-    value = text(description).replace("\xa0", " ").strip()
-    if value.startswith("暂估-"):
-        value = value[len("暂估-"):]
-    for suffix in HISTORY_SUFFIXES:
-        if value.endswith(suffix):
-            return value[:-len(suffix)].strip()
-    return ""
-
-
-def raw_line_role(line: dict) -> str:
-    code = text(line.get("bodies_accsubjectVid_code"))
-    fields = {
-        text(item.get("fieldname"))
-        for item in line.get("clientAuxiliaryDTOS") or []
-    }
-    if "客户" in fields:
-        return "sales"
-    if code.startswith("5001") or code.startswith("505") or code.startswith("22210102"):
-        return "sales"
-    if "供应商" in fields or code == "220201" or code.startswith("2221010"):
-        return "purchase"
-    if "存货档案" in fields or code.startswith("1405"):
-        return "cost"
-    if code.startswith("540"):
-        return "cost"
-    return "other"
-
-
-def fit_merge_patterns(domestic_payload: dict, voucher_records: list[dict]) -> dict:
-    """Classify how finance grouped sales, purchase and cost into vouchers.
-
-    This is diagnostic by default: the leave-one-out accuracy is recorded so a
-    weakly predictive policy is not silently used by generation.
-    """
-    source_groups = collections.defaultdict(list)
-    for record in domestic_payload.get("records") or []:
-        contract = text(record.get(CONTRACT_FIELD))
-        if contract:
-            source_groups[contract].append(record)
-    history_groups = collections.defaultdict(list)
-    for row in voucher_records:
-        contract = contract_from_summary(row.get("bodydescription"))
-        if contract:
-            history_groups[contract].append(row)
-
-    training = []
-    pattern_count = collections.Counter()
-    content_mode_count = collections.Counter()
-    examples = collections.defaultdict(list)
-    for contract in sorted(set(source_groups) & set(history_groups)):
-        by_voucher = collections.defaultdict(list)
-        for row in history_groups[contract]:
-            by_voucher[text(row.get("id"))].append(row)
-        shapes = []
-        for rows in by_voucher.values():
-            roles = {raw_line_role(row) for row in rows}
-            label = ""
-            if "sales" in roles:
-                label += "S"
-            if "purchase" in roles:
-                label += "P"
-            if "cost" in roles:
-                label += "C"
-            shapes.append(label)
-        pattern = "+".join(sorted(shapes))
-        records = source_groups[contract]
-        signature = (
-            contract[:4],
-            len(records),
-            len({text(record.get("供应商")) for record in records if text(record.get("供应商"))}),
-            "+".join(sorted({text(record.get("开票情况")) for record in records})),
-            "+".join(sorted({text(record.get("实际月份")) for record in records})),
-        )
-        content_mode = (
-            "full" if "P" in pattern
-            else "sales_cost" if "S" in pattern and "C" in pattern
-            else "sales"
-        )
-        training.append({
-            "contract": contract,
-            "signature": signature,
-            "pattern": pattern,
-            "content_mode": content_mode,
-        })
-        pattern_count[pattern] += 1
-        content_mode_count[content_mode] += 1
-        if len(examples[pattern]) < 8:
-            examples[pattern].append(contract)
-
-    signature_counts = collections.defaultdict(collections.Counter)
-    mode_signature_counts = collections.defaultdict(collections.Counter)
-    for item in training:
-        signature_counts[item["signature"]][item["pattern"]] += 1
-        mode_signature_counts[item["signature"]][item["content_mode"]] += 1
-
-    correct = 0
-    mode_correct = 0
-    for index, item in enumerate(training):
-        candidates = training[:index] + training[index + 1:]
-        def distance(other):
-            expected = other["signature"]
-            actual = item["signature"]
-            return (
-                4 * (actual[0] != expected[0])
-                + 2 * (actual[2] != expected[2])
-                + abs(actual[1] - expected[1])
-                + 0.5 * (actual[3] != expected[3])
-                + 0.25 * (actual[4] != expected[4])
-            )
-        nearest = min(candidates, key=distance) if candidates else item
-        correct += nearest["pattern"] == item["pattern"]
-        mode_correct += nearest["content_mode"] == item["content_mode"]
-
-    return {
-        "sample_contracts": len(training),
-        "patterns": [
-            {
-                "pattern": pattern,
-                "meaning": {
-                    "SPC": "收入、采购、成本在同一张凭证",
-                    "SC": "收入、成本在同一张凭证，无采购/进项",
-                    "C+S": "收入一张凭证，成本另起一张凭证",
-                    "S": "仅收入凭证",
-                }.get(pattern, pattern),
-                "count": count,
-                "examples": examples[pattern],
-            }
-            for pattern, count in pattern_count.most_common()
-        ],
-        "content_modes": dict(content_mode_count),
-        "content_mode_model": [
-            {
-                "signature": {
-                    "prefix": signature[0],
-                    "records": signature[1],
-                    "suppliers": signature[2],
-                    "invoice_status": signature[3],
-                    "month": signature[4],
-                },
-                "mode": counter.most_common(1)[0][0],
-                "counts": dict(counter),
-                "confidence": round(counter.most_common(1)[0][1] / sum(counter.values()), 4),
-                "support": sum(counter.values()),
-            }
-            for signature, counter in sorted(mode_signature_counts.items())
-        ],
-        "signature_counts": [
-            {
-                "prefix": signature[0],
-                "records": signature[1],
-                "suppliers": signature[2],
-                "invoice_status": signature[3],
-                "month": signature[4],
-                "patterns": dict(counter),
-                "predicted": counter.most_common(1)[0][0],
-                "confidence": round(counter.most_common(1)[0][1] / sum(counter.values()), 4),
-            }
-            for signature, counter in sorted(signature_counts.items())
-        ],
-        "leave_one_out": {
-            "correct": correct,
-            "total": len(training),
-            "accuracy": round(correct / len(training), 4) if training else 0,
-            "reliable_for_automatic_generation": bool(
-                training and correct / len(training) >= 0.9
-            ),
-        },
-        "content_mode_leave_one_out": {
-            "correct": mode_correct,
-            "total": len(training),
-            "accuracy": round(mode_correct / len(training), 4) if training else 0,
-        },
-    }
-
-
-def fit_rules(sample_payload: dict, domestic_payload: dict | None = None,
-              voucher_records: list[dict] | None = None) -> dict:
-    """Infer reusable domestic voucher rules from downloaded Yonyou samples."""
-    samples = [
-        sample for sample in sample_payload.get("samples") or []
-        if sample.get("类型") == "内销业务"
-    ]
-    contracts = set(sample_payload.get("matched_domestic_contracts") or [])
-    source_groups: dict[str, list[dict]] = collections.defaultdict(list)
-    if domestic_payload:
-        for record in domestic_payload.get("records") or []:
-            contract = text(record.get(CONTRACT_FIELD))
-            if contract:
-                source_groups[contract].append(record)
-                contracts.add(contract)
-
-    role_accounts = collections.defaultdict(collections.Counter)
-    receivable_by_currency = collections.defaultdict(collections.Counter)
-    inventory_subjects = collections.defaultdict(collections.Counter)
-    pending_input = collections.Counter()
-    normal_input = collections.Counter()
-    customer_names = {}
-    supplier_names = {}
-    inventory_names = {}
-    product_inventory = collections.defaultdict(collections.Counter)
-    summary_counts = collections.defaultdict(collections.Counter)
-    summary_by_year = collections.defaultdict(lambda: collections.defaultdict(collections.Counter))
-    order_counter = collections.Counter()
-    maker_counts = collections.Counter()
-    voucher_types = collections.Counter()
-    quantity_fields = collections.Counter()
-    purchase_order_counter = collections.Counter()
-    purchase_order_by_year = collections.defaultdict(collections.Counter)
-    purchase_order_by_prefix = collections.defaultdict(collections.Counter)
-    voucher_seed_lines = 0
-
-    for record in voucher_records or []:
-        for auxiliary in record.get("clientAuxiliaryDTOS") or []:
-            field_name = text(auxiliary.get("fieldname"))
-            value = auxiliary.get("value") or {}
-            code = text(value.get("code"))
-            name = text(value.get("name"))
-            if field_name == "客户":
-                add_name_mapping(customer_names, name, code)
-            elif field_name == "供应商":
-                add_name_mapping(supplier_names, name, code)
-            elif field_name == "存货档案":
-                add_name_mapping(inventory_names, name, code)
-                voucher_seed_lines += 1
-    amount_tolerances = []
-
-    contract_list = sorted(contracts, key=len, reverse=True)
-    for sample in samples:
-        maker_counts[text(sample.get("制单人"))] += 1
-        descriptions = sample.get("摘要") or []
-        voucher_types[text(sample.get("类型"))] += 1
-        matched = sample.get("匹配合同号_1") or []
-        records = []
-        for contract in matched:
-            records.extend(source_groups.get(contract, []))
-        customer_codes = set()
-
-        line_roles = [line_role(line) for line in sample.get("分录") or []]
-        for index in range(len(line_roles) - 2):
-            sequence = tuple(line_roles[index:index + 3])
-            if set(sequence) == {"payable", "inventory", "input_tax"}:
-                purchase_order_counter[sequence] += 1
-                year = text(sample.get("期间"))[:4]
-                purchase_order_by_year[year][sequence] += 1
-                description = text((sample.get("分录") or [])[index].get("摘要"))
-                match = re.search(r"(24|25|26)MT", description, re.IGNORECASE)
-                if match:
-                    purchase_order_by_prefix[year + match.group(1) + "MT"][sequence] += 1
-
-        for line in sample.get("分录") or []:
-            role = line_role(line)
-            code = text(line.get("科目编码"))
-            debit = number(line.get("本币借方"), Decimal("0")) or Decimal("0")
-            if role != "other":
-                role_accounts[role][code] += 1
-            currency = text(line.get("币种")) or "人民币"
-            if role == "receivable":
-                receivable_by_currency[currency][code] += 1
-            if role == "inventory":
-                inventory = aux_value(line, "存货档案")
-                if inventory:
-                    add_name_mapping(inventory_names, inventory["name"], inventory["code"])
-                    inventory_subjects[inventory["code"][:4]][code] += 1
-            if role == "input_tax":
-                pending = any(
-                    text(description).startswith("暂估-")
-                    for description in descriptions
-                    if line.get("摘要") == description
-                )
-                (pending_input if pending else normal_input)[code] += 1
-
-            customer = aux_value(line, "客户")
-            if customer:
-                add_name_mapping(customer_names, customer["name"], customer["code"])
-                customer_codes.add(customer["code"])
-            supplier = aux_value(line, "供应商")
-            if supplier:
-                add_name_mapping(supplier_names, supplier["name"], supplier["code"])
-
-            if role in ("revenue", "payable", "cost") or (role == "inventory" and debit):
-                pending, suffix = _strip_contract(text(line.get("摘要")), contract_list)
-                if suffix.endswith("-专票"):
-                    suffix = suffix[:-3]
-                if suffix:
-                    summary_counts[role][suffix] += 1
-                    summary_by_year[text(sample.get("期间"))[:4]][role][suffix] += 1
-
-            if role == "inventory" and debit:
-                inventory = aux_value(line, "存货档案")
-                line_cost = number(line.get("本币借方"), Decimal("0")) or Decimal("0")
-                candidates = [
-                    record for record in records
-                    if abs((number(record.get("不含税成本"), Decimal("0")) or Decimal("0"))
-                           - line_cost) <= Decimal("0.02")
-                ]
-                if inventory:
-                    for record in candidates:
-                        product = text(record.get("报关品名"))
-                        if product:
-                            product_inventory[product][inventory["code"]] += 1
-                if line.get("数量") is not None:
-                    for record in candidates:
-                        for key, value in record.items():
-                            try:
-                                if abs(float(value) - float(line["数量"])) <= 0.011:
-                                    quantity_fields[key] += 1
-                            except (TypeError, ValueError):
-                                pass
-        if len(customer_codes) == 1:
-            customer_code = next(iter(customer_codes))
-            for record in records:
-                for field in ("客户名称_脚本用", "买方英文名"):
-                    add_name_mapping(customer_names, text(record.get(field)), customer_code)
-
-        # Infer the modal ordering of purchase and cost blocks from 8/13-line patterns.
-        for line in sample.get("分录") or []:
-            role = line_role(line)
-            if role in ("payable", "inventory", "input_tax", "cost"):
-                order_counter[role] += 1
-
-    normal_input_code = mode(normal_input) or "22210101"
-    pending_input_code = normal_input_code
-    inventory_prefix_map = {
-        prefix: counts.most_common(1)[0][0]
-        for prefix, counts in inventory_subjects.items()
-        if counts
-    }
-    pattern_hits = sum(
-        code == "1405" + prefix[-2:]
-        for prefix, code in inventory_prefix_map.items()
-    )
-    inventory_pattern = (
-        "1405{prefix_last2}"
-        if inventory_prefix_map and pattern_hits / len(inventory_prefix_map) >= 0.8
-        else ""
-    )
-
-    modern_summary_counts = summary_by_year.get("2026") or summary_counts
-    purchase_summary = mode(modern_summary_counts["inventory"]) or "采购商品成本"
-    if "采购商品成本" not in purchase_summary and "内采购商品收入" in purchase_summary:
-        # Prefer the dominant modern wording when both historical styles exist.
-        modern = [
-            value for value, _ in summary_counts["inventory"].most_common()
-            if "采购商品成本" in value
-        ]
-        if modern:
-            purchase_summary = modern[0]
-    if "内销" in purchase_summary and "采购商品成本" not in purchase_summary:
-        purchase_summary = "采购商品成本"
-
-    cost_summary_mode = mode(modern_summary_counts["cost"]) or "结转采购成本"
-    if "结转采购成本" in cost_summary_mode:
-        cost_summary = "结转采购成本"
-    else:
-        cost_summary = "结转采购成本"
-
-    rules = {
-        "version": 1,
-        "fitted_at": dt.datetime.now(dt.timezone.utc).isoformat(),
-        "training": {
-            "domestic_vouchers": len(samples),
-            "matched_contracts": len(contracts),
-            "auxiliary_seed_lines": len(voucher_records or []),
-            "maker": mode(maker_counts),
-            "voucher_type": "记",
-        },
-        "accounts": {
-            "receivable_by_currency": {
-                currency: counts.most_common(1)[0][0]
-                for currency, counts in receivable_by_currency.items()
-            },
-            "revenue": mode(role_accounts["revenue"]) or "50010201",
-            "output_tax": mode(role_accounts["output_tax"]) or "22210102",
-            "input_tax": normal_input_code,
-            "pending_input_tax": pending_input_code,
-            "payable": mode(role_accounts["payable"]) or "220201",
-            "cost": mode(role_accounts["cost"]) or "540102",
-            "inventory_by_prefix": inventory_prefix_map,
-            "inventory_pattern": inventory_pattern,
-            "inventory_fallback": inventory_prefix_map.get("0599") or "140599",
-        },
-        "summary": {
-            "revenue": "内销收入",
-            "purchase": purchase_summary,
-            "cost": cost_summary,
-            "input_tax_suffix": "-专票",
-        },
-        "purchase_order": list(
-            (
-                (purchase_order_by_year.get("2026") or purchase_order_counter)
-                .most_common(1)[0][0]
-            )
-            if purchase_order_counter else ("payable", "inventory", "input_tax")
-        ),
-        "purchase_order_by_context": {
-            context: list(counter.most_common(1)[0][0])
-            for context, counter in purchase_order_by_prefix.items()
-            if counter
-        },
-        "quantity_field": mode(quantity_fields) or "开票数量（实际）",
-        "quantity_fallback": "报关重量",
-        "mappings": {
-            "customers": customer_names,
-            "suppliers": supplier_names,
-            "inventory_names": inventory_names,
-            "product_to_inventory": {
-                normalize_name(product): counts.most_common(1)[0][0]
-                for product, counts in product_inventory.items()
-                if counts
-            },
-        },
-        "evidence": {
-            "role_account_counts": {
-                role: list(counter.items()) for role, counter in role_accounts.items()
-            },
-            "normal_input_accounts": list(normal_input.items()),
-            "pending_input_accounts": list(pending_input.items()),
-            "summary_counts": {
-                role: list(counter.items()) for role, counter in summary_counts.items()
-            },
-            "quantity_fields": list(quantity_fields.items()),
-            "purchase_order_totals": list(purchase_order_counter.items()),
-            "purchase_order_by_year": {
-                year: list(counter.items())
-                for year, counter in purchase_order_by_year.items()
-            },
-            "purchase_order_by_prefix": {
-                key: list(counter.items())
-                for key, counter in purchase_order_by_prefix.items()
-            },
-        },
-        "merge_fit": fit_merge_patterns(domestic_payload or {}, voucher_records or []),
-    }
-    return rules
-
-
-def _customer_code(rules: dict, record: dict, masters: legacy.MasterData) -> str:
-    candidates = [record.get("客户名称_脚本用"), record.get("买方英文名")]
-    for candidate in candidates:
-        value = text(candidate)
-        if any("\u3400" <= char <= "\u9fff" for char in value):
-            exact = masters.customer_by_name.get(normalize_name(value), set())
-            if len(exact) == 1:
-                return str(next(iter(exact)))
-    return resolve_name(
-        rules["mappings"]["customers"],
-        candidates,
-        lambda value: masters.customer_code([value]),
-    )
-
-
-def enrich_buyer_names(records: list[dict]) -> list[dict]:
-    """Apply the confirmed Ruibei invoice-company mapping without mutating source."""
-    result = [dict(record) for record in records]
-    if not RUI_BEI_BUYER_MAPPING.exists():
-        return result
-    mapping = json.loads(RUI_BEI_BUYER_MAPPING.read_text(encoding="utf-8"))
-    by_contract = {
-        text(item.get(CONTRACT_FIELD)): item
-        for item in mapping.get("results") or []
-        if item.get("状态") == "已获取" and text(item.get("公司名称"))
-    }
+def enrich_buyer_names(records, masters=None):
+    """Apply order-scoped customerName values, preserving untouched Feishu source."""
+    result = copy.deepcopy(records)
+    cache = orders.load_cache(RUI_BEI_BUYER_MAPPING)
     for record in result:
-        if text(record.get("买方英文名")) or text(record.get("客户名称_脚本用")):
+        if text(record.get("销售方式")) != SOURCE_METHOD:
             continue
-        item = by_contract.get(text(record.get(CONTRACT_FIELD)))
-        if not item:
+        record.pop("_erp_customer_conflict", None)
+        if record.get("_manual_customer_name"):
             continue
-        record["客户名称_脚本用"] = text(item.get("公司名称"))
-        record["客户名称_来源"] = text(item.get("来源类型")) or "睿贝ERP开票申请"
-        if item.get("继承自"):
-            record["睿贝原始合同号"] = text(item["继承自"])
-        record["纳税识别号（睿贝）"] = text(item.get("纳税识别号"))
+        origin = text(record.get("客户名称_来源"))
+        if ("睿贝ERP" in origin and not any(module in origin for module in ("内销订单", "外销订单"))) or any(word in origin for word in ("发货审批", "收货单位")):
+            record["客户名称_脚本用"] = ""
+            record["客户名称_来源"] = ""
+        item = orders.resolve(cache, text(record.get(CONTRACT_FIELD)))
+        if item["状态"] != "已获取":
+            if item["订单"]:
+                record["_erp_customer_conflict"] = True
+            continue
+        record["客户名称_脚本用"] = item["公司名称"]
+        record["客户名称_来源"] = "睿贝ERP" + item["来源类型"].removesuffix("客户名称") + (" / ADD继承" if item["继承自"] else "")
+        record["睿贝内销订单ID"] = ",".join(row["order_id"] for row in item["订单"])
+        record.pop("睿贝原始合同号", None)
+        record.pop("纳税识别号（睿贝）", None)
+        if item["继承自"]:
+            record["睿贝原始合同号"] = item["继承自"]
     return result
 
 
-def _supplier_code(rules: dict, record: dict, masters: legacy.MasterData) -> str:
-    return resolve_name(
-        rules["mappings"]["suppliers"],
-        [record.get("供应商"), record.get("供应商简称")],
-        lambda value: masters.supplier_code(value, ""),
-    )
+def customer_for_records(records, masters):
+    if any(record.get("_erp_customer_conflict") for record in records):
+        return ""
+    return masters.customer_for_records(records) or ""
 
 
-def _inventory_code(rules: dict, record: dict, masters: legacy.MasterData) -> str:
-    product = text(record.get("报关品名"))
-    variants = [
-        product,
-        product.replace("镍基", "镍合金"),
-        product.replace("合金镍", "镍合金"),
-        product.replace("镍合金焊管", "镍基焊管"),
-    ]
-    for candidate in dict.fromkeys(variants):
-        code = (
-            rules["mappings"]["product_to_inventory"].get(normalize_name(candidate))
-            or rules["mappings"]["inventory_names"].get(normalize_name(candidate))
-            or masters.inventory_code(candidate)
-        )
-        if code:
-            return code
-    return ""
+def customer_failure_reason(records, masters):
+    cache = orders.load_cache(RUI_BEI_BUYER_MAPPING)
+    messages = []
+    codes = {masters.customer_for_record(record) for record in records}
+    if len(codes - {None, ""}) > 1:
+        return "同一合同存在不同客户，请核实实际客户主体"
+    for record in records:
+        if masters.customer_for_record(record) and not record.get("_erp_customer_conflict"):
+            continue
+        name = text(record.get("客户名称_脚本用")) or text(record.get("买方英文名"))
+        status = orders.resolve(cache, text(record.get(CONTRACT_FIELD)))["状态"]
+        if status == "内销订单客户冲突":
+            message = "睿贝订单存在不同客户，需人工核对，未自动选择"
+        elif status == "内销订单客户字段为空":
+            message = "已找到睿贝订单，但客户名称字段为空"
+        elif text(record.get("客户名称_来源")).startswith(("睿贝ERP内销订单", "睿贝ERP外销订单")):
+            message = f"睿贝订单已取得客户“{name}”，但未匹配用友客户档案，请维护映射"
+        elif cache:
+            message = "睿贝内销及外销订单均未找到本合同" + (f"，原客户名“{name}”也无法匹配用友档案" if name else "")
+        else:
+            message = "尚无完整睿贝订单缓存，请先获取订单客户信息"
+        if message not in messages:
+            messages.append(message)
+    return "；".join(messages) or "客户无法唯一匹配"
 
 
-def _quantity(record: dict, rules: dict) -> Decimal | None:
-    for field in (rules.get("quantity_field"), rules.get("quantity_fallback")):
-        value = number(record.get(field), None) if field else None
-        if value is not None and value != 0:
-            return value
-    return None
+def _row(row_id, summary, subject, amount, *, debit, customer="", supplier="", inventory="", quantity=None, unit_price=None):
+    value = str(money(amount)) if amount is not None else ""
+    return {"id": row_id, "摘要": summary, "科目编码": subject, "币种名称": "CNY", "汇率": "1",
+            "原币借方": value if debit else "0", "原币贷方": "0" if debit else value,
+            "借方金额": value if debit else "0", "贷方金额": "0" if debit else value,
+            "客户编码": customer, "供应商编码": supplier, "存货档案": inventory,
+            "借方数量": str(quantity) if quantity is not None and debit else "",
+            "贷方数量": str(quantity) if quantity is not None and not debit else "",
+            "单价": str(money(unit_price)) if unit_price is not None else ""}
 
 
-def merge_signature(records: list[dict]) -> dict:
-    contract = text(records[0].get(CONTRACT_FIELD))
-    return {
-        "prefix": contract[:4],
-        "records": len(records),
-        "suppliers": len({
-            text(record.get("供应商"))
-            for record in records
-            if text(record.get("供应商"))
-        }),
-        "invoice_status": "+".join(sorted({
-            text(record.get("开票情况")) for record in records
-        })),
-        "month": "+".join(sorted({
-            text(record.get("实际月份")) for record in records
-        })),
-    }
-
-
-def predict_merge_mode(rules: dict, records: list[dict]) -> tuple[str, float]:
-    model = (rules.get("merge_fit") or {}).get("content_mode_model") or []
-    if not model:
-        return "full", 0.0
-    signature = merge_signature(records)
-
-    def distance(item):
-        expected = item["signature"]
-        return (
-            4 * (signature["prefix"] != expected["prefix"])
-            + 2 * (signature["suppliers"] != expected["suppliers"])
-            + abs(signature["records"] - expected["records"])
-            + 0.5 * (signature["invoice_status"] != expected["invoice_status"])
-            + 0.25 * (signature["month"] != expected["month"])
-        )
-
-    nearest = min(model, key=distance)
-    return nearest["mode"], float(nearest.get("confidence") or 0)
-
-
-def _row(subject: str, summary: str, *, row_id: str, debit=Decimal("0"), credit=Decimal("0"),
-         customer="", supplier="", inventory="", quantity=None, unit_price=None,
-         currency="CNY", rate=Decimal("1")) -> dict:
-    debit = optional_money(debit)
-    credit = optional_money(credit)
-    quantity_text = str(quantity) if quantity is not None else ""
-    unit_price_text = str(optional_money(unit_price)) if unit_price is not None else ""
-    return {
-        "id": row_id,
-        "科目编码": subject,
-        "摘要": summary,
-        "币种名称": currency,
-        "汇率": str(rate),
-        "原币借方": str(debit) if debit is not None else "",
-        "原币贷方": str(credit) if credit is not None else "",
-        "借方金额": str(debit) if debit is not None else "",
-        "贷方金额": str(credit) if credit is not None else "",
-        "客户编码": customer or "",
-        "供应商编码": supplier or "",
-        "存货档案": inventory or "",
-        "单价": unit_price_text,
-        "借方数量": quantity_text if quantity is not None and debit else "",
-        "贷方数量": quantity_text if quantity is not None and credit else "",
-    }
-
-
-def build_domestic_voucher(records: list[dict], rules: dict,
-                           masters: legacy.MasterData | None = None) -> dict:
+def build_domestic_voucher(records, masters=None):
     if not records:
         raise DomesticVoucherError("空合同分组")
     masters = masters or legacy.MasterData()
-    records = enrich_buyer_names(records)
+    records = enrich_buyer_names(records, masters)
     contract = text(records[0].get(CONTRACT_FIELD))
     if not contract:
         raise DomesticVoucherError("合同号_1 为空")
-    issues = []
+    if any(text(r.get(CONTRACT_FIELD)) != contract for r in records):
+        raise DomesticVoucherError("同一凭证不能混入不同合同")
+    issues, warnings = [], []
 
-    def issue(message: str, row_id="", field="", record=None, source_field=""):
-        issues.append({
-            "id": f"domestic:{row_id}:{field}:{len(issues)}",
-            "message": message,
-            "row_id": row_id,
-            "field": field,
-            "record_id": text((record or {}).get("record_id")),
-            "source_field": source_field,
-            "severity": "error",
-        })
+    def issue(message, row_id="", field="", record=None, source_field="", severity="error"):
+        issues.append({"id": f"domestic:{row_id}:{field}:{len(issues)}", "message": message,
+                       "severity": severity, "row_id": row_id, "field": field,
+                       "record_id": text((record or {}).get("record_id")), "source_field": source_field})
 
-    def monetary(record, field, required=True):
-        raw = record.get(field)
-        if raw is None or text(raw) == "":
-            if required:
-                issue(f"缺少{field}", record=record, source_field=field)
-            return None
-        value = number(raw, None)
+    def amount(record, field, row_id, target):
+        value = number(record.get(field), None)
         if value is None:
-            issue(f"{field}数值格式无效", record=record, source_field=field)
-            return None
-        return money(value)
+            issue(f"缺少或无效的{field}，请补充来源后重新计算", row_id, target, record, field)
+        return value
 
-    def monetary_total(field):
-        values = [monetary(record, field) for record in records]
-        return None if any(value is None for value in values) else money(sum(values, Decimal("0")))
+    def total(field, row_id, target):
+        values = [amount(r, field, row_id, target) for r in records]
+        return money(sum(values, Decimal("0"))) if all(v is not None for v in values) else None
 
-    customer = ""
-    for record in records:
-        customer = _customer_code(rules, record, masters)
-        if customer:
-            break
-    currencies = {text(record.get("币种")).upper() for record in records}
-    missing_currency = "" in currencies
-    currencies.discard("")
-    currency = next(iter(currencies)) if len(currencies) == 1 else "CNY"
-    accounts = rules["accounts"]
-    summaries = rules["summary"]
-    receivable = accounts["receivable_by_currency"].get(currency)
-    if not receivable:
-        receivable = accounts["receivable_by_currency"].get("CNY", "112201")
-
-    gross = monetary_total("报关金额")
-    revenue = monetary_total("不含税人民币收入")
-    output_tax = monetary_total("销项税额")
-    if gross is None:
-        issue("缺少报关金额，请补充后重新计算", "income:ar", "借方金额",
-              records[0], "报关金额")
-    if revenue is None:
-        issue("缺少不含税人民币收入，请补充后重新计算", "income:revenue", "贷方金额",
-              records[0], "不含税人民币收入")
-    if output_tax is None:
-        issue("缺少销项税额，请补充后重新计算", "income:tax", "贷方金额",
-              records[0], "销项税额")
-    if missing_currency:
-        issue("币种缺失，请补充后重新计算", "income:ar", "币种名称",
-              records[0], "币种")
-    if len(currencies) > 1:
-        issue("同一合同包含不同币种，请核实来源币种后重新计算", "income:ar", "币种名称")
-    if gross is not None and revenue is not None and output_tax is not None \
-            and abs(gross - revenue - output_tax) > Decimal("1"):
-        issue(
-            f"收入区金额不平：报关金额={gross}，不含税收入={revenue}，"
-            f"销项税额={output_tax}，差额={money(gross - revenue - output_tax)}",
-            "income:tax", "贷方金额",
-        )
-
-    income_summary = contract + summaries["revenue"]
-    rows = [
-        _row(receivable, income_summary, row_id="income:ar", debit=gross,
-             customer=customer, currency=currency),
-        _row(accounts["revenue"], income_summary, row_id="income:revenue",
-             credit=revenue, currency=currency),
-        _row(accounts["output_tax"], income_summary, row_id="income:tax",
-             credit=output_tax),
-    ]
+    customer = customer_for_records(records, masters)
     if not customer:
-        issue("未匹配客户：请补充买方名称，或选择有效客户编码后重新计算",
-              "income:ar", "客户编码", records[0], "买方英文名")
-    for record in records:
+        issue("未匹配客户：" + customer_failure_reason(records, masters),
+              "income:ar", "客户编码", records[0], "客户名称_脚本用")
+    gross = total("报关金额", "income:ar", "借方金额")
+    revenue = total("不含税人民币收入", "income:revenue", "贷方金额")
+    tax = total("销项税额", "income:tax", "贷方金额")
+    if None not in (gross, revenue, tax) and gross != revenue + tax:
+        issue(f"收入区金额不平：应收={gross}，收入+销项税={money(revenue + tax)}，请核实来源",
+              record=records[0], source_field="报关金额")
+    summary = contract + "内销收入"
+    rows = [_row("income:ar", summary, "112201", gross, debit=True, customer=customer),
+            _row("income:revenue", summary, "50010201", revenue, debit=False),
+            _row("income:tax", summary, "22210102", tax, debit=False)]
+    for index, record in enumerate(records, 1):
+        key = text(record.get("record_id")) or f"record-{index}"
         if text(record.get("销售方式")) != SOURCE_METHOD:
-            issue("销售方式不是内销，请核实来源记录", "", "", record, "销售方式")
-
-    purchase_rows = []
-    cost_blocks = []
-    warnings = []
-    for index, record in enumerate(records, start=1):
-        record_key = text(record.get("record_id")) or f"record-{index}"
-        cost = monetary(record, "不含税成本")
-        purchase = monetary(record, "采购金额")
-        input_tax = monetary(record, "进项税额")
+            issue("销售方式不是内销，请核实来源", record=record, source_field="销售方式")
+        if text(record.get("币种")).upper() not in ("CNY", "RMB", "人民币"):
+            issue("币种缺失或非人民币内销：请确认处理规则后再导出", record=record, source_field="币种")
+        for field in FEE_FIELDS:
+            if text(record.get(field)):
+                fee = number(record.get(field), None)
+                if fee is None or fee != 0:
+                    issue(f"内销存在非零或无效{field}：请确认费用规则后再导出", record=record, source_field=field)
+        raw_cost = amount(record, "不含税成本", key + ":stock", "借方金额")
+        cost = money(raw_cost)
+        itax = money(amount(record, "进项税额", key + ":tax", "借方金额"))
+        purchase = money(amount(record, "采购金额", key + ":ap", "贷方金额"))
+        if None not in (cost, itax, purchase) and purchase != cost + itax:
+            issue(f"采购金额与不含税成本及进项税额不一致：应付={purchase}，成本+税={money(cost + itax)}",
+                  record=record, source_field="采购金额")
         supplier_raw = text(record.get("供应商"))
-        supplier = _supplier_code(rules, record, masters)
-        if re.search(r"[,，、;；]", supplier_raw):
-            supplier = ""
-        inventory_code = _inventory_code(rules, record, masters)
-        inventory_subject = ""
-        if inventory_code:
-            prefix = inventory_code[:4]
-            inventory_subject = accounts["inventory_by_prefix"].get(prefix, "")
-            pattern = accounts.get("inventory_pattern", "")
-            if not inventory_subject and pattern:
-                inventory_subject = pattern.format(prefix_last2=prefix[-2:])
-            inventory_subject = inventory_subject or accounts["inventory_fallback"]
-
-        base_summary = contract + summaries["purchase"]
-        tax_account = accounts["input_tax"]
-        quantity = _quantity(record, rules)
-        unit_price = money(cost / quantity) if cost is not None and quantity else None
-        payable = money(cost + input_tax) if cost is not None and input_tax is not None else None
-        stock_id = record_key + ":stock"
-        tax_id = record_key + ":tax"
-        payable_id = record_key + ":ap"
-        cost_id = record_key + ":cost"
-        out_id = record_key + ":out"
-        purchase_rows.extend([
-            _row(accounts["payable"], base_summary, row_id=payable_id,
-                 credit=payable, supplier=supplier),
-            _row(inventory_subject, base_summary, row_id=stock_id,
-                 debit=cost, inventory=inventory_code,
-                 quantity=quantity, unit_price=unit_price),
-            _row(tax_account, base_summary + summaries["input_tax_suffix"],
-                 row_id=tax_id, debit=input_tax),
-        ])
-        cost_blocks.extend([
-            _row(accounts["cost"], contract + summaries["cost"], row_id=cost_id,
-                 debit=cost),
-            _row(inventory_subject, contract + summaries["cost"], row_id=out_id,
-                 credit=cost,
-                 inventory=inventory_code, quantity=quantity, unit_price=unit_price),
-        ])
+        supplier = "" if re.search(r"[,，、;；]", supplier_raw) else (
+            masters.supplier_by_name.get(normalize_name(supplier_raw))
+            or masters.supplier_code(record.get("供应商简称"), supplier_raw) or "")
+        inventory = masters.inventory_code(text(record.get("报关品名"))) or ""
+        subject = legacy.INVENTORY_SUBJECT.get(legacy.PRODUCT_CODE_MAPPING.get(inventory[:4]), "")
+        weight = number(record.get("报关重量"), None)
+        if weight is None or weight <= 0:
+            issue("报关重量缺失、无效或不大于零，请核实数量；不使用开票数量替代",
+                  record=record, source_field="报关重量")
+            weight = None
+        unit_price = None
+        if raw_cost is not None and weight:
+            try:
+                unit_price = money(raw_cost / weight)
+            except InvalidOperation:
+                issue("成本或报关重量导致单价超出数值范围，请核实来源", record=record, source_field="报关重量")
         if not supplier:
-            issue("供应商缺失或无法匹配，请补充来源或选择有效供应商",
-                  payable_id, "供应商编码", record, "供应商")
-        elif re.search(r"[,，、;；]", supplier_raw):
-            issue("供应商字段包含多个名称，请拆分后重新计算",
-                  payable_id, "供应商编码", record, "供应商")
-        if not inventory_code:
-            issue("未匹配存货，请维护产品映射或选择有效存货和科目",
-                  stock_id, "存货档案", record, "报关品名")
-        if cost is None:
-            issue("缺少有效采购成本，请补充不含税成本或修改本行金额",
-                  stock_id, "借方金额", record, "不含税成本")
-        elif cost <= 0:
-            issue("采购成本必须大于零，请核实来源或修改本行金额",
-                  stock_id, "借方金额", record, "不含税成本")
-        if purchase is None:
-            issue("缺少采购金额，请补充采购金额或核实应付行",
-                  payable_id, "贷方金额", record, "采购金额")
-        elif purchase <= 0:
-            issue("采购金额必须大于零，请核实来源或修改本行金额",
-                  payable_id, "贷方金额", record, "采购金额")
-        if cost is not None and input_tax is not None and purchase is not None \
-                and abs(purchase - cost - input_tax) > Decimal("1"):
-            issue(
-                f"采购金额与不含税成本及进项税额不一致：采购金额={purchase}，"
-                f"成本+税额={money(cost + input_tax)}，"
-                f"差额={money(purchase - cost - input_tax)}",
-                payable_id, "贷方金额", record, "采购金额",
-            )
-        if input_tax is None:
-            issue("缺少有效进项税额，请补充来源或修改本行金额",
-                  tax_id, "借方金额", record, "进项税额")
-        if not supplier or not inventory_code or cost is None or purchase is None \
-                or cost <= 0 or purchase <= 0:
-            warnings.append({
-                "记录": index,
-                "合同号_1": contract,
-                "原因": "采购信息不完整，已保留分录并标记异常",
-                "供应商": supplier_raw,
-                "报关品名": text(record.get("报关品名")),
-            })
-
-    # Catalog this as a fitted ordering choice while retaining a deterministic fallback.
-    role_rows = {
-        "payable": [rows[0] for rows in zip(*[iter(purchase_rows)] * 3)],
-        "inventory": [rows[1] for rows in zip(*[iter(purchase_rows)] * 3)],
-        "input_tax": [rows[2] for rows in zip(*[iter(purchase_rows)] * 3)],
-    }
-    actual_year = text(records[0].get("实际年份")) or str(dt.date.today().year)
-    prefix_match = re.match(r"^(\d{2}MT)", contract.upper())
-    context = actual_year + (prefix_match.group(1) if prefix_match else "")
-    configured_order = rules.get("purchase_order_by_context", {}).get(
-        context, rules.get("purchase_order", [])
-    )
-    order = [role for role in configured_order if role in role_rows]
-    if set(order) != {"payable", "inventory", "input_tax"}:
-        order = ["payable", "inventory", "input_tax"]
-    for index in range(len(role_rows["payable"])):
-        for role in order:
-            rows.append(role_rows[role][index])
-    rows.extend(cost_blocks)
-
-    merge_mode, merge_confidence = predict_merge_mode(rules, records)
-    if merge_mode == "sales_cost":
-        rows = [
-            row for row in rows
-            if text(row.get("摘要")).endswith("内销收入")
-            or text(row.get("摘要")).endswith(summaries["cost"])
-        ]
-    elif merge_mode == "sales":
-        rows = [
-            row for row in rows
-            if text(row.get("摘要")).endswith("内销收入")
-        ]
-
-    row_ids = {row["id"] for row in rows}
-    for item in issues:
-        if item["row_id"] and item["row_id"] not in row_ids:
-            item["row_id"] = ""
-            item["field"] = ""
-    debit_total = money(sum(number(row["借方金额"]) or Decimal("0") for row in rows))
-    credit_total = money(sum(number(row["贷方金额"]) or Decimal("0") for row in rows))
-    if debit_total != credit_total:
-        issue(
-            f"凭证借贷不平衡：借方={debit_total}，贷方={credit_total}，"
-            f"差额={money(debit_total - credit_total)}"
-        )
-    return {
-        "合同号_1": contract,
-        "rows": rows,
-        "record_ids": [record.get("record_id") for record in records],
-        "warnings": warnings,
-        "issues": issues,
-        "合并模式": merge_mode,
-        "合并模式置信度": merge_confidence,
-        "totals": {"debit": str(debit_total), "credit": str(credit_total)},
-    }
+            issue("供应商缺失、多值或无法匹配，请补充来源或人工选择供应商", key + ":ap", "供应商编码", record, "供应商")
+        if not inventory or not subject:
+            issue("未匹配存货或库存科目，请维护产品映射", key + ":stock", "存货档案", record, "报关品名")
+        purchase_summary, cost_summary = contract + "采购商品成本", contract + "结转采购成本"
+        rows.extend([
+            _row(key + ":stock", purchase_summary, subject, cost, debit=True,
+                 inventory=inventory, quantity=weight, unit_price=unit_price),
+            _row(key + ":tax", purchase_summary + "-专票", "22210101", itax, debit=True),
+            _row(key + ":ap", purchase_summary, "220201", purchase, debit=False, supplier=supplier),
+            _row(key + ":cost", cost_summary, "540102", cost, debit=True),
+            _row(key + ":out", cost_summary, subject, cost, debit=False,
+                 inventory=inventory, quantity=weight, unit_price=unit_price),
+        ])
+    debit = money(sum((number(r["借方金额"]) for r in rows), Decimal("0")))
+    credit = money(sum((number(r["贷方金额"]) for r in rows), Decimal("0")))
+    if debit != credit:
+        issue(f"凭证借贷不平衡：借方={debit}，贷方={credit}，差额={money(debit-credit)}")
+    return {"合同号_1": contract, "rows": rows, "issues": issues, "warnings": warnings,
+            "record_ids": [r.get("record_id") for r in records], "effective_source": records,
+            "template_version": TEMPLATE_VERSION,
+            "totals": {"debit": str(debit), "credit": str(credit), "difference": str(money(debit-credit))}}
 
 
-def generate_all(domestic_payload: dict, rules: dict,
-                 masters: legacy.MasterData | None = None) -> dict:
+def generate_all(payload, masters=None):
     masters = masters or legacy.MasterData()
-    groups: dict[str, list[dict]] = collections.defaultdict(list)
-    for record in domestic_payload.get("records") or []:
-        if text(record.get("销售方式")) != SOURCE_METHOD:
-            continue
-        contract = text(record.get(CONTRACT_FIELD))
-        groups[contract].append(record)
-
-    generated = []
-    failed = []
-    skipped = []
+    groups = collections.defaultdict(list)
+    for item in payload.get("records", []):
+        record = dict(item.get("fields", item))
+        record["record_id"] = item.get("record_id") or item.get("id") or record.get("record_id")
+        if text(record.get("销售方式")) == SOURCE_METHOD:
+            groups[text(record.get(CONTRACT_FIELD))].append(record)
+    generated, failed, skipped = [], [], []
     for contract, records in sorted(groups.items()):
         if not contract:
-            skipped.append({
-                "合同号_1": "",
-                "记录数": len(records),
-                "原因": "合同号_1 为空，无法确定凭证单位",
-                "record_ids": [record.get("record_id") for record in records],
-            })
+            skipped.append({"合同号_1": "", "原因": "合同号_1 为空", "记录数": len(records)})
             continue
         try:
-            generated.append(build_domestic_voucher(records, rules, masters))
+            generated.append(build_domestic_voucher(records, masters))
         except DomesticVoucherError as error:
-            failed.append({
-                "合同号_1": contract,
-                "记录数": len(records),
-                "原因": str(error),
-            })
-    return {
-        "generated_count": len(generated),
-        "failed_count": len(failed),
-        "skipped_count": len(skipped),
-        "generated": generated,
-        "failed": failed,
-        "skipped": skipped,
-    }
+            failed.append({"合同号_1": contract, "原因": str(error)})
+    return {"generated": generated, "failed": failed, "skipped": skipped,
+            "generated_count": len(generated), "failed_count": len(failed), "skipped_count": len(skipped),
+            "template_version": TEMPLATE_VERSION}
+
+
+def _excel_row(row):
+    fields = {"汇率", "单价", "借方数量", "贷方数量", "原币借方", "原币贷方", "借方金额", "贷方金额"}
+    return {k: (float(number(v)) if v != "" else None) if k in fields else v for k, v in row.items()}
 
 
 def write_excel(result: dict, path: Path, posting_date: dt.date,
-                maker: str = "马云凤") -> None:
+                maker: str = "王益") -> None:
     book, sheet, columns = legacy._new_sheet(path)
     sheet._cell_overwrite_ok = True
     row_number = 1
-    for voucher_id, voucher in enumerate(result["generated"], start=1):
+    for voucher_id, voucher in enumerate([v for v in result["generated"] if not any(i["severity"] == "error" for i in v.get("issues", []))], start=1):
         for row in voucher["rows"]:
-            legacy._write_row(sheet, columns, row_number, row, voucher_id, posting_date)
+            legacy._write_row(sheet, columns, row_number, _excel_row(row), voucher_id, posting_date)
             for field, value in (("制单人", maker), ("凭证类别", "记")):
                 if field in columns:
                     sheet.write(row_number, columns[field], value)
@@ -1030,11 +262,12 @@ def write_excel(result: dict, path: Path, posting_date: dt.date,
     temporary.replace(path)
 
 
+
 def write_single_excels(result: dict, directory: Path, posting_date: dt.date,
-                        maker: str = "马云凤") -> Path:
+                        maker: str = "王益") -> Path:
     directory.mkdir(parents=True, exist_ok=True)
     index_rows = []
-    for index, voucher in enumerate(result["generated"], start=1):
+    for index, voucher in enumerate([v for v in result["generated"] if not any(i["severity"] == "error" for i in v.get("issues", []))], start=1):
         contract = voucher["合同号_1"]
         safe_contract = re.sub(r"[^0-9A-Za-z\u4e00-\u9fa5&_-]", "_", contract)
         filename = f"{index:03d}_{safe_contract}.xls"
@@ -1042,7 +275,7 @@ def write_single_excels(result: dict, directory: Path, posting_date: dt.date,
         book, sheet, columns = legacy._new_sheet(path)
         sheet._cell_overwrite_ok = True
         for row_number, row in enumerate(voucher["rows"], start=1):
-            legacy._write_row(sheet, columns, row_number, row, 1, posting_date)
+            legacy._write_row(sheet, columns, row_number, _excel_row(row), 1, posting_date)
             for field, value in (("制单人", maker), ("凭证类别", "记")):
                 if field in columns:
                     sheet.write(row_number, columns[field], value)
@@ -1055,8 +288,8 @@ def write_single_excels(result: dict, directory: Path, posting_date: dt.date,
             contract,
             filename,
             len(voucher["rows"]),
-            voucher.get("合并模式", ""),
-            voucher.get("合并模式置信度", ""),
+            voucher.get("template_version", ""),
+            len(voucher.get("issues", [])),
             len(voucher["warnings"]),
             "；".join(sorted({warning["原因"] for warning in voucher["warnings"]})),
         ])
@@ -1070,7 +303,7 @@ def write_single_excels(result: dict, directory: Path, posting_date: dt.date,
     sheet.title = "单张凭证索引"
     headers = [
         "序号", "合同号_1", "导入文件", "分录行数",
-        "合并模式", "模式置信度", "警告数", "警告原因",
+        "模板版本", "异常数", "警告数", "警告原因",
     ]
     sheet.append(headers)
     for row in index_rows:
@@ -1093,471 +326,9 @@ def write_single_excels(result: dict, directory: Path, posting_date: dt.date,
     return index_path
 
 
-def evaluate(generated: dict, sample_payload: dict) -> dict:
-    """Independent post-generation comparison; never called by generation."""
-    sample_by_contract = collections.defaultdict(list)
-    for sample in sample_payload.get("samples") or []:
-        if sample.get("类型") != "内销业务":
-            continue
-        for contract in sample.get("匹配合同号_1") or []:
-            sample_by_contract[contract].append(sample)
-
-    comparisons = []
-    skipped_without_contract_lines = []
-    suffixes = sorted({
-        "内销收入",
-        "销收入",
-        "内采购商品收入-专票",
-        "内采购商品收入",
-        "内销采购商品收入-专票",
-        "内销采购商品收入",
-        "采购商品成本-专票",
-        "采购商品成本",
-        "结转内销采购成本",
-        "结转采购成本",
-    }, key=len, reverse=True)
-
-    def summary_contract(description: str) -> str:
-        value = description.replace("\xa0", " ").strip()
-        if value.startswith("暂估-"):
-            value = value[len("暂估-"):]
-        for suffix in suffixes:
-            if value.endswith(suffix):
-                return value[:-len(suffix)].strip()
-        return ""
-
-    for voucher in generated.get("generated") or []:
-        contract = voucher["合同号_1"]
-        samples = sample_by_contract.get(contract, [])
-        if not samples:
-            continue
-        generated_revenue = money(sum(
-            number(row["贷方金额"]) or Decimal("0")
-            for row in voucher["rows"]
-            if text(row["科目编码"]).startswith("500102")
-        ))
-        sample_lines = []
-        for sample in samples:
-            for line in sample.get("分录") or []:
-                description = text(line.get("摘要"))
-                if summary_contract(description) == contract:
-                    sample_lines.append(line)
-        if not sample_lines:
-            skipped_without_contract_lines.append(contract)
-            continue
-        generated_gross = money(sum(
-            number(row["借方金额"]) or Decimal("0")
-            for row in voucher["rows"]
-            if text(row["摘要"]).endswith("内销收入")
-        ))
-        sample_gross = money(sum(
-            number(line.get("本币借方")) or Decimal("0")
-            for line in sample_lines
-            if text(line.get("摘要")).endswith("内销收入")
-        ))
-        generated_tax = money(sum(
-            number(row["贷方金额"]) or Decimal("0")
-            for row in voucher["rows"]
-            if text(row["科目编码"]).startswith("22210102")
-        ))
-        sample_tax = money(sum(
-            number(line.get("本币贷方")) or Decimal("0")
-            for line in sample_lines
-            if text(line.get("科目编码")).startswith("22210102")
-        ))
-        sample_revenue = money(sum(
-            number(line.get("本币贷方")) or Decimal("0")
-            for line in sample_lines
-            if text(line.get("科目编码")).startswith("500102")
-        ))
-        comparisons.append({
-            "合同号_1": contract,
-            "导入文件": voucher.get("file", ""),
-            "生成不含税收入": str(generated_revenue),
-            "历史不含税收入": str(sample_revenue),
-            "差异": str(generated_revenue - sample_revenue),
-            "生成含税收入": str(generated_gross),
-            "历史含税收入": str(sample_gross),
-            "生成销项税": str(generated_tax),
-            "历史销项税": str(sample_tax),
-            "收入一致": abs(generated_revenue - sample_revenue) <= Decimal("0.02"),
-            "含税收入一致": abs(generated_gross - sample_gross) <= Decimal("0.02"),
-            "销项税一致": abs(generated_tax - sample_tax) <= Decimal("0.02"),
-            "一致": (
-                abs(generated_revenue - sample_revenue) <= Decimal("0.02")
-                and abs(generated_gross - sample_gross) <= Decimal("0.02")
-                and abs(generated_tax - sample_tax) <= Decimal("0.02")
-            ),
-        })
-    return {
-        "compared_contracts": len(comparisons),
-        "exact_revenue_matches": sum(item["收入一致"] for item in comparisons),
-        "exact_sales_matches": sum(item["一致"] for item in comparisons),
-        "skipped_without_contract_lines": skipped_without_contract_lines,
-        "comparisons": comparisons,
-    }
-
-
-def evaluate_full_lines(generated: dict, sample_payload: dict,
-                        voucher_records: list[dict] | None = None) -> dict:
-    """Compare every accounting field of comparable generated/manual vouchers."""
-    suffixes = sorted({
-        "内销收入",
-        "销收入",
-        "内采购商品收入-专票",
-        "内采购商品收入",
-        "内销采购商品收入-专票",
-        "内销采购商品收入",
-        "采购商品成本-专票",
-        "采购商品成本",
-        "结转内销采购成本",
-        "结转采购成本",
-    }, key=len, reverse=True)
-
-    def summary_contract(value: str) -> str:
-        description = text(value).replace("\xa0", " ").strip()
-        if description.startswith("暂估-"):
-            description = description[len("暂估-"):]
-        for suffix in suffixes:
-            if description.endswith(suffix):
-                return description[:-len(suffix)].strip()
-        return ""
-
-    def canonical(line: dict, sample: bool) -> dict:
-        if sample:
-            if line.get("科目编码") or line.get("辅助核算") is not None:
-                debit = number(line.get("本币借方"), Decimal("0")) or Decimal("0")
-                credit = number(line.get("本币贷方"), Decimal("0")) or Decimal("0")
-                customer = aux_value(line, "客户").get("code", "")
-                supplier = aux_value(line, "供应商").get("code", "")
-                inventory = aux_value(line, "存货档案").get("code", "")
-                quantity = line.get("数量")
-                unit_price = line.get("单价")
-                summary = text(line.get("摘要"))
-                code = text(line.get("科目编码"))
-            else:
-                debit = number(line.get("debit_org"), Decimal("0")) or Decimal("0")
-                credit = number(line.get("credit_org"), Decimal("0")) or Decimal("0")
-                auxiliaries = {
-                    text(item.get("fieldname")): text((item.get("value") or {}).get("code"))
-                    for item in line.get("clientAuxiliaryDTOS") or []
-                }
-                customer = auxiliaries.get("客户", "")
-                supplier = auxiliaries.get("供应商", "")
-                inventory = auxiliaries.get("存货档案", "")
-                quantity = line.get("quantity")
-                unit_price = line.get("price")
-                summary = text(line.get("bodydescription"))
-                code = text(line.get("bodies_accsubjectVid_code"))
-        else:
-            code = text(line.get("科目编码"))
-            debit = number(line.get("借方金额"), Decimal("0")) or Decimal("0")
-            credit = number(line.get("贷方金额"), Decimal("0")) or Decimal("0")
-            customer = text(line.get("客户编码"))
-            supplier = text(line.get("供应商编码"))
-            inventory = text(line.get("存货档案"))
-            quantity = line.get("借方数量") or line.get("贷方数量")
-            unit_price = line.get("单价")
-            summary = text(line.get("摘要"))
-        quantity_value = number(quantity, None)
-        return {
-            "科目编码": code,
-            "借方": str(money(debit)),
-            "贷方": str(money(credit)),
-            "客户编码": customer,
-            "供应商编码": supplier,
-            "存货档案": inventory,
-            "数量": str(quantity_value.normalize()) if quantity_value is not None else "",
-            "单价": str(money(unit_price)) if unit_price not in (None, "") else "",
-            "摘要": summary,
-        }
-
-    def without_summary(line: dict) -> tuple:
-        return tuple((key, line[key]) for key in line if key != "摘要")
-
-    def relaxed_line(line: dict) -> tuple:
-        values = dict(without_summary(line))
-        if values["科目编码"] in ("22210101", "22210107"):
-            values["科目编码"] = "22210101/22210107"
-        return tuple(sorted(values.items()))
-
-    def account_totals(lines: list[dict]) -> dict:
-        totals = collections.defaultdict(lambda: {"借方": Decimal("0"), "贷方": Decimal("0")})
-        for line in lines:
-            totals[line["科目编码"]]["借方"] += Decimal(line["借方"])
-            totals[line["科目编码"]]["贷方"] += Decimal(line["贷方"])
-        return {
-            account: {
-                "借方": str(money(values["借方"])),
-                "贷方": str(money(values["贷方"])),
-            }
-            for account, values in totals.items()
-        }
-
-    def dimension_totals(lines: list[dict], include_aux: bool) -> dict:
-        totals = collections.defaultdict(Decimal)
-        for line in lines:
-            debit = Decimal(line["借方"])
-            credit = Decimal(line["贷方"])
-            account = line["科目编码"]
-            if account in ("22210101", "22210107"):
-                account = "22210101/22210107"
-            prefixes = [account, "借" if debit else "贷"]
-            if include_aux:
-                prefixes.extend([
-                    line["客户编码"], line["供应商编码"], line["存货档案"],
-                ])
-            totals[tuple(prefixes)] += debit or credit
-        return dict(totals)
-
-    sample_by_contract = collections.defaultdict(list)
-    voucher_ids_by_contract = collections.defaultdict(set)
-    if voucher_records:
-        for record in voucher_records:
-            contract = summary_contract(record.get("bodydescription"))
-            if contract:
-                sample_by_contract[contract].append(record)
-                voucher_ids_by_contract[contract].add(text(record.get("id")))
-    else:
-        for sample in sample_payload.get("samples") or []:
-            if sample.get("类型") != "内销业务":
-                continue
-            for line in sample.get("分录") or []:
-                contract = summary_contract(line.get("摘要"))
-                if contract:
-                    sample_by_contract[contract].append(line)
-                    voucher_ids_by_contract[contract].add(text(sample.get("凭证ID")))
-
-    comparisons = []
-    for voucher in generated.get("generated") or []:
-        contract = voucher["合同号_1"]
-        historical = sample_by_contract.get(contract, [])
-        if not historical:
-            continue
-        actual = [canonical(line, False) for line in voucher["rows"]]
-        expected = [canonical(line, True) for line in historical]
-        actual_without_summary = collections.Counter(without_summary(line) for line in actual)
-        expected_without_summary = collections.Counter(without_summary(line) for line in expected)
-        actual_relaxed = collections.Counter(relaxed_line(line) for line in actual)
-        expected_relaxed = collections.Counter(relaxed_line(line) for line in expected)
-        actual_full = collections.Counter(tuple(line.items()) for line in actual)
-        expected_full = collections.Counter(tuple(line.items()) for line in expected)
-        actual_accounts = account_totals(actual)
-        expected_accounts = account_totals(expected)
-        actual_dimensions = dimension_totals(actual, True)
-        expected_dimensions = dimension_totals(expected, True)
-        actual_account_groups = dimension_totals(actual, False)
-        expected_account_groups = dimension_totals(expected, False)
-        exact_common = sum((actual_without_summary & expected_without_summary).values())
-        dimension_common = sum(
-            1
-            for key, value in actual_dimensions.items()
-            if expected_dimensions.get(key) == value
-        )
-        account_common = sum(
-            1
-            for key, value in actual_account_groups.items()
-            if expected_account_groups.get(key) == value
-        )
-        account_differences = []
-        for account in sorted(set(actual_accounts) | set(expected_accounts)):
-            generated_value = actual_accounts.get(account, {"借方": "0.00", "贷方": "0.00"})
-            expected_value = expected_accounts.get(account, {"借方": "0.00", "贷方": "0.00"})
-            if generated_value != expected_value:
-                account_differences.append({
-                    "科目编码": account,
-                    "生成借方": generated_value["借方"],
-                    "历史借方": expected_value["借方"],
-                    "生成贷方": generated_value["贷方"],
-                    "历史贷方": expected_value["贷方"],
-                })
-        relaxed = actual_relaxed == expected_relaxed
-        reasons = []
-        if not relaxed:
-            if len(actual) != len(expected):
-                reasons.append(f"分录数不同：生成 {len(actual)} 行，历史 {len(expected)} 行")
-            actual_core = collections.Counter(
-                (line["科目编码"], line["借方"], line["贷方"])
-                if line["科目编码"] not in ("22210101", "22210107")
-                else ("22210101/22210107", line["借方"], line["贷方"])
-                for line in actual
-            )
-            expected_core = collections.Counter(
-                (line["科目编码"], line["借方"], line["贷方"])
-                if line["科目编码"] not in ("22210101", "22210107")
-                else ("22210101/22210107", line["借方"], line["贷方"])
-                for line in expected
-            )
-            if actual_core == expected_core:
-                reasons.append("科目金额相同，但辅助核算、数量或单价不同")
-            else:
-                actual_accounts_relaxed = collections.defaultdict(Decimal)
-                expected_accounts_relaxed = collections.defaultdict(Decimal)
-                for line in actual:
-                    account = (
-                        "22210101/22210107"
-                        if line["科目编码"] in ("22210101", "22210107")
-                        else line["科目编码"]
-                    )
-                    actual_accounts_relaxed[account] += Decimal(line["借方"]) - Decimal(line["贷方"])
-                for line in expected:
-                    account = (
-                        "22210101/22210107"
-                        if line["科目编码"] in ("22210101", "22210107")
-                        else line["科目编码"]
-                    )
-                    expected_accounts_relaxed[account] += Decimal(line["借方"]) - Decimal(line["贷方"])
-                differing = [
-                    account for account in sorted(set(actual_accounts_relaxed) | set(expected_accounts_relaxed))
-                    if actual_accounts_relaxed[account] != expected_accounts_relaxed[account]
-                ]
-                if differing:
-                    reasons.append("科目净额不同：" + "、".join(differing))
-                else:
-                    reasons.append("借方/贷方拆分不同")
-        comparisons.append({
-            "合同号_1": contract,
-            "生成行数": len(actual),
-            "历史行数": len(expected),
-            "历史凭证ID": sorted(voucher_ids_by_contract[contract]),
-            "会计字段一致": actual_without_summary == expected_without_summary,
-            "忽略顺序及暂估进项科目后一致": relaxed,
-            "剩余不一致原因": reasons,
-            "科目汇总一致": not account_differences,
-            "科目汇总差异": account_differences,
-            "行顺序一致": actual == expected,
-            "包含摘要完全一致": actual_full == expected_full,
-            "完全一致分录数": exact_common,
-            "同科目借方/贷方及辅助核算汇总匹配数": dimension_common,
-            "同科目借贷总额匹配数": account_common,
-            "宽松判定正确": bool(exact_common or dimension_common or account_common),
-            "生成多出行": [
-                dict(line) for line, count in (actual_without_summary - expected_without_summary).items()
-                for _ in range(count)
-            ],
-            "历史多出行": [
-                dict(line) for line, count in (expected_without_summary - actual_without_summary).items()
-                for _ in range(count)
-            ],
-        })
-    generated_contracts = {
-        item["合同号_1"] for item in generated.get("generated") or []
-    }
-    not_made_contracts = sorted(generated_contracts - set(sample_by_contract))
-    return {
-        "compared_contracts": len(comparisons),
-        "exact_accounting_matches": sum(item["会计字段一致"] for item in comparisons),
-        "relaxed_matches": sum(item["忽略顺序及暂估进项科目后一致"] for item in comparisons),
-        "exact_account_total_matches": sum(item["科目汇总一致"] for item in comparisons),
-        "exact_ordered_matches": sum(item["行顺序一致"] for item in comparisons),
-        "exact_full_matches": sum(item["包含摘要完全一致"] for item in comparisons),
-        "loose_matched_contracts": sum(item["宽松判定正确"] for item in comparisons),
-        "loose_mismatched_contracts": sum(
-            not item["宽松判定正确"] for item in comparisons
-        ),
-        "not_made_or_not_found_contracts": not_made_contracts,
-        "comparisons": comparisons,
-    }
-
 
 def save_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
     temporary.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8")
-    temporary.replace(path)
-
-
-def write_reconciliation_workbook(report: dict, path: Path) -> None:
-    from openpyxl import Workbook
-    from openpyxl.styles import Alignment, Font, PatternFill
-    from openpyxl.utils import get_column_letter
-
-    full = report["full_line_comparison"]
-    workbook = Workbook()
-    workbook.remove(workbook.active)
-
-    def add_sheet(title: str, headers: list[str], rows: list[list[Any]]) -> None:
-        target = workbook.create_sheet(title)
-        target.append(headers)
-        for row in rows:
-            target.append(row)
-        for cell in target[1]:
-            cell.font = Font(color="FFFFFF", bold=True)
-            cell.fill = PatternFill("solid", fgColor="1F4E78")
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-        target.freeze_panes = "A2"
-        target.auto_filter.ref = target.dimensions
-        for index, header in enumerate(headers, start=1):
-            widths = [len(header) * 2]
-            widths.extend(
-                min(50, len(str(row[index - 1] or "")) + 2)
-                for row in rows[:200]
-            )
-            target.column_dimensions[get_column_letter(index)].width = max(12, max(widths))
-        for row in target.iter_rows(min_row=2):
-            for cell in row:
-                cell.alignment = Alignment(vertical="top", wrap_text=True)
-
-    summary_rows = []
-    generated_extra = []
-    historical_extra = []
-    account_differences = []
-    for item in full.get("comparisons") or []:
-        summary_rows.append([
-            item["合同号_1"],
-            item.get("导入文件", ""),
-            "是" if item["会计字段一致"] else "否",
-            "是" if item["忽略顺序及暂估进项科目后一致"] else "否",
-            "；".join(item["剩余不一致原因"]),
-            "是" if item["科目汇总一致"] else "否",
-            "是" if item["行顺序一致"] else "否",
-            "是" if item["包含摘要完全一致"] else "否",
-            "是" if item["宽松判定正确"] else "否",
-            item["完全一致分录数"],
-            item["同科目借方/贷方及辅助核算汇总匹配数"],
-            item["同科目借贷总额匹配数"],
-            item["生成行数"],
-            item["历史行数"],
-            "；".join(item["历史凭证ID"]),
-        ])
-        for line in item["生成多出行"]:
-            generated_extra.append([
-                item["合同号_1"], line["科目编码"], line["借方"], line["贷方"],
-                line["客户编码"], line["供应商编码"], line["存货档案"],
-                line["数量"], line["单价"],
-            ])
-        for line in item["历史多出行"]:
-            historical_extra.append([
-                item["合同号_1"], line["科目编码"], line["借方"], line["贷方"],
-                line["客户编码"], line["供应商编码"], line["存货档案"],
-                line["数量"], line["单价"],
-            ])
-        for difference in item["科目汇总差异"]:
-            account_differences.append([
-                item["合同号_1"], difference["科目编码"],
-                difference["生成借方"], difference["历史借方"],
-                difference["生成贷方"], difference["历史贷方"],
-            ])
-
-    add_sheet("差异汇总", [
-        "合同号_1", "导入文件", "严格会计字段一致", "忽略顺序及暂估进项科目后一致",
-        "剩余不一致原因", "科目汇总一致", "行顺序一致",
-        "包含摘要完全一致", "宽松判定正确", "完全一致分录数",
-        "维度汇总匹配数", "科目汇总匹配数", "生成行数", "历史行数", "历史凭证ID",
-    ], summary_rows)
-    add_sheet("生成多出行", [
-        "合同号_1", "科目编码", "借方", "贷方", "客户编码",
-        "供应商编码", "存货档案", "数量", "单价",
-    ], generated_extra)
-    add_sheet("历史多出行", [
-        "合同号_1", "科目编码", "借方", "贷方", "客户编码",
-        "供应商编码", "存货档案", "数量", "单价",
-    ], historical_extra)
-    add_sheet("科目汇总差异", [
-        "合同号_1", "科目编码", "生成借方", "历史借方", "生成贷方", "历史贷方",
-    ], account_differences)
-
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(".part")
-    workbook.save(temporary)
     temporary.replace(path)

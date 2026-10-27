@@ -78,6 +78,7 @@ function toggleException() {
   markDirty()
 }
 async function recalculateMappings() {
+  retainCurrent()
   await flushAll()
   const plan = await api('/mapping-recalculation')
   if (!plan.drafts.length) { drafts.value.forEach(d => { d.mapping_stale = false }); return }
@@ -160,14 +161,27 @@ const saving = reactive(new Set<string>())
 const inflight = new Map<string, Promise<void>>(), timers = new Map<string, ReturnType<typeof setTimeout>>()
 let disposed = false, touchX = 0
 const current = computed(() => filtered.value.find(d => d.id === selectedId.value))
+const retainedId = ref(''), retainedPosition = ref(0)
 const filtered = computed(() => {
   const q = query.value.toUpperCase().replace(/[-_\s]/g, '')
-  return drafts.value.filter(d => (!q || (d.search_index + d.customs_no).toUpperCase().replace(/[-_\s]/g, '').includes(q))
+  const matchesQuery = (d: Draft) => !q || (d.search_index + d.customs_no).toUpperCase().replace(/[-_\s]/g, '').includes(q)
+  const result = drafts.value.filter(d => matchesQuery(d)
     && (statusFilter.value === 'all' || (statusFilter.value === 'valid' ? d.valid : !d.valid)))
     .sort((a, b) => Number(a.valid) - Number(b.valid))
+  const retained = drafts.value.find(d => d.id === retainedId.value && d.id === selectedId.value)
+  if (retained && matchesQuery(retained) && !result.includes(retained)) {
+    result.splice(Math.min(retainedPosition.value, result.length), 0, retained)
+  }
+  return result
 })
+function retainCurrent() {
+  if (statusFilter.value === 'all' || retainedId.value === selectedId.value) return
+  retainedPosition.value = index.value
+  retainedId.value = selectedId.value
+}
 const index = computed(() => filtered.value.findIndex(d => d.id === selectedId.value))
 watch([query, statusFilter], () => {
+  retainedId.value = ''
   if (filtered.value.length && !filtered.value.some(d => d.id === selectedId.value)) {
     selectedId.value = filtered.value[0]?.id || ''
     sourceIndex.value = 0
@@ -175,6 +189,17 @@ watch([query, statusFilter], () => {
 })
 const validCount = computed(() => drafts.value.filter(d => d.valid && !dirty.has(d.id) && !saving.has(d.id)).length)
 const mapLabels: Record<string, string> = { inventory: '产品存货', suppliers: '供应商', customers: '客户', subjects: '会计科目', aux: '辅助核算', rates: '汇率' }
+const mappingNameLabel = computed(() => ({ inventory: '产品名称', suppliers: '供应商名称', customers: '客户名称' }[mapKind.value] || '名称'))
+function openMapping(row: any = { alias: '', platform_code: '', enabled: true }) {
+  const item = clone(row)
+  if (mapKind.value === 'customers') {
+    const archive = catalogs.value.customers?.find(r => String(r.code) === item.platform_code)
+    const group = item.group_override ?? archive?.group_name
+    item.group_override = ['国内', '国外'].includes(group) ? group : inferredCustomerGroup(archive?.name || item.alias || '') || '国内'
+  }
+  mapEdit.value = item; mapError.value = ''; groupValid.value = true
+}
+
 const mappingRows = computed(() => (mappings.value.items[mapKind.value] || []).filter((r: any) => `${r.alias} ${r.platform_code} ${r.platform_name}`.toLowerCase().includes(mapQuery.value.toLowerCase())))
 const referenceRows = computed(() => {
   let rows = (catalogs.value[mapKind.value] || []).filter((r: any) => JSON.stringify(r).toLowerCase().includes(mapQuery.value.toLowerCase()))
@@ -230,6 +255,7 @@ async function refreshLists() {
 async function loadBatch(id: string) {
   await flushAll()
   const batch = await api('/batches/' + id + '?workbench=true')
+  retainedId.value = ''
   query.value = ''; statusFilter.value = 'all'
   drafts.value = batch.drafts.map(normalizeDraft)
   batchId.value = id
@@ -289,6 +315,7 @@ async function runTask(kind: string, payload: any, existing?: any) {
 function markDirty() {
   const d = current.value
   if (!d) return
+  retainCurrent()
   dirty.add(d.id)
   // Recalculate display totals immediately; server remains the export authority.
   const sum = (f: string) => d.rows.reduce((n, r) => n + Math.round((Number(r[f]) || 0) * 100), 0) / 100
@@ -368,6 +395,7 @@ async function flushAll() {
 function blurSave() { if (current.value && !saveErrors.has(current.value.id)) void save(current.value.id).catch(() => {}) }
 function selectDraft(id: string) {
   if (id === selectedId.value) return
+  retainedId.value = ''
   turnDirection.value = drafts.value.findIndex(d => d.id === id) >= drafts.value.findIndex(d => d.id === selectedId.value) ? 1 : -1
   selectedId.value = id; sourceIndex.value = 0
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -412,6 +440,10 @@ function sourceValue(field: string) {
   if (!d || !r) return ''
   return d.overrides[r.record_id]?.[field] ?? (Array.isArray(r[field]) ? r[field].map((i: any) => i?.text || i).join(' ') : r[field] ?? '')
 }
+const buyerSupplement = computed(() => {
+  const d = current.value, r = d?.source[sourceIndex.value]
+  return d?.effective_source?.find(item => item.record_id === r?.record_id)
+})
 function updateSource(field: string, e: Event) {
   const d = current.value!, r = d.source[sourceIndex.value]!
   d.overrides[r.record_id] ||= {}
@@ -421,6 +453,7 @@ function updateSource(field: string, e: Event) {
 async function recalculate() {
   const d = current.value
   if (!d || recalculatingVoucher.value) return
+  retainCurrent()
   await flushAll()
   if (d.manual_fields.length && !window.confirm('重新计算会替换人工修改的分录，原版本会留在历史中。确定重新计算？')) return
   if (d.incoming_source && !window.confirm('发现飞书来源更新。确认采用最新来源重新计算？本地来源补充值会继续应用。')) return
@@ -459,6 +492,7 @@ async function loadMappings() {
   mapEdit.value = null
 }
 async function saveMap() {
+  if (mapKind.value === 'customers' && !['国内', '国外'].includes(mapEdit.value.group_override)) { mapError.value = '请选择国内或国外'; return }
   if (!groupValid.value) { mapError.value = '请填写新分组名称'; return }
   mapError.value = ''
   try {
@@ -537,8 +571,9 @@ onBeforeUnmount(() => {
         <section ref="canvasElement" class="voucher-area">
           <template v-if="current">
             <div class="voucher-toolbar"><div class="canvas-identity"><b>{{ current.contracts[0] }}</b><span>{{ index + 1 }} / {{ filtered.length }}</span></div><div class="canvas-tools"><button title="缩小" aria-label="缩小凭证" :disabled="zoom <= .5" @click="changeZoom(-.1)"><Minus :size="16" /></button><span class="zoom-value">{{ Math.round(zoom * 100) }}%</span><button title="放大" aria-label="放大凭证" :disabled="zoom >= 1.4" @click="changeZoom(.1)"><Plus :size="16" /></button><span class="tool-separator"></span><button class="issues-toggle" :aria-expanded="showInspector" @click="showInspector = !showInspector; inspectorTab = 'issues'"><AlertCircle :size="16" />问题 {{ current.issues.length }}</button><button class="recalculate-button" aria-label="重新计算当前凭证" :disabled="busy || recalculatingVoucher" @click="guard(recalculate)"><RefreshCw :size="16" :class="{spin: recalculatingVoucher}" />重新计算</button><button title="修改历史" aria-label="查看修改历史" @click="guard(() => openHistory(current!.id, '凭证修改历史'))"><History :size="16" /></button><button class="focus-button" @click="enterReview">专注核对</button></div></div>
+            <div v-if="current.engine_stale" class="inline-warning">内销生成规则或客户来源已更新，请重新计算并核对。<button :disabled="busy || recalculatingVoucher" @click="guard(recalculate)">重新计算</button></div>
             <div v-if="current.mapping_stale" class="inline-warning">映射已更新。<button :disabled="recalculating || busy" @click="guard(recalculateMappings)">重新计算</button></div>
-            <div v-if="current.incoming_source" class="inline-warning">飞书来源已有更新，请核对后重新计算。<button @click="guard(recalculate)">采用最新来源</button></div>
+            <div v-if="current.incoming_source" class="inline-warning">来源数据或客户补全已有更新，请核对后重新计算。<button @click="guard(recalculate)">采用最新来源</button></div>
 
             <div ref="paperElement" class="voucher-paper" :style="{ zoom }">
               <div class="paper-heading"><span>嘉兴迈拓不锈钢有限公司</span><h2>记账凭证</h2><span class="paper-status" :class="current.valid ? 'success-text' : 'warning-text'"><CheckCircle2 v-if="current.valid" :size="15" /><AlertCircle v-else :size="15" />{{ current.valid ? '校验通过' : '待核对' }}</span></div>
@@ -559,6 +594,7 @@ onBeforeUnmount(() => {
 
           </div>
           <div v-else class="source-panel"><select aria-label="来源记录" v-model="sourceIndex"><option v-for="(r,i) in current.source" :value="i">{{ i + 1 }} · {{ r['报关品名'] || r.record_id }}</option></select>
+            <p v-if="buyerSupplement?.['客户名称_来源']" class="inline-warning">客户补全：{{ buyerSupplement['客户名称_脚本用'] }} · {{ buyerSupplement['客户名称_来源'] }}<span v-if="buyerSupplement['睿贝原始合同号']"> · 原单 {{ buyerSupplement['睿贝原始合同号'] }}</span></p>
             <p class="muted">填写补充值后，点击重新计算。飞书原始值保留。</p>
             <label v-for="field in meta.source_fields" :key="field">{{ field }}<input :aria-label="'来源' + field" :value="sourceValue(field)" @input="updateSource(field, $event)" @blur="blurSave"><small v-if="current.overrides[current.source[sourceIndex]?.record_id]?.[field] !== undefined">原值：{{ current.source[sourceIndex]?.[field] ?? '空' }}</small></label>
             <button class="primary" @click="guard(recalculate)"><RefreshCw :size="14" />重新计算</button>
@@ -575,8 +611,8 @@ onBeforeUnmount(() => {
     <main v-else-if="page === 'sources'" class="management">
       <section class="page-heading"><div><div class="eyebrow">DATA SOURCES</div><h1>数据源</h1><p>维护业务名称与用友档案的映射，修改后用于后续凭证生成。</p></div><button class="secondary" @click="guard(loadMappings)"><RefreshCw :size="15" />刷新映射</button></section>
       <section class="management-card"><div class="management-tabs"><button v-for="(label,kind) in mapLabels" :class="{ active: mapKind === kind }" @click="mapKind = kind; mapQuery = ''; mapEdit = null; referenceEdit = null">{{ label }}</button></div>
-        <div class="table-tools"><div class="search-box"><Search :size="16" /><input v-model="mapQuery" :placeholder="mapKind === 'rates' ? '搜索年月 / 币种' : '搜索名称或编码'" aria-label="搜索数据源"></div><span class="table-count">{{ mapKind === 'rates' ? rates.rows.length + ' 个月 · ' + rates.columns.length + ' 种币种' : (isMapping ? mappingRows.length : referenceRows.length) + ' 条' }}</span><button v-if="isMapping" class="primary" @click="mapEdit = { alias: '', platform_code: '', enabled: true }; mapError = ''"><Plus :size="15" />新增映射</button><button v-if="mapKind === 'rates'" class="primary" @click="openRate()"><Plus :size="15" />新增汇率</button></div>
-        <div class="data-scroll"><table v-if="isMapping" class="data-table mapping-table"><colgroup><col style="width:27%"><col style="width:37%"><col style="width:8%"><col style="width:17%"><col style="width:11%"></colgroup><thead><tr><th>来源名称</th><th>用友档案 · 编码 / 名称</th><th>状态</th><th>更新时间</th><th>操作</th></tr></thead><tbody><template v-for="group in mappingGroups" :key="group.name"><tr v-if="group.name !== '未分组' || mappingGroups.length > 1" class="group-row"><th colspan="5">{{ group.name }} <span>{{ group.rows.length }}</span></th></tr><tr v-for="row in group.rows" :key="row.id"><td><b class="row-name" :title="row.alias">{{ row.alias }}</b></td><td><div class="archive-line"><span class="code-chip">{{ row.platform_code }}</span><span class="row-name" :title="row.platform_name">{{ row.platform_name }}</span></div><small v-if="mapKind === 'inventory'" class="row-caption">{{ catalogs.inventory?.find((r: any) => String(r.code) === row.platform_code)?.subject_code }} · {{ catalogs.inventory?.find((r: any) => String(r.code) === row.platform_code)?.subject_name }}</small></td><td><span class="badge" :class="row.enabled ? 'success' : 'neutral'">{{ row.enabled ? '启用' : '停用' }}</span></td><td class="timestamp">{{ row.updated_at?.slice(0,16).replace('T',' ') || '初始映射' }}</td><td class="table-actions"><button @click="mapEdit = clone(row); mapError = ''">编辑</button><button @click="guard(() => openHistory('mapping:' + mapKind + ':' + row.id, '映射修改历史'))">历史</button></td></tr></template></tbody></table>
+        <div class="table-tools"><div class="search-box"><Search :size="16" /><input v-model="mapQuery" :placeholder="mapKind === 'rates' ? '搜索年月 / 币种' : '搜索名称或编码'" aria-label="搜索数据源"></div><span class="table-count">{{ mapKind === 'rates' ? rates.rows.length + ' 个月 · ' + rates.columns.length + ' 种币种' : (isMapping ? mappingRows.length : referenceRows.length) + ' 条' }}</span><button v-if="isMapping" class="primary" @click="openMapping()"><Plus :size="15" />新增映射</button><button v-if="mapKind === 'rates'" class="primary" @click="openRate()"><Plus :size="15" />新增汇率</button></div>
+        <div class="data-scroll"><table v-if="isMapping" class="data-table mapping-table"><colgroup><col style="width:27%"><col style="width:37%"><col style="width:8%"><col style="width:17%"><col style="width:11%"></colgroup><thead><tr><th>{{ mappingNameLabel }}</th><th>用友档案 · 编码 / 名称</th><th>状态</th><th>更新时间</th><th>操作</th></tr></thead><tbody><template v-for="group in mappingGroups" :key="group.name"><tr v-if="group.name !== '未分组' || mappingGroups.length > 1" class="group-row"><th colspan="5">{{ group.name }} <span>{{ group.rows.length }}</span></th></tr><tr v-for="row in group.rows" :key="row.id"><td><b class="row-name" :title="row.alias">{{ row.alias }}</b></td><td><div class="archive-line"><span class="code-chip">{{ row.platform_code }}</span><span class="row-name" :title="row.platform_name">{{ row.platform_name }}</span></div><small v-if="mapKind === 'inventory'" class="row-caption">{{ catalogs.inventory?.find((r: any) => String(r.code) === row.platform_code)?.subject_code }} · {{ catalogs.inventory?.find((r: any) => String(r.code) === row.platform_code)?.subject_name }}</small></td><td><span class="badge" :class="row.enabled ? 'success' : 'neutral'">{{ row.enabled ? '启用' : '停用' }}</span></td><td class="timestamp">{{ row.updated_at?.slice(0,16).replace('T',' ') || '初始映射' }}</td><td class="table-actions"><button @click="openMapping(row)">编辑</button><button @click="guard(() => openHistory('mapping:' + mapKind + ':' + row.id, '映射修改历史'))">历史</button></td></tr></template></tbody></table>
         <table v-else-if="mapKind === 'rates'" class="data-table rate-table"><thead><tr><th>年月</th><th v-for="currency in rates.columns" :key="currency">{{ currency }}</th></tr></thead><tbody><tr v-for="row in rates.rows" :key="row.period"><th>{{ row.period }}</th><td v-for="currency in rates.columns" :key="currency" :title="row.cells[currency]?.sources.join('；') || '无汇率记录'"><button class="rate-edit" :aria-label="'编辑' + row.period + currency + '汇率'" @click="openRate(row.period, currency)"><span v-if="(row.cells[currency]?.values.length || 0) > 1" class="rate-conflict" :title="'同月同币种存在多个汇率：' + row.cells[currency]!.values.join(' / ')"><AlertCircle :size="14" />{{ row.cells[currency]!.values.join(' / ') }}</span><span v-else>{{ row.cells[currency]?.values[0] || '—' }}</span></button></td></tr></tbody></table>
         <table v-else class="data-table reference-table"><colgroup><col style="width:19%"><col style="width:43%"><col style="width:23%"><col style="width:15%"></colgroup><thead><tr><th>编码</th><th>名称</th><th>配置</th><th>操作</th></tr></thead><tbody><template v-for="group in referenceGroups" :key="group.name"><tr v-if="group.name !== '未分组' || referenceGroups.length > 1" class="group-row"><th colspan="4">{{ group.name }} <span>{{ group.rows.length }}</span></th></tr><tr v-for="row in group.rows" :key="row.code || row.account_code"><td><span class="code-chip">{{ row.code || row.account_code }}</span></td><td><span class="row-name" :title="row.displayname || row.name || row.account_name">{{ row.displayname || row.name || row.account_name }}</span></td><td>{{ mapKind === 'subjects' ? (row.leaf ? '末级科目' : '上级科目') : row.auxiliary_fields.map((a: any) => a.name).join('、') }}</td><td class="table-actions"><button @click="openReference(row)">编辑</button><button @click="guard(() => openHistory('catalog:' + mapKind + ':' + (row.code || row.account_code), '数据源修改历史'))">历史</button></td></tr></template></tbody></table>
         <div v-if="!isMapping && !(mapKind === 'rates' ? rates.rows.length : referenceRows.length)" class="empty-list">没有匹配的记录</div>
@@ -599,7 +635,7 @@ onBeforeUnmount(() => {
         <p class="muted">命中 {{ snapshot.matched }} 条待开记录 · 已开或已导出排除 {{ snapshot.excluded }} 条</p>
         <div v-if="snapshotAllHardBlocked" class="inline-warning" role="alert">发现的 {{ snapshotGroups.length }} 张凭证均因缺少业务单号或包含范围外记录而不能构建。请先在飞书修复数据，再重新检索。</div>
         <div v-else-if="!selectedGroups.length" class="inline-warning" role="status">异常分组默认未选中。请核对原因后手动勾选，或关闭并先修复来源数据。</div>
-        <div class="modal-scroll"><table class="data-table"><thead><tr><th><input type="checkbox" aria-label="全选可生成凭证" :disabled="!snapshotSelectableCount" :checked="snapshotGroups.some((g: any) => !g.blocked.length) && snapshotGroups.filter((g: any) => !g.blocked.length).every((g: any) => selectedGroups.includes(g.key))" @change="selectedGroups = ($event.target as HTMLInputElement).checked ? snapshotGroups.filter((g: any) => !g.blocked.length).map((g: any) => g.key) : []"></th><th>类型</th><th>合同号 / 业务单号</th><th>记录</th><th>分组核验</th></tr></thead><tbody><tr v-for="g in snapshotGroups" :key="g.key"><td><input type="checkbox" :aria-label="'选择' + g.contracts.join(' ')" v-model="selectedGroups" :value="g.key" :disabled="g.hard_blocked?.length > 0"></td><td><span class="business-tag" :class="g.business_type === '内销' ? 'domestic' : 'export'">{{ g.business_type }}</span></td><td><b>{{ g.contracts.join(' / ') }}</b><small class="block muted">{{ g.business_type === '内销' ? '合同号 ' + (g.business_no || g.contracts[0]) : '报关单号 ' + (g.customs_no || '缺少报关单号') }}</small></td><td>{{ g.count }} 条</td><td><span v-if="g.blocked.length" :class="g.hard_blocked?.length ? 'error-text' : 'warning-text'">{{ g.blocked.join('；') }}<small v-if="!g.hard_blocked?.length" class="block">默认不选中，核实后可手动勾选</small></span><span v-else-if="g.added" class="warning-text">已补入同{{ g.business_type === '内销' ? '合同' : '报关单' }} {{ g.added }} 条</span><span v-else class="success-text">分组完整</span><details><summary>查看来源</summary><p v-for="r in g.records">{{ r['合同号_1'] }} · {{ r['报关品名'] }} · {{ r['是否开凭证'] || '未标记' }}</p></details></td></tr></tbody></table></div>
+        <div class="modal-scroll"><table class="data-table"><thead><tr><th><input type="checkbox" aria-label="全选可生成凭证" :disabled="!snapshotSelectableCount" :checked="snapshotGroups.some((g: any) => !g.blocked.length) && snapshotGroups.filter((g: any) => !g.blocked.length).every((g: any) => selectedGroups.includes(g.key))" @change="selectedGroups = ($event.target as HTMLInputElement).checked ? snapshotGroups.filter((g: any) => !g.blocked.length).map((g: any) => g.key) : []"></th><th>类型</th><th>合同号 / 业务单号</th><th>记录</th><th>分组核验</th></tr></thead><tbody><tr v-for="g in snapshotGroups" :key="g.key"><td><input type="checkbox" :aria-label="'选择' + g.contracts.join(' ')" v-model="selectedGroups" :value="g.key" :disabled="g.hard_blocked?.length > 0"></td><td><span class="business-tag" :class="g.business_type === '内销' ? 'domestic' : 'export'">{{ g.business_type }}</span></td><td><b>{{ g.contracts.join(' / ') }}</b><small class="block muted">{{ g.business_type === '内销' ? '合同号 ' + (g.business_no || g.contracts[0]) : '报关单号 ' + (g.customs_no || '缺少报关单号') }}</small></td><td>{{ g.count }} 条</td><td><span v-if="g.blocked.length" :class="g.hard_blocked?.length ? 'error-text' : 'warning-text'">{{ g.blocked.join('；') }}<small v-if="!g.hard_blocked?.length" class="block">默认不选中，核实后可手动勾选</small></span><span v-else-if="g.added" class="warning-text">已补入同{{ g.business_type === '内销' ? '合同' : '报关单' }} {{ g.added }} 条</span><span v-else class="success-text">分组完整</span><details><summary>查看来源</summary><p v-for="r in g.records">{{ scalar(r['合同号_1']) || '合同号待补充' }} · {{ scalar(r['报关品名']) || '产品名待补充' }} · {{ scalar(r['是否开凭证']) || '未标记' }}</p></details></td></tr></tbody></table></div>
         <footer class="modal-footer"><span>{{ selectedGroups.length ? '已选 ' + selectedGroups.length + ' 张' : '请至少选择一张可构建的凭证' }} · 制单日期 {{ postingDate }}</span><button v-if="snapshotAllHardBlocked" class="primary" @click="finishRange">确认并关闭</button><button v-else class="primary" :disabled="!selectedGroups.length || busy" @click="guard(() => runTask('build', { snapshot_id: snapshot.id, keys: selectedGroups, posting_date: postingDate, acknowledged_groups: snapshotGroups.filter((g: any) => g.blocked.length && selectedGroups.includes(g.key)).map((g: any) => g.key) }))">构建凭证草稿<ArrowRight :size="15" /></button></footer>
       </template>
     </section></div>
@@ -623,7 +659,7 @@ onBeforeUnmount(() => {
       <template v-else-if="mapKind === 'aux'"><p>{{ referenceEdit.account_code }} · {{ referenceEdit.account_name }}</p><div v-for="option in auxOptions" :key="option.code" class="aux-config-row"><label><input type="checkbox" :checked="referenceEdit.auxiliary_fields.some((f: any) => f.code === option.code)" @change="toggleAux(option, ($event.target as HTMLInputElement).checked)">{{ option.name }}</label><label v-if="referenceEdit.auxiliary_fields.some((f: any) => f.code === option.code)"><input type="checkbox" v-model="referenceEdit.auxiliary_fields.find((f: any) => f.code === option.code).mustinput">必填</label></div></template>
       <template v-else><label v-if="rateChoices.length > 1">同月来源记录<select :value="referenceEdit.record_id || referenceEdit.id" @change="selectRate(($event.target as HTMLSelectElement).value)"><option v-for="r in rateChoices" :value="r.record_id || r.id">{{ scalar(r.fields['汇率']) }} · {{ scalar(r.fields['数据来源']) }}</option></select></label><label>年份<input v-model="referenceEdit.fields['实际年份']" :disabled="!!referenceEdit.id"></label><label>月份<input v-model="referenceEdit.fields['实际月份']" :disabled="!!referenceEdit.id"></label><label>币种<input v-model="referenceEdit.fields['币种']" :disabled="!!referenceEdit.id"></label><label>汇率<input v-model="referenceEdit.fields['汇率']" inputmode="decimal"></label><label>来源说明<input v-model="referenceEdit.fields['数据来源']"></label></template>
       <GroupPicker v-if="mapKind !== 'rates'" v-model="referenceEdit.group_override" :options="groupOptions" @validity="groupValid = $event" /><p class="error-text" role="alert">{{ referenceError }}</p></div><footer class="modal-footer"><span>仅更新工作台本地配置</span><button class="primary" :disabled="referenceSaving || (mapKind !== 'rates' && !groupValid)" @click="saveReference">{{ referenceSaving ? '保存中…' : '保存' }}</button></footer></section></div>
-    <div v-if="mapEdit" class="modal-backdrop"><section class="modal small"><div class="modal-heading"><h2>{{ mapEdit.id ? '编辑' : '新增' }}{{ mapLabels[mapKind] }}映射</h2><button aria-label="关闭映射编辑" @click="mapEdit = null"><X :size="20" /></button></div><div class="form-stack"><label>来源名称<input v-model="mapEdit.alias"></label><label>用友档案编码<input list="mapping-options" v-model="mapEdit.platform_code" placeholder="输入编码或搜索档案名称"></label><datalist id="mapping-options"><option v-for="r in catalogs[mapKind]" :value="String(r.code)">{{ r.name }}</option></datalist><p class="muted">{{ catalogs[mapKind]?.find((r: any) => String(r.code) === mapEdit.platform_code)?.name || '选择有效档案后可保存' }}</p><GroupPicker v-model="mapEdit.group_override" :options="groupOptions" @validity="groupValid = $event" /><label class="checkbox-label"><input type="checkbox" v-model="mapEdit.enabled">启用此映射</label><p class="error-text">{{ mapError }}</p></div><footer class="modal-footer"><span>保存后后台立即更新</span><button class="primary" :disabled="!groupValid" @click="saveMap">保存映射</button></footer></section></div>
+    <div v-if="mapEdit" class="modal-backdrop"><section class="modal small"><div class="modal-heading"><h2>{{ mapEdit.id ? '编辑' : '新增' }}{{ mapLabels[mapKind] }}映射</h2><button aria-label="关闭映射编辑" @click="mapEdit = null"><X :size="20" /></button></div><div class="form-stack"><label>{{ mappingNameLabel }}<input v-model="mapEdit.alias"></label><label>用友档案编码<input list="mapping-options" v-model="mapEdit.platform_code" placeholder="输入编码或搜索档案名称"></label><datalist id="mapping-options"><option v-for="r in catalogs[mapKind]" :value="String(r.code)">{{ r.name }}</option></datalist><p class="muted">{{ catalogs[mapKind]?.find((r: any) => String(r.code) === mapEdit.platform_code)?.name || '选择有效档案后可保存' }}</p><div v-if="mapKind === 'customers'" class="customer-group-picker"><span>分组</span><div class="customer-group-options" role="radiogroup" aria-label="客户分组"><button v-for="group in ['国内', '国外']" :key="group" type="button" role="radio" :aria-checked="mapEdit.group_override === group" :class="{ selected: mapEdit.group_override === group }" @click="mapEdit.group_override = group"><Check v-if="mapEdit.group_override === group" :size="15" />{{ group }}</button></div></div><GroupPicker v-else v-model="mapEdit.group_override" :options="groupOptions" @validity="groupValid = $event" /><label class="checkbox-label"><input type="checkbox" v-model="mapEdit.enabled">启用此映射</label><p class="error-text">{{ mapError }}</p></div><footer class="modal-footer"><span>保存后后台立即更新</span><button class="primary" :disabled="!groupValid" @click="saveMap">保存映射</button></footer></section></div>
     <div v-if="conflict" class="modal-backdrop"><section class="modal"><div class="modal-heading"><h2>这张凭证已在其他窗口修改</h2></div><p>你的输入已保存在当前浏览器。比较版本后选择保留哪一份。</p><div class="conflict-columns"><div><b>本地输入 · 版本 {{ conflict.local.version }}</b><pre>{{ JSON.stringify({ header: conflict.local.header, rows: conflict.local.rows, overrides: conflict.local.overrides }, null, 2) }}</pre></div><div><b>服务器 · 版本 {{ conflict.remote.version }}</b><pre>{{ JSON.stringify({ header: conflict.remote.header, rows: conflict.remote.rows, overrides: conflict.remote.overrides }, null, 2) }}</pre></div></div><footer class="modal-footer"><button class="secondary" @click="guard(() => resolveConflict(false))">采用服务器版本</button><button class="primary" @click="guard(() => resolveConflict(true))">确认以本地输入覆盖</button></footer></section></div>
     <div v-if="history" class="modal-backdrop"><section class="modal wide"><div class="modal-heading"><h2>{{ historyTitle }}</h2><button aria-label="关闭修改历史" @click="history = null"><X :size="20" /></button></div><div class="modal-scroll"><div v-for="h in history" class="history-item"><b>{{ h.at.replace('T',' ') }}</b><span>浏览器 {{ h.session.slice(0,8) }} · {{ ({edit:'编辑',build:'生成',recalculate:'重新计算',save_mapping:'维护映射',save_catalog:'维护数据源',delete:'删除'} as any)[h.action] || h.action }}</span><details><summary>查看该版本内容</summary><pre>{{ JSON.stringify(h.after, null, 2) }}</pre></details></div><p v-if="!history.length">暂无修改记录</p></div></section></div>
     <div v-if="exportDetail" class="modal-backdrop"><section class="modal archive-modal" role="dialog" aria-modal="true" aria-labelledby="archive-title"><div class="modal-heading"><div><small>已导出快照 · 只读</small><h2 id="archive-title">历史核算</h2></div><span class="archive-filename" :title="exportDetail.filename">{{ exportDetail.filename }}</span><button aria-label="关闭历史核算" @click="exportDetail = null"><X :size="20" /></button></div><div class="archive-toolbar"><div class="search-box"><Search :size="16" /><input v-model="archiveQuery" placeholder="搜索合同号 / 报关单号" aria-label="搜索历史核算"></div><div class="pager"><button aria-label="上一张历史凭证" :disabled="archiveIndex <= 0" @click="archiveIndex--"><ChevronLeft :size="18" /></button><span>{{ archiveCurrent ? archiveIndex + 1 : 0 }} / {{ archiveDrafts.length }}</span><button aria-label="下一张历史凭证" :disabled="archiveIndex >= archiveDrafts.length - 1" @click="archiveIndex++"><ChevronRight :size="18" /></button></div><a class="secondary" :href="'/api/exports/' + exportDetail.id + '/download'"><Download :size="15" />下载此版本</a></div><div class="modal-scroll"><div v-if="archiveCurrent" class="voucher-paper"><div class="paper-heading"><span>{{ archiveCurrent.contracts.join(' / ') }}</span><h2>记账凭证</h2><span>版本 {{ archiveCurrent.version }}</span></div><div class="voucher-meta"><span class="business-tag" :class="archiveCurrent.business_type === '内销' ? 'domestic' : 'export'">{{ archiveCurrent.business_type || '外销' }}</span><span>日期 {{ archiveCurrent.header.posting_date }}</span><span>类别 {{ archiveCurrent.header.category }}</span><span>{{ archiveCurrent.business_type === '内销' ? '合同号' : '报关单号' }} {{ archiveCurrent.business_type === '内销' ? (archiveCurrent.business_no || archiveCurrent.contracts[0]) : archiveCurrent.customs_no }}</span></div><VoucherTable :key="archiveCurrent.id" :draft="archiveCurrent" :catalogs="catalogs" readonly /><div class="paper-footer"><span>制单人 {{ archiveCurrent.header.maker }}</span><span>借贷差额 {{ amount(archiveCurrent.totals.difference) }}</span></div></div><p v-else class="empty-list">没有匹配的凭证</p></div></section></div>

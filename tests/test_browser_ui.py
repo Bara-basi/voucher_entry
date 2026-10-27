@@ -149,6 +149,57 @@ class BrowserAcceptanceTests(unittest.TestCase):
         self.page.get_by_role("button", name="检索待开记录").click()
         self.wait_idle()
 
+    def test_numbered_domestic_voucher_displays_erp_english_customer(self):
+        draft = {
+            "id": "english-customer", "version": 1, "customs_no": "26MT-03X499",
+            "business_type": "内销", "business_no": "26MT-03X499", "contracts": ["26MT-03X499"],
+            "search_index": "26MT03X499", "source": [], "effective_source": [], "overrides": {},
+            "header": {"posting_date": "2026-10-27", "category": "记", "maker": "测试"},
+            "rows": [{"id": "ar", "摘要": "26MT-03X499内销收入", "科目编码": "112201",
+                      "客户编码": "010249", "币种名称": "CNY", "汇率": "1", "借方金额": "100",
+                      "贷方金额": "0", "原币借方": "100", "原币贷方": "0"}],
+            "customer_labels": {"010249": "KOCH Engineered Solution"},
+            "issues": [], "manual_fields": [], "valid": True, "exports": [],
+            "totals": {"debit": "100.00", "credit": "0.00", "difference": "100.00"},
+            "updated_at": "2026-10-27T12:00:00+08:00",
+        }
+        batch = {"id": "english-batch", "draft_ids": [draft["id"]],
+                 "created_at": draft["updated_at"], "drafts": [draft]}
+        def batches(route):
+            value = batch if "/batches/" in route.request.url else [batch]
+            route.fulfill(status=200, content_type="application/json", body=json.dumps(value, ensure_ascii=False))
+        self.page.route("**/api/batches**", batches)
+        self.page.goto(self.base, wait_until="networkidle")
+        customer = self.page.get_by_label("客户编码", exact=True)
+        expect(customer).to_have_value("010249 KOCH Engineered Solution")
+        customer.focus()
+        expect(customer).to_have_value("010249")
+        self.page.locator(".canvas-identity").click()
+        expect(customer).to_have_value("010249 KOCH Engineered Solution")
+        self.assertEqual(self.page_errors, [])
+
+    def test_source_preview_formats_feishu_rich_fields_as_readable_text(self):
+        self.mock_query_result({
+            "id": "readable-source", "created_at": "2026-10-27T10:00:00+08:00",
+            "mode": "pending", "matched": 1, "excluded": 0, "offline": True,
+            "groups": [{"key": "内销:26MT-08C406", "business_type": "内销",
+                        "business_no": "26MT-08C406", "contracts": ["26MT-08C406"],
+                        "count": 2, "added": 1, "blocked": [], "hard_blocked": [],
+                        "records": [
+                            {"合同号_1": [{"text": "26MT-08C406", "type": "text"}],
+                             "报关品名": "镍基退火软线", "是否开凭证": "待开"},
+                            {"合同号_1": {"type": 1, "value": [{"text": "26MT-08C406"}]},
+                             "报关品名": [{"text": "镍基退火软线"}], "是否开凭证": ""}]}],
+        })
+        self.open_mock_query()
+        preview = self.page.locator(".range-modal details")
+        preview.locator("summary").click()
+        expect(preview.locator("p").nth(0)).to_have_text("26MT-08C406 · 镍基退火软线 · 待开")
+        expect(preview.locator("p").nth(1)).to_have_text("26MT-08C406 · 镍基退火软线 · 未标记")
+        expect(preview).not_to_contain_text('"text"')
+        self.page.screenshot(path="tmp/browser-source-preview.png", full_page=True)
+        self.assertEqual(self.page_errors, [])
+
     def test_empty_pending_result_requires_confirmation(self):
         self.mock_query_result({
             "id": "empty",
@@ -290,6 +341,25 @@ class BrowserAcceptanceTests(unittest.TestCase):
         with page.expect_response(lambda response: response.url.endswith("/recalculate")) as recalculated:
             page.get_by_role("button", name="重新计算当前凭证").click()
         self.assertTrue(recalculated.value.ok)
+        expect(page.locator(".paper-status")).to_contain_text("校验通过")
+        # Fixing the only exception must keep the active voucher on the review canvas.
+        summary_input = page.get_by_label("摘要", exact=True).first
+        original_summary = summary_input.input_value()
+        summary_input.fill("")
+        page.locator(".canvas-identity").click()
+        page.wait_for_timeout(1200)
+        expect(page.locator(".paper-status")).to_contain_text("待核对")
+        expect(page.locator(".save-indicator")).to_contain_text("所有修改已保存")
+        page.locator(".list-tabs").get_by_role("button", name=re.compile("^异常")).click()
+        page.get_by_role("button", name="专注核对").click()
+        summary_input = page.get_by_label("摘要", exact=True).first
+        summary_input.fill(original_summary)
+        page.locator(".review-header > b").click()
+        expect(page.locator(".paper-status")).to_contain_text("校验通过")
+        expect(page.locator(".review-save")).to_contain_text("所有修改已保存")
+        expect(page.locator(".canvas-identity b")).to_contain_text("02C355")
+        page.get_by_role("button", name="退出核对模式").click()
+        page.locator(".list-tabs").get_by_role("button", name="全部", exact=True).click()
         zoom_before = page.locator(".zoom-value").inner_text()
         page.get_by_role("button", name="放大凭证").click()
         expect(page.locator(".zoom-value")).not_to_have_text(zoom_before)
@@ -409,7 +479,19 @@ class BrowserAcceptanceTests(unittest.TestCase):
         page.goto(self.base, wait_until="networkidle")
         page.get_by_role("button", name="数据源").click()
         expect(page.get_by_role("heading", name="数据源")).to_be_visible()
-        page.get_by_role("button", name="客户", exact=True).click()
+        expect(page.locator(".mapping-table tbody tr:not(.group-row)").first).to_be_visible()
+        for tab, label in [("产品存货", "产品名称"), ("供应商", "供应商名称"), ("客户", "客户名称")]:
+            page.get_by_role("button", name=tab, exact=True).click()
+            expect(page.locator(".mapping-table thead th").first).to_have_text(label)
+            page.get_by_role("button", name="新增映射", exact=True).click()
+            expect(page.get_by_label(label, exact=True)).to_be_visible()
+            if tab == "客户":
+                expect(page.get_by_role("radio")).to_have_count(2)
+                expect(page.get_by_role("radio", name="国内", exact=True)).to_be_checked()
+                page.get_by_role("radio", name="国外", exact=True).click()
+                expect(page.get_by_role("radio", name="国内", exact=True)).not_to_be_checked()
+            page.get_by_role("button", name="关闭映射编辑").click()
+            expect(page.get_by_role("button", name="关闭映射编辑")).to_have_count(0)
         page.get_by_label("搜索数据源").fill("上海宝冶冶金工程有限公司")
         expect(page.locator(".group-row", has_text="国内")).to_be_visible()
         row = page.locator(".mapping-table tbody tr", has_text="上海宝冶冶金工程有限公司")
@@ -422,11 +504,17 @@ class BrowserAcceptanceTests(unittest.TestCase):
         row.get_by_role("button", name="编辑").click()
         modal = page.locator(".modal", has_text="编辑客户映射")
         expect(modal).to_be_visible()
-        modal.get_by_label("选择分组").select_option("none")
+        expect(modal.get_by_role("radio")).to_have_count(2)
+        expect(modal.get_by_role("radio", name="国内", exact=True)).to_be_checked()
+        modal.get_by_role("radio", name="国外", exact=True).click()
+        expect(modal.get_by_role("radio", name="国外", exact=True)).to_be_checked()
+        expect(modal.get_by_role("radio", name="国内", exact=True)).not_to_be_checked()
+        expect(modal.get_by_label("选择分组")).to_have_count(0)
+        page.screenshot(path="tmp/browser-customer-groups.png", full_page=True)
         modal.get_by_role("button", name="保存映射").click()
         expect(modal).not_to_be_visible()
         page.get_by_label("搜索数据源").fill("")
-        expect(page.locator(".group-row", has_text="未分组")).to_be_visible()
+        expect(page.locator(".group-row", has_text="国外")).to_be_visible()
         expect(page.locator(".mapping-table tbody tr", has_text="上海宝冶冶金工程有限公司")).to_be_visible()
         page.get_by_label("搜索数据源").fill("KOCH Engineered")
         expect(page.locator(".group-row", has_text="国内")).to_be_visible()
@@ -456,7 +544,7 @@ class BrowserAcceptanceTests(unittest.TestCase):
         saved_row = next(row for row in saved["items"]["customers"]
                          if row["alias"] == "上海宝冶冶金工程有限公司")
         self.assertEqual(saved_row["platform_code"], "010251")
-        self.assertEqual(saved_row["group_override"], "")
+        self.assertEqual(saved_row["group_override"], "国外")
         self.assertEqual(self.page_errors, [])
         self.assertEqual(self.server_errors, [])
 

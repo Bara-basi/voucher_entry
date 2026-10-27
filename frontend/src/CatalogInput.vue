@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-const props = defineProps<{ modelValue: string; items: any[]; label: string; target: string }>()
+const props = defineProps<{ modelValue: string; items: any[]; label: string; target: string; displayName?: string }>()
 const emit = defineEmits<{ 'update:modelValue': [value: string]; blur: [] }>()
 const input = ref<HTMLTextAreaElement>(), typing = ref(false), focused = ref(false), active = ref(0)
 const position = ref<Record<string, string>>({})
 const normalize = (s: string) => s.toLowerCase().replace(/[\s_-]/g, '')
 const selected = computed(() => props.items.find(item => String(item.code) === props.modelValue))
-const display = computed(() => focused.value ? props.modelValue : selected.value ? `${selected.value.code} ${selected.value.displayname || selected.value.name}` : props.modelValue)
+const display = computed(() => focused.value ? props.modelValue : selected.value ? `${selected.value.code} ${props.displayName || selected.value.displayname || selected.value.name}` : props.modelValue)
 const matches = computed(() => {
   const q = normalize(props.modelValue)
   if (!q) return []
@@ -38,6 +38,7 @@ watch(() => props.target, () => { typing.value = false; focused.value = false })
 </script>
 <template>
   <textarea rows="2" ref="input" class="catalog-input" :aria-label="label" :data-target="target" :value="display"
+    :title="displayName && selected ? `用友档案：${selected.code} ${selected.name}` : undefined"
     role="combobox" aria-autocomplete="list" :aria-expanded="typing && matches.length > 0"
     :aria-controls="'options-' + target" :aria-activedescendant="typing && matches.length ? 'option-' + target + active : undefined"
     autocomplete="off" @focus="focused = true" @input="edit" @keydown="key"

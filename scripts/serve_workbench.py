@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+DEPENDENCIES = ROOT / ".workdeps"
 
 
 def main():
@@ -22,6 +23,9 @@ def main():
         os.environ["WORKBENCH_OUTPUT"] = str(ROOT / "tmp/workbench-demo-exports")
     os.chdir(ROOT)
     sys.path.insert(0, str(ROOT))
+    if DEPENDENCIES.is_dir():
+        sys.path.insert(0, str(DEPENDENCIES))
+        os.environ["PYTHONPATH"] = str(DEPENDENCIES) + os.pathsep + os.environ.get("PYTHONPATH", "")
     import uvicorn
     uvicorn.run("app.main:app", host=args.host, port=args.port, workers=1)
 

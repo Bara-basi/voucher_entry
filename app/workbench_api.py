@@ -89,14 +89,16 @@ def batches(workbench: bool = False):
 
 @router.get("/batches/{key}")
 def batch(key: str, workbench: bool = False):
-    with store.connect() as db:
+    with store.connect(True) as db:
         value = svc.required(db, "batch", key)
         if workbench:
             value = next((b for b in svc.workbench_batches(db) if b["id"] == key),
                          {**value, "draft_ids": []})
-        value["drafts"] = [svc.required(db, "draft", d) for d in value["draft_ids"]]
+        value["drafts"] = [svc.refresh_generated_draft(db, d) for d in value["draft_ids"]]
         version = svc.mapping_state(db)["version"]
+    catalogs = svc.catalog()
     for d in value["drafts"]:
+        draft_service.validate(d, catalogs)
         d["mapping_stale"] = d["mapping_version"] != version
     return value
 
@@ -113,8 +115,9 @@ def mapping_recalculation(request: dict, x_session_id: str = Header(default="ano
 
 @router.get("/drafts/{key}")
 def draft(key: str):
-    with store.connect() as db:
-        value = svc.required(db, "draft", key)
+    with store.connect(True) as db:
+        value = svc.refresh_generated_draft(db, key)
+        draft_service.validate(value, svc.catalog())
         value["mapping_stale"] = value["mapping_version"] != svc.mapping_state(db)["version"]
     return value
 

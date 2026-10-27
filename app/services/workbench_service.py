@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import collections
 import calendar
 import datetime as dt
 import hashlib
@@ -9,6 +10,8 @@ import json
 import logging
 import math
 import os
+import subprocess
+import sys
 import re
 import threading
 import time
@@ -22,6 +25,7 @@ from fastapi import HTTPException
 
 from . import draft_service as engine
 from . import domestic_voucher_service as domestic
+from . import ruibei_order_cache as order_cache
 from . import feishu_service as feishu
 from . import voucher_service as legacy
 from . import workbench_store as store
@@ -346,14 +350,15 @@ def mapping_state(db):
 
 
 def domestic_customer_mapping_rows():
-    rules_path = ROOT / "data/domestic_voucher_rules_fit.json"
     customers_path = ROOT / "mappings/platform/客户档案.json"
     source_paths = [
-        rules_path,
         customers_path,
+        legacy.CUSTOMER_ALIAS_PATH,
+        legacy.CUSTOMER_HISTORY_PATH,
+        legacy.CUSTOMER_USAGE_PATH,
         ROOT / "data/domestic_source_current.json",
         ROOT / "data/ai_customs_source.json",
-        ROOT / "data/ruibei_buyer_mapping_2026.json",
+        domestic.RUI_BEI_BUYER_MAPPING,
     ]
     signature = (
         str(ROOT),
@@ -368,21 +373,15 @@ def domestic_customer_mapping_rows():
 
 @lru_cache(maxsize=16)
 def _domestic_customer_mapping_rows_cached(signature):
-    rules_path = ROOT / "data/domestic_voucher_rules_fit.json"
     customers_path = ROOT / "mappings/platform/客户档案.json"
-    if not rules_path.exists() or not customers_path.exists():
+    if not customers_path.exists():
         return []
-    rules = legacy.read_json(rules_path)
-    known = (rules.get("mappings") or {}).get("customers") or {}
+    masters = legacy.MasterData()
     platform = legacy.read_json(customers_path).get("records", [])
     by_code = {str(row["code"]): row for row in platform if row.get("code")}
-    by_name = {}
-    for row in platform:
-        name = legacy.normalize_name(row.get("name"))
-        if name:
-            by_name.setdefault(name, str(row["code"]))
 
     names = []
+    domestic_contracts = set()
     for filename in ("domestic_source_current.json", "ai_customs_source.json"):
         path = ROOT / "data" / filename
         if not path.exists():
@@ -391,16 +390,18 @@ def _domestic_customer_mapping_rows_cached(signature):
             fields = item.get("fields", item)
             if domestic.text(fields.get("销售方式")) != "内销":
                 continue
+            domestic_contracts.add(order_cache.normalize_contract(domestic.text(fields.get("合同号_1"))))
             names.extend([
                 domestic.text(fields.get("客户名称_脚本用")),
                 domestic.text(fields.get("买方英文名")),
             ])
-    ruibei_path = ROOT / "data/ruibei_buyer_mapping_2026.json"
+    ruibei_path = domestic.RUI_BEI_BUYER_MAPPING
     if ruibei_path.exists():
         names.extend(
-            domestic.text(item.get("公司名称"))
-            for item in legacy.read_json(ruibei_path).get("results", [])
-            if item.get("状态") == "已获取"
+            domestic.text(item.get("customer_name"))
+            for item in order_cache.load_cache(ruibei_path).get("records", [])
+            if item.get("customer_name") and (item.get("module", "domestic") == "domestic"
+                or domestic_contracts.intersection(order_cache.contract_keys(item.get("order_code"))))
         )
 
     rows, seen = [], set()
@@ -409,11 +410,9 @@ def _domestic_customer_mapping_rows_cached(signature):
         normalized = legacy.normalize_name(alias)
         if not alias or not normalized or normalized in seen:
             continue
-        # Chinese legal names should use an exact customer-archive match. English
-        # names and abbreviations retain the fitted voucher mapping because the same
-        # group may deliberately bill through a domestic subsidiary or trading entity.
-        chinese_name = any("\u3400" <= char <= "\u9fff" for char in alias)
-        code = str((by_name.get(normalized) if chinese_name else "") or known.get(normalized) or "")
+        # Auto-sync only independently resolved names; fitted cross-contract aliases
+        # must never become global overrides for either sales method.
+        code = masters.customer_code([alias])
         if not code:
             continue
         seen.add(normalized)
@@ -428,7 +427,7 @@ def _domestic_customer_mapping_rows_cached(signature):
             "platform_name": str(archive.get("name") or alias) if archive else alias,
             "enabled": True,
             "updated_at": "",
-            "basis": "内销规则与睿贝买方映射自动同步",
+            "basis": legacy.AUTO_CUSTOMER_BASIS,
         })
     return sorted(rows, key=lambda row: (row["alias"].casefold(), row["platform_code"]))
 
@@ -436,11 +435,15 @@ def _domestic_customer_mapping_rows_cached(signature):
 def merge_domestic_customer_mappings(state):
     state = copy.deepcopy(state)
     rows = state.setdefault("items", {}).setdefault("customers", [])
+    generated = domestic_customer_mapping_rows()
+    supported = {legacy.normalize_name(row["alias"]) for row in generated}
+    rows[:] = [row for row in rows if row.get("basis") != legacy.AUTO_CUSTOMER_BASIS
+               or legacy.normalize_name(row.get("alias")) in supported]
     aliases = {
         legacy.normalize_name(row.get("alias")): row
         for row in rows if row.get("alias")
     }
-    for row in domestic_customer_mapping_rows():
+    for row in generated:
         normalized = legacy.normalize_name(row["alias"])
         existing = aliases.get(normalized)
         if existing is None:
@@ -482,7 +485,8 @@ def masters_for(db):
                     masters.inventory.pop(row["alias"], None)
                 continue
             if kind == "customers":
-                masters.customer_aliases[legacy.normalize_name(row["alias"])] = row["platform_code"]
+                if row.get("basis") != legacy.AUTO_CUSTOMER_BASIS:
+                    masters.customer_aliases[legacy.normalize_name(row["alias"])] = row["platform_code"]
             elif kind == "suppliers":
                 masters.supplier_aliases[row["alias"]] = row["platform_code"]
             else:
@@ -534,6 +538,8 @@ def save_mapping(kind, payload, session):
                 "platform_name": catalogs[kind + "_by_code"][code]["name"],
                 "enabled": bool(incoming.get("enabled", True)), "updated_at": store.now(),
                 "group_override": group_override(incoming, old)}
+        if kind == "customers":
+            item["basis"] = "财务人工维护"
         if old and all(old.get(k, True if k == "enabled" else None) == item.get(k)
                        for k in ("alias", "platform_code", "enabled", "group_override")):
             return state
@@ -654,6 +660,8 @@ def resume():
     with store.connect(True) as db:
         tasks = store.all_items(db, "task")
         state = persist_mapping_migrations(db)
+        for draft in store.all_items(db, "draft"):
+            refresh_generated_draft(db, draft["id"])
     if state and not OFFLINE:
         sync_mapping_files(state)
     for task in reversed(tasks):
@@ -876,15 +884,25 @@ def query_job(task):
     return {"snapshot_id": snapshot["id"], "groups": len(result), "matched": len(selected)}
 
 
+def customer_labels(records, masters):
+    """Display verified ERP export-order names without changing Yonyou archive IDs."""
+    names = collections.defaultdict(set)
+    for record in records:
+        if (not legacy.uses_export_customer(record) or record.get("_manual_customer_name")
+                or not legacy.to_text(record.get("客户名称_来源")).startswith("睿贝ERP外销订单")):
+            continue
+        code = masters.customer_for_record(record)
+        name = legacy.to_text(record.get("客户名称_脚本用"))
+        if code and name:
+            names[code].add(name)
+    return {code: next(iter(values)) for code, values in names.items() if len(values) == 1}
+
+
 def build_voucher_rows(records, masters, catalogs, kind):
     if kind != "内销":
         return engine.build(records, masters, catalogs)
-    rules_path = ROOT / "data/domestic_voucher_rules_fit.json"
-    if not rules_path.exists():
-        raise ValueError("缺少内销凭证拟合规则，请先运行内销规则拟合")
-    rules = legacy.read_json(rules_path)
     try:
-        result = domestic.build_domestic_voucher(records, rules, masters)
+        result = domestic.build_domestic_voucher(records, masters)
     except domestic.DomesticVoucherError as error:
         raise ValueError("内销凭证构建失败：" + str(error)) from error
     rows = []
@@ -908,6 +926,55 @@ def build_voucher_rows(records, masters, catalogs, kind):
                 "severity": "warning",
             })
     return rows, issues
+
+
+def fetch_missing_domestic_buyers(task, records, masters=None):
+    if OFFLINE:
+        return
+    cache = order_cache.load_cache(domestic.RUI_BEI_BUYER_MAPPING)
+    full = not order_cache.complete_modules(cache)
+    selected = [r for r in records if legacy.to_text(r.get("销售方式")) == "内销"]
+    missing = [r for r in selected if order_cache.needs_remote(cache, legacy.to_text(r.get("合同号_1")))]
+    if not selected or (not full and not missing):
+        return
+    folder = ROOT / ".chche"
+    folder.mkdir(exist_ok=True)
+    key = hashlib.sha256(task["id"].encode()).hexdigest()[:24]
+    source = folder / ("order-request-" + key + ".json")
+    resume_file = folder / "domestic_orders.checkpoint.json"
+    source.write_text(store.dumps({"records": missing}), encoding="utf-8")
+    checkpoint(task, message="正在缓存睿贝全部内销及外销订单" if full else f"正在从睿贝内销及外销订单查询{len(missing)}条记录")
+    child_env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONUTF8="1")
+    child_env["PYTHONPATH"] = str(ROOT / ".workdeps") + os.pathsep + child_env.get("PYTHONPATH", "")
+    command = [sys.executable, str(ROOT / "scripts/fetch_ruibei_buyers.py"),
+               "--domestic", str(source), "--output", str(domestic.RUI_BEI_BUYER_MAPPING),
+               "--checkpoint", str(resume_file)]
+    if full:
+        command.append("--full")
+    try:
+        completed = subprocess.run(command, cwd=ROOT, capture_output=True, timeout=3600, env=child_env,
+            creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
+        if completed.returncode:
+            detail = getattr(completed, "stderr", b"") or b""
+            detail = detail.decode("utf-8", errors="replace") if isinstance(detail, bytes) else str(detail)
+            if "ModuleNotFoundError" in detail or "ImportError" in detail:
+                reason = "Python依赖缺失或无法加载，请检查项目.workdeps及requirements.txt"
+            elif "Executable doesn't exist" in detail:
+                reason = "浏览器程序缺失，请检查Chrome或Playwright浏览器安装"
+            elif "KeyError" in detail and any(k in detail for k in ("RUI_BEI_ERP", "RUIB_BEI_ERP")):
+                reason = "ERP配置项缺失，请检查.env中的睿贝URL、用户名和密码配置键"
+            elif "10013" in detail or "net::ERR" in detail:
+                reason = "ERP网络访问失败，请检查后台进程联网权限及ERP地址"
+            elif "TimeoutError" in detail:
+                reason = "ERP登录或订单页面操作超时，请检查账号登录及页面权限"
+            else:
+                reason = "ERP脚本执行异常，请核查登录与订单页面权限"
+            logging.error("Ruibei query failed: exit=%s, reason=%s", completed.returncode, reason)
+            raise ValueError("睿贝客户获取失败：" + reason + "；已完成的查询可续接")
+    except subprocess.TimeoutExpired:
+        raise ValueError("睿贝客户获取超时，请重试；已完成的查询可续接") from None
+    finally:
+        source.unlink(missing_ok=True)
 
 
 def build_job(task):
@@ -936,6 +1003,8 @@ def build_job(task):
             fail(422, "请主动勾选已核实的异常分组；缺少业务单号或范围外记录仍需修复")
     catalogs = catalog()
     inherited, notes = legacy.apply_add_inheritance(copy.deepcopy(snap["all_records"]))
+    fetch_missing_domestic_buyers(task, [r for g in groups for r in g["records"]], masters)
+    inherited = domestic.enrich_buyer_names(inherited, masters)
     by_id = {r["record_id"]: r for r in inherited}
     batch = {"id": task["id"], "created_at": task["created_at"], "draft_ids": [],
              "snapshot_id": snap["id"], "mode": snap["mode"]}
@@ -962,11 +1031,13 @@ def build_job(task):
                          "contracts": group["contracts"],
                          "search_index": group["search_index"], "source": source, "overrides": {},
                          "effective_source": effective,
+                         "customer_labels": customer_labels(effective, masters),
                          "header": {"posting_date": p["posting_date"], "category": "记", "maker": "王益"},
                          "rows": rows, "build_issues": issues, "blocking_issues": [],
                          "manual_fields": previous.get("manual_fields", []) if previous else [],
                          "version": previous["version"] + 1 if previous else 1,
                          "mapping_version": version,
+                         "domestic_template_version": domestic.TEMPLATE_VERSION if group.get("business_type") == "内销" else "",
                          "updated_at": store.now(),
                          "created_at": previous.get("created_at", store.now()) if previous else store.now(),
                          "exports": previous.get("exports", []) if previous else [],
@@ -974,12 +1045,14 @@ def build_job(task):
                 engine.validate(draft, catalogs)
                 store.put(db, "draft", key, draft)
                 store.audit(db, key, task["session"], "build", None, draft)
-            elif draft["source"] != group["records"]:
+            elif (draft["source"] != group["records"]
+                  or draft.get("effective_source") != [by_id[r["record_id"]] for r in group["records"]]):
                 draft["incoming_source"] = group["records"]
                 draft["incoming_effective_source"] = [by_id[r["record_id"]] for r in group["records"]]
                 draft["version"] += 1
                 engine.validate(draft, catalogs)
                 store.put(db, "draft", key, draft)
+            draft = refresh_generated_draft(db, key)
             if group["key"] in acknowledged and draft.get("status_acknowledgement", {}).get("task_id") != task["id"]:
                 draft["status_acknowledgement"] = {"reasons": group["blocked"], "session": task["session"], "at": store.now(), "task_id": task["id"]}
                 if draft.get("exports") and draft.get("reopened_task") != task["id"]:
@@ -1081,6 +1154,25 @@ def delete_batch(key, session):
     }
 
 
+def refresh_generated_draft(db, key):
+    """Upgrade generated drafts without overwriting a reviewed or exported source."""
+    draft = required(db, "draft", key)
+    if draft.get("exports"):
+        return draft
+    incoming = bool(draft.get("incoming_source"))
+    stale = (draft.get("business_type") == "内销"
+             and draft.get("domestic_template_version") != domestic.TEMPLATE_VERSION)
+    if not (incoming or stale):
+        return draft
+    if incoming and (draft.get("manual_fields") or draft.get("overrides")):
+        return draft
+    if draft.get("overrides", {}) != draft.get("calculated_overrides", {}):
+        return draft
+    return _recalculate(db, key, {"version": draft["version"],
+                                "preserve_manual": True, "refresh_source": True},
+                        "system:auto-refresh")
+
+
 def recalculate(key, payload, session):
     with store.connect(True) as db:
         return _recalculate(db, key, payload, session)
@@ -1096,8 +1188,13 @@ def _recalculate(db, key, payload, session):
         fail(409, "飞书来源已更新，请确认采用最新来源后重新计算")
     source = old.get("incoming_source") or old["source"]
     effective = old.get("incoming_effective_source") or old.get("effective_source") or source
+    if old.get("business_type") == "内销":
+        effective = domestic.enrich_buyer_names(effective)
     # Apply explicit overrides after inherited source values.
     records = [dict(r, **old["overrides"].get(r["record_id"], {})) for r in effective]
+    for record in records:
+        if any(field in old["overrides"].get(record["record_id"], {}) for field in ("客户名称_脚本用", "买方英文名")):
+            record["_manual_customer_name"] = True
     masters, version = masters_for(db)
     catalogs = catalog()
     draft = copy.deepcopy(old)
@@ -1109,6 +1206,9 @@ def _recalculate(db, key, payload, session):
     draft["rows"], draft["build_issues"] = build_voucher_rows(
         records, masters, catalogs, old.get("business_type", "外销")
     )
+    draft["customer_labels"] = customer_labels(records, masters)
+    if old.get("business_type") == "内销":
+        draft["domestic_template_version"] = domestic.TEMPLATE_VERSION
     if payload.get("preserve_manual"):
         if "__rows__/structure" in old["manual_fields"]:
             draft["rows"] = copy.deepcopy(old["rows"])
@@ -1156,12 +1256,39 @@ def recalculate_mappings(payload, session):
                  "refresh_source": payload.get("refresh_source", False)}, session) for item in targets]
 
 
+def validate_export_draft(draft, catalogs, masters):
+    """Recheck automatic customer assignments, including drafts made by old rules."""
+    engine.validate(draft, catalogs)
+    records = [dict(record, **draft.get("overrides", {}).get(record["record_id"], {}))
+               for record in (draft.get("effective_source") or draft["source"])]
+    for record in records:
+        if any(field in draft.get("overrides", {}).get(record["record_id"], {}) for field in ("客户名称_脚本用", "买方英文名")):
+            record["_manual_customer_name"] = True
+    if draft.get("business_type") == "内销":
+        records = domestic.enrich_buyer_names(records)
+        customer = domestic.customer_for_records(records, masters)
+    else:
+        customer = masters.customer_for_records(records)
+    manual = set(draft.get("manual_fields", []))
+    for row in draft["rows"]:
+        code = row.get("客户编码")
+        if code and row["id"] + "/客户编码" not in manual and code != customer:
+            draft["issues"].append({
+                "id": "customer-current:" + row["id"], "severity": "error",
+                "row_id": row["id"], "field": "客户编码",
+                "message": "自动填写的客户与当前来源或映射不一致，请重新计算并核实客户后导出",
+            })
+            draft["valid"] = False
+    return draft
+
+
 def export_plan(ids):
     valid, excluded = [], []
     with store.connect() as db:
         catalogs = catalog()
+        masters, _ = masters_for(db)
         for key in dict.fromkeys(ids):
-            draft = engine.validate(required(db, "draft", key), catalogs)
+            draft = validate_export_draft(required(db, "draft", key), catalogs, masters)
             entry = {"id": key, "contracts": draft["contracts"],
                      "business_type": draft.get("business_type", "外销"),
                      "business_no": draft.get("business_no", draft.get("customs_no", "")),
@@ -1207,11 +1334,12 @@ def export_job(task):
         if not existing:
             drafts = []
             catalogs = catalog()
+            masters, _ = masters_for(db)
             for item in task["payload"]["drafts"]:
                 draft = required(db, "draft", item["id"])
                 if draft["version"] != item["version"]:
                     fail(409, "预览后凭证发生变化，请重新预览导出")
-                if not engine.validate(draft, catalogs)["valid"]:
+                if not validate_export_draft(draft, catalogs, masters)["valid"]:
                     fail(422, "凭证尚有阻断问题")
                 drafts.append(draft)
             if not drafts or len({d["id"] for d in drafts}) != len(drafts):
@@ -1264,6 +1392,17 @@ def writeback(eid):
         return
     if export["offline"]:
         export["writeback"] = "offline"
+        with store.connect(True) as db:
+            store.put(db, "export", eid, export)
+        return
+    with store.connect() as db:
+        masters, _ = masters_for(db)
+    catalogs = catalog()
+    checked = [validate_export_draft(copy.deepcopy(draft), catalogs, masters)
+               for draft in export.get("drafts", [])]
+    if any(draft.get("engine_stale") or any(issue["id"].startswith("customer-current:")
+           for issue in draft["issues"]) for draft in checked):
+        export.update(writeback="failed", error="历史导出的内销规则或自动客户已过期，请核实并重新生成替换文件")
         with store.connect(True) as db:
             store.put(db, "export", eid, export)
         return

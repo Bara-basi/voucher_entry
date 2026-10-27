@@ -29,6 +29,135 @@ from app import main as legacy_api
 
 
 class WorkbenchTests(unittest.TestCase):
+    def test_koch_auto_mapping_cannot_override_verified_customer(self):
+        alias = {"id": "old-auto", "alias": "KOCH Engineered Solution",
+                 "platform_code": "000062", "enabled": True,
+                 "basis": legacy.AUTO_CUSTOMER_BASIS}
+        with store.connect(True) as db:
+            store.put(db, "settings", "mappings", {
+                "version": 1, "items": {"customers": [alias]}})
+            state = svc.persist_mapping_migrations(db)
+        self.assertEqual(state["version"], 2)
+        corrected = next(r for r in state["items"]["customers"] if r["alias"] == alias["alias"])
+        self.assertEqual(corrected["platform_code"], "010249")
+        with store.connect() as db:
+            masters, _ = svc.masters_for(db)
+        self.assertEqual(masters.customer_code([alias["alias"]]), "010249")
+        records = [r for r in self.source if legacy.to_text(r.get("合同号_1")) == "26MT-03P256"]
+        self.assertEqual(len(records), 5)
+        rows, _ = engine.build(records, masters, self.catalogs)
+        self.assertEqual(rows[0]["客户编码"], "010249")
+        valid_records = copy.deepcopy(self.sample["source"])
+        for record in valid_records:
+            record["买方英文名"] = records[0]["买方英文名"]
+            record["客户名称_脚本用"] = records[0]["客户名称_脚本用"]
+        self.assertEqual(legacy.build_voucher(valid_records, masters)[0]["客户编码"], "010249")
+        export_rows, _ = engine.build(valid_records, masters, self.catalogs)
+        path = self.path / "koch.xls"
+        svc.write_excel([{**self.sample, "rows": export_rows}], path)
+        sheet = xlrd.open_workbook(str(path)).sheet_by_index(0)
+        self.assertEqual(sheet.cell_value(1, sheet.row_values(0).index("客户编码")), "010249")
+
+        self.assertEqual(domestic.customer_for_records(records, masters), "010249")
+        # Explicit finance edits must survive future automatic migrations.
+        svc.save_mapping("customers", {"version": 2, "item": {
+            **corrected, "platform_code": "000062"}}, "finance")
+        with store.connect(True) as db:
+            manual = svc.persist_mapping_migrations(db)
+        edited = next(r for r in manual["items"]["customers"] if r["alias"] == alias["alias"])
+        self.assertEqual(edited["platform_code"], "000062")
+        self.assertEqual(edited["basis"], "财务人工维护")
+
+    def test_customer_primary_source_and_group_consistency(self):
+        good = {"record_id": "buyer-1", "销售方式": "出口",
+                "买方英文名": [{"text": "KOCH Engineered Solution"}],
+                "客户名称_脚本用": {"value": [{"text": "上海辉懿机械有限公司"}]}}
+        masters = copy.deepcopy(self.masters)
+        self.assertEqual(masters.customer_for_record(good), "010249")
+        unknown = {**good, "买方英文名": "Unknown buyer never confirmed"}
+        self.assertIsNone(masters.customer_for_record(unknown))
+        fitted = {"mappings": {"customers": {
+            legacy.normalize_name(unknown["买方英文名"]): "000062"}}}
+        self.assertEqual(domestic.customer_for_records([{
+            **unknown, "客户名称_脚本用": unknown["买方英文名"]}], masters), "")
+        self.assertEqual(masters.customer_for_record({**good, "买方英文名": ""}), "010243")
+        conflict = {**good, "record_id": "buyer-2", "买方英文名": "上海辉懿机械有限公司"}
+        for kind in ("外销", "内销"):
+            records = [copy.deepcopy(self.source[0]) for _ in range(2)]
+            for row, buyer in zip(records, (good, conflict)):
+                row.update(buyer, 销售方式="内销" if kind == "内销" else "出口")
+                row["客户名称_脚本用"] = row["买方英文名"]
+            with patch.object(domestic, "RUI_BEI_BUYER_MAPPING", self.path / "no-order-cache.json"):
+                rows, issues = svc.build_voucher_rows(records, masters, self.catalogs, kind)
+            self.assertEqual(rows[0]["客户编码"], "")
+            self.assertTrue(any(i.get("field") == "客户编码" for i in issues))
+
+    def test_customer_ambiguity_does_not_pick_numeric_code(self):
+        masters = copy.deepcopy(self.masters)
+        masters.customer_by_name = {"ambiguousbuyer": {"123", "A-1"}}
+        masters.customer_shortname = {"123": "First", "A-1": "Second"}
+        masters.customer_aliases = {}
+        masters.customer_history = {}
+        self.assertIsNone(masters.customer_code(["Ambiguous Buyer"]))
+        masters.customer_by_name = {"exactbuyer": {"123"}}
+        masters.customer_history = {"exactbuyer": "A-1"}
+        self.assertEqual(masters.customer_code(["Exact Buyer"]), "123")
+
+    def test_add_order_does_not_inherit_first_of_conflicting_buyers(self):
+        records = [
+            {"合同号_1": "26MT-TEST", "买方英文名": "Buyer A"},
+            {"合同号_1": "26MT-TEST", "买方英文名": "Buyer B"},
+            {"合同号_1": "26MT-TEST-ADD", "买方英文名": ""},
+        ]
+        result, _ = legacy.apply_add_inheritance(records)
+        self.assertEqual(result[2]["买方英文名"], "")
+
+    def test_old_automatic_customer_is_rechecked_at_both_export_boundaries(self):
+        old = copy.deepcopy(self.draft)
+        old["id"] = "old-customer"
+        old["business_type"] = "外销"
+        for record in old["source"]:
+            record.update(买方英文名="KOCH Engineered Solution", 客户名称_脚本用="KOCH Engineered Solution")
+        old["effective_source"] = copy.deepcopy(old["source"])
+        old["rows"][0]["客户编码"] = "000062"
+        old["manual_fields"] = []
+        self.assertTrue(engine.validate(old, self.catalogs)["valid"])
+        with store.connect(True) as db:
+            store.put(db, "draft", old["id"], old)
+        plan = svc.export_plan([old["id"]])
+        self.assertEqual(plan["valid"], [])
+        self.assertTrue(any(i["id"].startswith("customer-current:") for i in plan["excluded"][0]["issues"]))
+        task = self.task("export", {"drafts": [{"id": old["id"], "version": old["version"]}]})
+        with self.assertRaises(HTTPException) as error:
+            svc.export_job(task)
+        self.assertEqual(error.exception.status_code, 422)
+        self.assertFalse(svc.OUTPUT.exists())
+        with store.connect(True) as db:
+            store.put(db, "export", "old-export", {"id": "old-export", "drafts": [old],
+                "record_ids": [r["record_id"] for r in old["source"]],
+                "writeback": "pending", "offline": False, "written": 0, "updates": []})
+        with patch.object(svc.feishu, "batch_update") as update:
+            svc.writeback("old-export")
+            update.assert_not_called()
+        with store.connect() as db:
+            self.assertEqual(store.get(db, "export", "old-export")["writeback"], "failed")
+        # A finance user's explicit customer choice remains reviewable and authoritative.
+        old["manual_fields"] = [old["rows"][0]["id"] + "/客户编码"]
+        with store.connect(True) as db:
+            store.put(db, "draft", old["id"], old)
+        self.assertEqual(len(svc.export_plan([old["id"]])["valid"]), 1)
+
+    def test_script_customer_alias_does_not_promote_auto_or_disabled_rows(self):
+        from scripts import customer_matching
+        row = {"alias": "KOCH Engineered Solution", "platform_code": "000062",
+               "basis": legacy.AUTO_CUSTOMER_BASIS}
+        for mapping in (row, {**row, "basis": "财务人工维护", "enabled": False}):
+            with patch.object(customer_matching, "load_mapping", return_value={"aliases": [mapping]}):
+                self.assertIsNone(customer_matching.confirmed_alias(row["alias"], self.masters.customers))
+        with patch.object(customer_matching, "load_mapping", return_value={"aliases": [
+                {**row, "basis": "财务人工维护", "platform_code": "010249"}]}):
+            self.assertEqual(customer_matching.confirmed_alias(row["alias"], self.masters.customers)["code"], "010249")
+
     def test_unchanged_catalog_and_mapping_saves_are_noops(self):
         for kind in ("inventory", "suppliers", "customers"):
             with store.connect() as db:
@@ -342,6 +471,42 @@ class WorkbenchTests(unittest.TestCase):
         with store.connect(True) as db:
             store.put(db, "draft", self.draft["id"], self.draft)
 
+    def test_generated_source_refresh_is_automatic_and_idempotent(self):
+        draft = copy.deepcopy(self.draft)
+        draft["incoming_source"] = copy.deepcopy(draft["source"])
+        draft["incoming_source"][0]["客户名称来源"] = "更新后的检索"
+        draft["incoming_effective_source"] = copy.deepcopy(draft["incoming_source"])
+        with store.connect(True) as db:
+            store.put(db, "draft", draft["id"], draft)
+            updated = svc.refresh_generated_draft(db, draft["id"])
+            self.assertNotIn("incoming_source", updated)
+            self.assertEqual(updated["source"], draft["incoming_source"])
+            self.assertEqual(updated["version"], draft["version"] + 1)
+            again = svc.refresh_generated_draft(db, draft["id"])
+            self.assertEqual(again["version"], updated["version"])
+
+    def test_automatic_refresh_preserves_manual_and_exported_drafts(self):
+        for protected in ({"manual_fields": ["__rows__/structure"]},
+                          {"overrides": {"some-record": {"采购金额": 123}}},
+                          {"exports": ["saved-export"]}):
+            draft = {**copy.deepcopy(self.draft), **protected}
+            draft["incoming_source"] = copy.deepcopy(draft["source"])
+            with store.connect(True) as db:
+                store.put(db, "draft", draft["id"], draft)
+                self.assertEqual(svc.refresh_generated_draft(db, draft["id"]), draft)
+
+    def test_template_refresh_preserves_manual_fields_and_header(self):
+        draft = copy.deepcopy(self.draft)
+        draft.update(business_type="内销", domestic_template_version="old")
+        draft["rows"][0]["摘要"] = "人工核对后的摘要"
+        draft["manual_fields"] = [draft["rows"][0]["id"] + "/摘要"]
+        with store.connect(True) as db, patch.object(svc, "build_voucher_rows", return_value=(copy.deepcopy(self.draft["rows"]), [])):
+            store.put(db, "draft", draft["id"], draft)
+            updated = svc.refresh_generated_draft(db, draft["id"])
+            self.assertEqual(updated["rows"][0]["摘要"], "人工核对后的摘要")
+            self.assertEqual(updated["header"], draft["header"])
+            self.assertEqual(updated["domestic_template_version"], domestic.TEMPLATE_VERSION)
+
     def task(self, kind, payload, checkpoint=None):
         task = {"id": kind + "-test", "kind": kind, "payload": payload, "checkpoint": checkpoint or {},
                 "session": "test-browser", "created_at": store.now(), "progress": 0, "status": "running"}
@@ -534,6 +699,7 @@ class WorkbenchTests(unittest.TestCase):
             if record.get("合同号_1") == "26MT-DP012"
         ]
         self.assertEqual(len(records), 1)
+        records[0]["内陆运费含税"] = "0"  # Fee treatment is a separate pending business rule.
         records[0]["客户名称_脚本用"] = {
             "type": 1,
             "value": [{"text": "上海宝冶集团有限公司", "type": "text"}],
@@ -695,10 +861,15 @@ class WorkbenchTests(unittest.TestCase):
     def test_full_snapshot_regression(self):
         source, _ = legacy.apply_add_inheritance(copy.deepcopy(self.source))
         old_success, new_success, rounding_differences = 0, 0, 0
+        blocked_customers = 0
         for group in legacy.group_records(source).values():
             rows, issues = engine.build(group, self.masters, self.catalogs)
             draft = dict(self.sample, rows=rows, build_issues=issues)
             new_success += int(engine.validate(draft, self.catalogs)["valid"])
+            if not self.masters.customer_for_records(group):
+                blocked_customers += 1
+                self.assertFalse(draft["valid"])
+                self.assertTrue(any(i.get("field") == "客户编码" for i in draft["issues"]))
             try:
                 old = legacy.build_voucher(group, self.masters)
             except legacy.VoucherError:
@@ -713,7 +884,8 @@ class WorkbenchTests(unittest.TestCase):
                     diff = abs(engine.number(a[field]) - engine.number(b[field]))
                     self.assertLessEqual(diff, engine.Decimal(".02"), (field, a[field], b[field]))
                     rounding_differences += int(bool(diff))
-        self.assertGreater(old_success, 450)
+        # Ambiguous/unverified customers now remain blocked rather than guessed.
+        self.assertGreater(old_success + blocked_customers, 450)
         self.assertGreaterEqual(new_success, old_success)
 
     def test_partial_export_and_stale_version_rejected(self):
@@ -787,9 +959,7 @@ class WorkbenchTests(unittest.TestCase):
             for row in rows
         }
         expected = {
-            "上海宝冶冶金工程有限公司": "010251",
             "上海宝冶集团有限公司": "010251",
-            "上海辉懿机械有限公司": "010243",
             "万里旺(上海)钢管有限公司": "010240",
             "浙江海洲制药股份有限公司": "D-016",
         }
@@ -821,12 +991,16 @@ class WorkbenchTests(unittest.TestCase):
             self.assertEqual(reloaded, persisted)
             self.assertEqual(svc.mapping_state(db), reloaded)
             masters, _ = svc.masters_for(db)
-        self.assertEqual(masters.customer_code(["上海宝冶冶金工程有限公司"]), "010251")
+        # Live financial users may confirm this formerly fitted-only alias.
+        confirmed = by_alias.get(legacy.normalize_name("上海宝冶冶金工程有限公司"))
+        expected_code = (confirmed["platform_code"] if confirmed and confirmed.get("enabled", True)
+                         and confirmed.get("basis") != legacy.AUTO_CUSTOMER_BASIS else None)
+        self.assertEqual(masters.customer_code(["上海宝冶冶金工程有限公司"]), expected_code)
         self.assertEqual(masters.customer_code(["上海辉懿机械有限公司"]), "010243")
-        rules = legacy.read_json(svc.ROOT / "data/domestic_voucher_rules_fit.json")
+
         self.assertEqual(
-            domestic._customer_code(
-                rules, {"客户名称_脚本用": "上海辉懿机械有限公司"}, masters
+            domestic.customer_for_records(
+                [{"销售方式": "内销", "客户名称_脚本用": "上海辉懿机械有限公司"}], masters
             ),
             "010243",
         )

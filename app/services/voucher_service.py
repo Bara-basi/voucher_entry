@@ -28,6 +28,7 @@ CUSTOMER_HISTORY_PATH = ROOT / "mappings/customer_resolution_history.json"
 SUPPLIER_ALIAS_PATH = ROOT / "mappings/finance_supplier_alias_mappings.json"
 CUSTOMER_USAGE_PATH = ROOT / "mappings/customer_usage.json"
 RATE_PATH = ROOT / "data/fx_rates_ai_snapshot.json"
+AUTO_CUSTOMER_BASIS = "内销规则与睿贝买方映射自动同步"
 
 EXCLUDED_MAKERS = {"王益"}          # 王益 = 导入测试样例
 SCOPE_SALE_METHOD = "出口"
@@ -95,6 +96,14 @@ def to_text(value) -> str:
     return str(value or "").strip()
 
 
+def uses_export_customer(record) -> bool:
+    """Finance may book numbered export orders using the domestic voucher template."""
+    if to_text(record.get("销售方式")) != "内销":
+        return True
+    contract = re.sub(r"\s+", "", to_text(record.get("合同号_1")).upper()).removeprefix("PI-")
+    return bool(re.match(r"^\d{2}MT-(?:0[1-9]|[1-9]\d)[A-Z]", contract))
+
+
 def read_json(path: Path):
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
@@ -115,7 +124,9 @@ class MasterData:
         self.customers = read_json(CUSTOMER_PATH)["records"]
         self.suppliers = read_json(SUPPLIER_PATH)["records"]
         self.customer_aliases = {normalize_name(a["alias"]): a["platform_code"]
-                                 for a in read_json(CUSTOMER_ALIAS_PATH)["aliases"]}
+                                 for a in read_json(CUSTOMER_ALIAS_PATH)["aliases"]
+                                 if a.get("enabled", True)
+                                 and a.get("basis") != AUTO_CUSTOMER_BASIS}
         self.customer_history = {}
         for record in read_json(CUSTOMER_HISTORY_PATH)["records"]:
             self.customer_history.setdefault(record["normalized_alias"], record["platform_code"])
@@ -172,7 +183,7 @@ class MasterData:
     def inventory_code(self, product_name: str) -> str | None:
         return self.inventory.get((product_name or "").strip())
 
-    def customer_code(self, names) -> str | None:
+    def customer_code(self, names, *, use_history=True) -> str | None:
         for raw in names:
             name = to_text(raw)
             if not name:
@@ -182,8 +193,11 @@ class MasterData:
             if code:
                 return code
             candidates = set(self.customer_by_name.get(normalized, set()))
-            history = self.customer_history.get(normalized)
-            if history:
+            history = self.customer_history.get(normalized) if use_history else None
+            if history in candidates:
+                return history
+            # An exact archive name must not be mixed with an unrelated historical guess.
+            if not candidates and history and history in self.customer_shortname:
                 candidates.add(history)
             if not candidates:
                 # 档案全名常带括号补充说明（如 TOROCA(SECIME...)），允许唯一前缀匹配
@@ -191,7 +205,7 @@ class MasterData:
                 if len(key) >= 6:
                     for archive_key, codes in self.customer_by_name.items():
                         other = archive_key.replace("and", "")
-                        if other.startswith(key) or key.startswith(other):
+                        if len(other) >= 6 and (other.startswith(key) or key.startswith(other)):
                             candidates |= codes
             if candidates:
                 # 同一简称（如 3-095）的档案是同一客户的不同版本，一并纳入比较
@@ -208,13 +222,27 @@ class MasterData:
                     usage = self.customer_usage
                     ranked = sorted(candidates, key=lambda c: (-int(usage.get(c, 0)), c))
                     return ranked[0]
-                # 否则优先正式的数字编码（如 020155 而非 2-010）
-                numeric = [c for c in candidates if str(c).isdigit()]
-                if len(numeric) == 1:
-                    return numeric[0]
-                if history:
-                    return history
+                # Different customers must not be resolved by code format or row order.
+                return None
         return None
+
+    def customer_for_record(self, record) -> str | None:
+        fields = (("客户名称_脚本用", "买方英文名") if to_text(record.get("销售方式")) == "内销"
+                  else ("买方英文名", "客户名称_脚本用"))
+        # The second field is only a fallback when the primary source is empty.
+        name = next((to_text(record.get(f)) for f in fields if to_text(record.get(f))), "")
+        return self.customer_code([name], use_history=uses_export_customer(record)) if name else None
+
+    def customer_for_records(self, records) -> str | None:
+        codes = set()
+        for record in records:
+            if not any(to_text(record.get(f)) for f in ("买方英文名", "客户名称_脚本用")):
+                continue
+            code = self.customer_for_record(record)
+            if not code:
+                return None
+            codes.add(code)
+        return next(iter(codes)) if len(codes) == 1 else None
 
     def supplier_code(self, short_name: str, full_name: str = "") -> str | None:
         short_name = to_text(short_name)
@@ -268,8 +296,7 @@ def build_voucher(records, masters: MasterData | None = None) -> list[dict]:
     total_freight = sum(to_float(r.get("运费")) for r in records)
     total_insurance = sum(to_float(r.get("保费")) for r in records)
 
-    customer = masters.customer_code([records[0].get("买方英文名"),
-                                      records[0].get("客户名称_脚本用")])
+    customer = masters.customer_for_records(records)
     if not customer:
         raise VoucherError("无法匹配客户")
 
@@ -478,11 +505,10 @@ def apply_add_inheritance(records) -> tuple[list[dict], list[dict]]:
         if not base_records:
             continue
 
-        customer = ""
-        for base in base_records:
-            customer = to_text(base.get("买方英文名")) or to_text(base.get("客户名称_脚本用"))
-            if customer:
-                break
+        customers = {to_text(base.get("买方英文名")) or to_text(base.get("客户名称_脚本用"))
+                     for base in base_records}
+        customers.discard("")
+        customer = next(iter(customers)) if len(customers) == 1 else ""
         suppliers = {to_text(r.get("供应商")) for r in base_records if to_text(r.get("供应商"))}
         short_names = {to_text(r.get("供应商简称")) for r in base_records
                        if to_text(r.get("供应商简称"))}
