@@ -126,7 +126,10 @@ function grouped(rows: any[], kind: string) {
   }
   return [...groups].sort(([a], [b]) => a === '未分组' ? 1 : b === '未分组' ? -1 : a.localeCompare(b, 'zh')).map(([name, rows]) => ({name, rows}))
 }
-function openReference(row: any) { referenceError.value = ''; referenceEdit.value = clone(row) }
+function openReference(row: any) {
+  referenceError.value = ''
+  referenceEdit.value = { ...clone(row), group_override: row.group_override ?? row.group_name ?? '' }
+}
 const rateChoices = ref<any[]>([])
 function openRate(period = '', currency = '') {
   const [year, month] = period.split('-')
@@ -196,6 +199,9 @@ function openMapping(row: any = { alias: '', platform_code: '', enabled: true })
     const archive = catalogs.value.customers?.find(r => String(r.code) === item.platform_code)
     const group = item.group_override ?? archive?.group_name
     item.group_override = ['国内', '国外'].includes(group) ? group : inferredCustomerGroup(archive?.name || item.alias || '') || '国内'
+  } else {
+    const archive = catalogs.value[mapKind.value]?.find(r => String(r.code) === item.platform_code)
+    item.group_override = item.group_override ?? archive?.group_name ?? ''
   }
   mapEdit.value = item; mapError.value = ''; groupValid.value = true
 }

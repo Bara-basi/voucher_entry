@@ -1,21 +1,21 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 const props = defineProps<{ modelValue?: string | null; options: string[] }>()
-const emit = defineEmits<{ 'update:modelValue': [value: string | null]; validity: [valid: boolean] }>()
+const emit = defineEmits<{ 'update:modelValue': [value: string]; validity: [valid: boolean] }>()
 const creating = ref(false)
 const options = computed(() => [...new Set([...props.options, ...(props.modelValue ? [props.modelValue] : [])])].sort((a,b) => a.localeCompare(b, 'zh')))
-const selection = computed(() => creating.value ? 'new' : props.modelValue == null ? 'auto' : props.modelValue === '' ? 'none' : 'group:' + props.modelValue)
+const selection = computed(() => creating.value ? 'new' : !props.modelValue ? 'none' : 'group:' + props.modelValue)
 function select(event: Event) {
   const value = (event.target as HTMLSelectElement).value
   creating.value = value === 'new'
-  emit('update:modelValue', value === 'auto' ? null : value.startsWith('group:') ? value.slice(6) : '')
+  emit('update:modelValue', value.startsWith('group:') ? value.slice(6) : '')
 }
 watch(() => [creating.value, props.modelValue], () => emit('validity', !creating.value || !!props.modelValue?.trim()), { immediate: true })
 </script>
 <template>
   <div class="group-picker">
     <label>分组<select aria-label="选择分组" :value="selection" @change="select">
-      <option value="auto">沿用档案分组</option><option value="none">未分组</option>
+      <option value="none">未分组</option>
       <option v-for="name in options" :key="name" :value="'group:' + name">{{ name }}</option>
       <option value="new">＋ 新建分组</option>
     </select></label>
