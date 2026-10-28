@@ -19,6 +19,7 @@ from urllib.request import Request, urlopen
 import xlrd
 from fastapi import HTTPException
 
+from app import settings
 from app.services import draft_service as engine
 from app.services import domestic_voucher_service as domestic
 from app.services import feishu_service as feishu
@@ -29,6 +30,17 @@ from app import main as legacy_api
 
 
 class WorkbenchTests(unittest.TestCase):
+    def test_voucher_maker_uses_environment_and_reaches_template(self):
+        with patch.dict(os.environ, {"VOUCHER_MAKER": ""}):
+            self.assertEqual(settings.voucher_maker(), "马云凤")
+        with patch.dict(os.environ, {"VOUCHER_MAKER": "环境制单人"}):
+            self.assertEqual(settings.voucher_maker(), "环境制单人")
+            path = self.path / "environment-maker.xls"
+            legacy.write_template_xls(self.draft["rows"], path, dt.date(2026, 10, 28))
+            sheet = xlrd.open_workbook(str(path)).sheet_by_index(0)
+            header = [str(value).lstrip("* ") for value in sheet.row_values(0)]
+            self.assertEqual(sheet.cell_value(1, header.index("制单人")), "环境制单人")
+
     def test_koch_auto_mapping_cannot_override_verified_customer(self):
         alias = {"id": "old-auto", "alias": "KOCH Engineered Solution",
                  "platform_code": "000062", "enabled": True,
@@ -1114,6 +1126,7 @@ class HTTPFlowTests(unittest.TestCase):
                 break
         self.assertIsNotNone(selected)
         self.assertIsNotNone(draft)
+        self.assertEqual(draft["header"]["maker"], settings.voucher_maker())
         numeric_rows = copy.deepcopy(draft["rows"])
         for row in numeric_rows:
             for field in engine.NUMBERS:

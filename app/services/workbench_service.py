@@ -23,6 +23,7 @@ from urllib.parse import urlencode
 
 from fastapi import HTTPException
 
+from app.settings import voucher_maker
 from . import draft_service as engine
 from . import domestic_voucher_service as domestic
 from . import ruibei_order_cache as order_cache
@@ -1032,7 +1033,8 @@ def build_job(task):
                          "search_index": group["search_index"], "source": source, "overrides": {},
                          "effective_source": effective,
                          "customer_labels": customer_labels(effective, masters),
-                         "header": {"posting_date": p["posting_date"], "category": "记", "maker": "王益"},
+                         "header": {"posting_date": p["posting_date"], "category": "记",
+                                    "maker": voucher_maker()},
                          "rows": rows, "build_issues": issues, "blocking_issues": [],
                          "manual_fields": previous.get("manual_fields", []) if previous else [],
                          "version": previous["version"] + 1 if previous else 1,

@@ -17,6 +17,8 @@ from pathlib import Path
 import xlrd
 import xlwt
 
+from app.settings import voucher_maker
+
 ROOT = Path(__file__).resolve().parents[2]
 
 TEMPLATE_PATH = ROOT / "templates/024_存货档案_反方向数量留空.xls"
@@ -409,7 +411,7 @@ def _write_row(sheet, column, row_index, row, voucher_id, posting_date):
         "会计期间": posting_date.month,
         "制单日期": posting_date.isoformat(),
         "凭证类别": "记",
-        "制单人": "王益",
+        "制单人": voucher_maker(),
         "科目编码": row["科目编码"],
         "摘要": row["摘要"],
         "币种名称": row["币种名称"],

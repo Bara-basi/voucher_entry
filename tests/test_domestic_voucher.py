@@ -2,6 +2,7 @@
 import copy
 import datetime as dt
 import json
+import os
 import tempfile
 import unittest
 from types import SimpleNamespace
@@ -320,11 +321,13 @@ class DomesticVoucherTests(unittest.TestCase):
         good = self.build()
         bad = self.build([{**self.record, "采购金额": ""}])
         target = Path(self.temp.name) / "template.xls"
-        domestic.write_excel({"generated": [good, bad]}, target, dt.date(2026, 10, 26))
+        with patch.dict(os.environ, {"VOUCHER_MAKER": "内销制单人"}):
+            domestic.write_excel({"generated": [good, bad]}, target, dt.date(2026, 10, 26))
         sheet = xlrd.open_workbook(str(target)).sheet_by_index(0)
         header = [str(v).lstrip("* ") for v in sheet.row_values(0)]
         self.assertEqual(sheet.nrows, 9)
         self.assertEqual(sheet.ncols, 53)
+        self.assertEqual(sheet.cell_value(1, header.index("制单人")), "内销制单人")
         self.assertEqual(sheet.cell_value(1, header.index("借方金额")), 1130)
         self.assertEqual(sheet.cell_value(4, header.index("借方数量")), 10)
 

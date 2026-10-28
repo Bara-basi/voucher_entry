@@ -10,6 +10,7 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from pathlib import Path
 from typing import Any
 
+from app.settings import voucher_maker
 from . import voucher_service as legacy
 from . import ruibei_order_cache as orders
 
@@ -245,7 +246,8 @@ def _excel_row(row):
 
 
 def write_excel(result: dict, path: Path, posting_date: dt.date,
-                maker: str = "王益") -> None:
+                maker: str | None = None) -> None:
+    maker = maker or voucher_maker()
     book, sheet, columns = legacy._new_sheet(path)
     sheet._cell_overwrite_ok = True
     row_number = 1
@@ -264,7 +266,8 @@ def write_excel(result: dict, path: Path, posting_date: dt.date,
 
 
 def write_single_excels(result: dict, directory: Path, posting_date: dt.date,
-                        maker: str = "王益") -> Path:
+                        maker: str | None = None) -> Path:
+    maker = maker or voucher_maker()
     directory.mkdir(parents=True, exist_ok=True)
     index_rows = []
     for index, voucher in enumerate([v for v in result["generated"] if not any(i["severity"] == "error" for i in v.get("issues", []))], start=1):
